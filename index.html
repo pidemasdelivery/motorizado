@@ -8995,6 +8995,9 @@ html.pdLoginFijo body #loginView#loginView#loginView > *{width:100%;max-width:42
 /* Ventanas que se cierran deslizando hacia abajo */
 .pdArrastrando{transition:none!important;user-select:none!important}
 .pdSoltando{transition:translate .28s cubic-bezier(.2,.8,.3,1)!important}
+#pdFondoHoja{position:fixed;inset:0;background:rgba(31,26,23,.45);opacity:0;transition:opacity .2s ease-out;pointer-events:auto;touch-action:none}
+#pdFondoHoja.on{opacity:1}
+#pdFondoHoja[hidden]{display:none!important}
 </style>
 <script id="pd-app-panel-js">
 (function(){
@@ -9024,6 +9027,37 @@ html.pdLoginFijo body #loginView#loginView#loginView > *{width:100%;max-width:42
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',iniciarLogin);else iniciarLogin();
 
   /* 4 · Ventanas (hojas) que se cierran deslizando hacia abajo, como en la tienda */
+
+  /* 5 · Fondo oscuro detrás de todas las ventanas (igual que la primera ventana del motorizado) */
+  (function(){
+    var fondo=null;
+    function crear(){fondo=document.createElement('div');fondo.id='pdFondoHoja';fondo.setAttribute('aria-hidden','true');document.body.appendChild(fondo);
+      fondo.addEventListener('click',function(e){e.stopPropagation()});return fondo}
+    function alfa(c){var m=/rgba?\(([^)]+)\)/.exec(c);if(!m)return 0;var p=m[1].split(',');return p.length>3?parseFloat(p[3]):1}
+    var CAND='section.pdmSheet,section.panelSection,.notifDialog,[class*="Sheet"],[class*="sheet"],dialog[open],[role="dialog"]';
+    function hojaAbierta(){
+      var best=null,bz=-1;
+      document.querySelectorAll(CAND).forEach(function(e){
+        if(e.id==='pdFondoHoja'||!e.getClientRects().length)return;
+        var cs=getComputedStyle(e);if(cs.position!=='fixed'||cs.visibility==='hidden'||cs.display==='none'||parseFloat(cs.opacity)<0.5)return;
+        var r=e.getBoundingClientRect();if(!(r.bottom>=innerHeight-2&&r.top>24&&r.height>120))return;
+        var z=parseInt(cs.zIndex,10)||0;if(z>bz){bz=z;best=e}
+      });
+      return best?{h:best,z:bz}:null}
+    function yaTieneFondo(z){
+      var els=document.elementsFromPoint(Math.round(innerWidth/2),12);
+      for(var i=0;i<els.length;i++){var e=els[i];if(e.id==='pdFondoHoja')continue;var cs=getComputedStyle(e);if(cs.position!=='fixed')continue;
+        var r=e.getBoundingClientRect();if(r.top<=1&&r.height>=innerHeight-2&&r.width>=innerWidth-2&&alfa(cs.backgroundColor)>=0.2&&(parseInt(cs.zIndex,10)||0)<z)return true}
+      return false}
+    function revisar(){
+      var a=hojaAbierta();
+      if(!a){if(fondo&&!fondo.hidden){fondo.classList.remove('on');fondo.hidden=true}return}
+      if(fondo&&!fondo.hidden&&String(a.z-1)===fondo.style.zIndex)return;
+      if(fondo&&!fondo.hidden){fondo.hidden=true}
+      if(yaTieneFondo(a.z))return;
+      (fondo||crear()).style.zIndex=String(a.z-1);fondo.hidden=false;void fondo.offsetWidth;fondo.classList.add('on')}
+    setInterval(revisar,250);
+  })();
   if(document.documentElement.dataset.pdSinArrastre==='1')return;
   var quieto=matchMedia('(prefers-reduced-motion: reduce)').matches;
   var CERRAR='[aria-label^="Cerrar"],[aria-label^="cerrar"],[data-close],.close,.pdpm-x,.pdmX,.notifClose,.pnaX,.pdoX';
