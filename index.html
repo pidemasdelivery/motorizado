@@ -2972,8 +2972,8 @@ const cfg=config(m);const BASE_D=baseFor(m);
 const today=iso(now),nowMin=now.getHours()*60+now.getMinutes();
 const cur=periodOf(today);
 if(!cfg.ok)return {ok:false,cfg,current:{...cur,days:[],earned:0,paid:0,balance:0},periods:[],today};
-const faltas=new Map(),pagos=[],jornadas=[],descs=[];
-(rows||[]).forEach(r=>{const t=norm(r.tipo),f=String(r.fecha||'').slice(0,10);if(t==='falta'&&f&&!faltas.has(f))faltas.set(f,r);else if(t==='pago')pagos.push(r);else if(t==='descuento')descs.push(r);else if(t==='jornada'&&f)jornadas.push(r)});
+const faltas=new Map(),pagos=[],jornadas=[],descs=[],adel=new Map();
+(rows||[]).forEach(r=>{const t=norm(r.tipo),f=String(r.fecha||'').slice(0,10);if(t==='falta'&&f&&!faltas.has(f))faltas.set(f,r);else if(t==='pago')pagos.push(r);else if(t==='descuento')descs.push(r);else if(t==='jornada'&&f){if(/^d[ií]a adelantado/i.test(String(r.descripcion||''))){if(!adel.has(f))adel.set(f,r)}else jornadas.push(r)}});
 const periods=new Map();const monthGas={};
 const getP=k=>{if(!periods.has(k.key))periods.set(k.key,{...k,days:[],shifts:[],worked:0,rest:0,faltas:0,gasDays:0,gasAdj:0,adj:0,hours:0,gasTotal:0,earned:0,paid:0,payments:[],desc:0,descSet:false,descRows:[],needsDesc:k.start.slice(8,10)==='16'&&k.start>=DESC_FROM});return periods.get(k.key)};
 getP(cur);
@@ -2992,7 +2992,7 @@ const isWork=cfg.days.includes(key)&&!hol;
 const isRest=!isWork&&(d.getDay()===0||hol);
 const day={date:di,dow:key,label:LABEL[key],holiday:hol,work:isWork,rest:isRest,status:'',base:0,gas:0};
 if(di<cfg.hire){day.status='antes';P.days.push(day);continue}
-const passed=di<today||(di===today&&nowMin>=endMin);
+const passedN=di<today||(di===today&&nowMin>=endMin);const passed=passedN||(adel.has(di)&&di<=cur.end);if(passed&&!passedN){day.adel=adel.get(di)}
 if(d.getDate()===31){day.status='dia31';P.days.push(day);continue}
 const falta=faltas.get(di);
 if(falta&&(isWork||isRest)){day.status='falta';day.falta=falta;if(passed)P.faltas++;}
