@@ -25,7 +25,8 @@ dialog[data-pdm-hoja]::backdrop{background:var(--pdmu-velo)!important;-webkit-ba
 [data-pdm-hoja="auto"]{height:auto!important}
 [data-pdm-hoja][data-pdm-grip]::before{content:""!important;display:block!important;position:absolute!important;top:8px!important;left:50%!important;width:40px!important;height:5px!important;margin:0 0 0 -20px!important;border-radius:3px!important;background:#E8D9CE!important;z-index:5!important;pointer-events:none!important;opacity:1!important;transform:none!important}
 [data-pdm-oculto]{display:none!important}
-[data-pdm-cab]{position:sticky!important;top:0!important;z-index:4!important;background-color:#fff!important}
+[data-pdm-cab]{position:sticky!important;top:0!important;z-index:4!important;background-color:#fff!important;box-shadow:0 -64px 0 0 #fff!important}
+[data-pdm-grip] > [data-pdm-cab]::after{content:""!important;display:block!important;position:absolute!important;top:-14px!important;left:50%!important;width:40px!important;height:5px!important;margin:0 0 0 -20px!important;border-radius:3px!important;background:#E8D9CE!important;pointer-events:none!important}
 [data-pdm-cab] [data-pdm-titulo]{margin:0!important;font:800 19px/1.25 var(--font,Inter,system-ui,sans-serif)!important;letter-spacing:-.2px!important;color:#C4410C!important;text-transform:none!important}
 [data-pdm-pie]{position:sticky!important;bottom:0!important;z-index:4!important;background-color:#fff!important}
 /* abrir y cerrar rápido */
@@ -88,6 +89,7 @@ body>.toast button{background:#FFF4EC!important;color:#C4410C!important;border:1
 }
 </style>
 
+
 <style id="pd-cargando">
 html.pdCarga,html.pdCarga body{background:#FFF9F5!important}
 html.pdCarga body>*{visibility:hidden!important}
@@ -100,7 +102,7 @@ html.pdCarga.pdCargaSale body::before,html.pdCarga.pdCargaSale body::after{opaci
 h.classList.add("pdCarga");var fin=false,t0=Date.now(),q=0,fuentes=false;
 try{document.fonts.ready.then(function(){fuentes=true})}catch(e){fuentes=true}
 /* ¿Hay sesión guardada? Entonces se espera el panel; si no, el login */
-var ses=false;try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i)||"";if(/^sb-.*-auth-token$/.test(k)&&localStorage.getItem(k)){ses=true;break}}}catch(e){}
+var ses=false;try{ses=!!localStorage.getItem("pidemas-motorizado-sesion")}catch(e){}
 function ve(id){var e=document.getElementById(id);if(!e)return false;if(e.hidden||e.classList.contains("hidden"))return false;var c=getComputedStyle(e);return c.display!=="none"&&e.getClientRects().length>0}
 function salir(){if(fin)return;fin=true;h.classList.add("pdCargaSale");setTimeout(function(){h.classList.remove("pdCarga","pdCargaSale")},300)}
 window.pdQuitarCarga=salir;
@@ -3193,7 +3195,7 @@ return {BASE,baseFor,SBM,DAY8,GAS,GAS_CAP,GAS_Q,FIXED_FROM,HOURS,KEYS,LABEL,calc
   $('pdslCal').innerHTML=(P.days||[]).map(d=>{const n=d.adjDay||S.parse(d.date).getDate();
    const sub={ajuste:'Ajuste 30 días',ajusteFuturo:'Se suma al cerrar',dia31:'Incluido en el 30',trabajado:'Trabajado'+(d.gas?' + gas':''),descanso:d.holiday?'Feriado pagado':'Descanso pagado',falta:'Falta',hoy:'Hoy · '+res.endAt,futuro:d.work?'Laborable':(d.rest?'Descanso':'—'),libre:'Libre',antes:'Antes del ingreso'}[d.status]||'';
    const adv=d.adjDay?0:state.rows.filter(r=>String(r.tipo||'').toLowerCase()==='pago'&&/^adelanto/i.test(String(r.descripcion||''))&&String(r.fecha).slice(0,10)===d.date).reduce((a,r)=>a+(Number(r.monto)||0),0);
-    return `<div class="pdslDay ${d.status}" data-date="${d.date}"><small>${E(d.adjDay?'Feb':SHORT[d.dow])}</small><b>${n}</b><small>${E(sub)}</small>${adv>0?`<i class="pdslAdvTag">Adelanto<br><span style="white-space:nowrap">${money(adv)}</span></i>`:''}</div>`}).join('');
+    return `<div class="pdslDay ${d.status}${d.adel?' adelantado':''}" data-date="${d.date}"><small>${E(d.adjDay?'Feb':SHORT[d.dow])}</small><b>${n}</b><small>${E(sub)}</small>${adv>0?`<i class="pdslAdvTag">Adelanto<b>${money(adv)}</b></i>`:''}</div>`}).join('');
   }
   window.pdPintarPagosMoto=function(){const pays=state.rows.filter(r=>String(r.tipo||'').toLowerCase()==='pago').sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha))).slice(0,10);$('pdwPays').innerHTML=pays.length?pays.map(r=>{const adv=/^adelanto/i.test(String(r.descripcion||''));return `<div class="pdslRow"><span><strong>${money(r.monto)}</strong><small>${E(fmtD(r.fecha))}${r.descripcion?' · '+E(r.descripcion):''}${r.periodo?' · '+E(S.periodOf(String(r.periodo).slice(0,10)).label):''}</small></span><span class="pdslPill ${adv?'adv':'ok'}">${adv?'Adelanto':'Recibido'}</span></div>`}).join(''):'<span class="pdslMuted">Aún no tienes pagos registrados.</span>'};window.pdPintarPagosMoto();
   const hist=res.periods.filter(p=>!p.isCurrent);
@@ -3276,7 +3278,7 @@ return {BASE,baseFor,SBM,DAY8,GAS,GAS_CAP,GAS_Q,FIXED_FROM,HOURS,KEYS,LABEL,calc
 
 const SUPABASE_URL="https://escxesvzndmyfuteawey.supabase.co";
 const SUPABASE_KEY="sb_publishable_pCP210JJcN3NP3a6Y2c--w_c7C0PjaU";
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{storageKey:'pidemas-motorizado-sesion',persistSession:true,autoRefreshToken:true}});
 
 let session=null,moto=null,orders=[],channel=null,locationTimer=null;
 const localPedidoUpdates=new Set();
@@ -3483,7 +3485,7 @@ function setupLoginOptions(){
 
 async function init(){
   setupLoginOptions();
-  $("logout").onclick=async()=>{if(window.__pidemasDeliveryTimer)clearInterval(window.__pidemasDeliveryTimer);hide($("nav"));hide($("logout"));hide($("notifTopButton"));await db.auth.signOut();location.reload()};
+  $("logout").onclick=async()=>{if(window.__pidemasDeliveryTimer)clearInterval(window.__pidemasDeliveryTimer);hide($("nav"));hide($("logout"));hide($("notifTopButton"));await db.auth.signOut({scope:'local'});location.reload()};
   $("notifTopButton").onclick=()=>openNotificationsModal();
   $("closeNotifications").onclick=()=>closeNotificationsModal(true);
   document.querySelectorAll("[data-notif-filter]").forEach(b=>b.addEventListener("click",()=>{activeNotificationFilter=b.dataset.notifFilter;notificationVisibleLimit=10;document.querySelectorAll("[data-notif-filter]").forEach(x=>x.classList.toggle("active",x===b));loadNotifications();}));
@@ -3544,14 +3546,14 @@ async function enter(uid){
     p=result.data;pe=result.error;
   }catch(e){show($("loginMsg"),"La sesión se inició, pero no se pudo consultar el perfil. Revisa la conexión con Supabase.");return}
   if(pe){show($("loginMsg"),"Error al consultar el perfil: "+pe.message);return}
-  if(!p||p.rol!=="motorizado"||p.activo!==true){await db.auth.signOut();session=null;show($("loginMsg"),"La cuenta ingresó, pero no tiene el rol motorizado activo en la tabla perfiles.");return}
+  if(!p||p.rol!=="motorizado"||p.activo!==true){await db.auth.signOut({scope:'local'});session=null;show($("loginMsg"),"La cuenta ingresó, pero no tiene el rol motorizado activo en la tabla perfiles.");return}
   let m=null,me=null;
   try{
     const result=await db.from("motorizados").select("*").eq("usuario_id",uid).eq("activo",true).maybeSingle();
     m=result.data;me=result.error;
   }catch(e){show($("loginMsg"),"No se pudo comprobar el registro del motorizado. Revisa la conexión con Supabase.");return}
   if(me){show($("loginMsg"),"Error al consultar el motorizado: "+me.message);return}
-  if(!m){await db.auth.signOut();session=null;show($("loginMsg"),"La cuenta ingresó, pero no está vinculada a un motorizado activo. Revisa usuario_id y activo en Supabase.");return}
+  if(!m){await db.auth.signOut({scope:'local'});session=null;show($("loginMsg"),"La cuenta ingresó, pero no está vinculada a un motorizado activo. Revisa usuario_id y activo en Supabase.");return}
   moto=m;
   window.__pidemasProfileRecord=p;
   $("welcome").textContent="Hola, "+(p.nombre_completo||m.nombre_completo||"Motorizado");
@@ -10504,6 +10506,65 @@ document.addEventListener('keydown',e=>{const i=e.target;if(!apto(i))return;if(e
 try{const orig=HTMLInputElement.prototype.showPicker;if(orig)HTMLInputElement.prototype.showPicker=function(){if(apto(this)){abrir(this);return}return orig.apply(this,arguments)}}catch(e){}
 })();
 </script>
+<style id="pd-sueldo-adelanto">
+/* Sueldos: etiqueta de adelanto dentro del día (sin salirse) y día adelantado */
+@layer pd-tipo{
+html:root body:not(#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ) .pdslDay .pdslAdvTag{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;align-self:stretch!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;margin:6px 0 0!important;padding:5px 6px!important;border-radius:10px!important;border:0!important;background:#FFF4EC!important;color:#A8360A!important;white-space:normal!important;overflow:hidden!important;box-sizing:border-box!important;font:800 10.5px/1.15 var(--font)!important;font-style:normal!important;text-align:left!important}
+</style>
+<style id="pd-perfil-moto-como-negocio">
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;align-items:center!important;text-align:left!important;gap:16px!important;padding:18px!important;background:#fff!important;border:1px solid #F1E4DC!important;border-radius:22px!important;color:#1F1A17!important;box-shadow:none!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpAv{width:84px!important;height:84px!important;margin:0!important;flex:0 0 84px!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profilePhotoPreview{width:84px!important;height:84px!important;border-radius:22px!important;background:#FFF4EC!important;border:0!important;box-shadow:none!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#C4410C!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profilePhotoPreview img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:0!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpCam,html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpChips,html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpFotoActs{display:none!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpWho{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;min-width:0!important;text-align:left!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpHnKick{font:800 13px/1.2 var(--font)!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#6E625A!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profileDisplayName{font:800 26px/1.15 var(--font)!important;color:#1F1A17!important;overflow-wrap:anywhere!important;text-align:left!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profileDisplayRole{display:none!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpHnSub{font:500 15px/1.3 var(--font)!important;color:#6E625A!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;gap:16px!important;align-items:center!important;padding:16px!important;border:1px solid #F1E4DC!important;border-radius:18px!important;background:#fff!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTh{width:84px!important;height:84px!important;border-radius:18px!important;background:#FFF4EC!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#C4410C!important;font:800 30px var(--font)!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTh img{width:100%!important;height:100%!important;object-fit:cover!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTx{display:flex!important;flex-direction:column!important;gap:6px!important;min-width:0!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTx strong{font:800 17px/1.2 var(--font)!important;color:#1F1A17!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTx small{font:500 14px/1.35 var(--font)!important;color:#6E625A!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns{display:flex!important;gap:8px!important;flex-wrap:wrap!important;margin-top:4px!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns label,html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns button{all:unset;box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:44px!important;padding:0 18px!important;border-radius:14px!important;font:700 15px var(--font)!important;cursor:pointer!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns label{background:#FBE6DD!important;color:#C4410C!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns button{background:#fff!important;color:#4A3F38!important;border:1px solid #F1E4DC!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns button[hidden]{display:none!important}
+</style>
+<script id="pd-perfil-moto-como-negocio-js">
+(function(){
+  function paso(){
+    var hero=document.querySelector('#profileTab .pdp > section.pdpHero');if(!hero)return;
+    if(!hero.classList.contains('pdpHn')){
+      hero.classList.add('pdpHn');
+      var who=hero.querySelector('.pdpWho');
+      if(who&&!who.querySelector('.pdpHnKick')){who.insertAdjacentHTML('afterbegin','<span class="pdpHnKick">Mi perfil</span>');who.insertAdjacentHTML('beforeend','<span class="pdpHnSub" id="pdpHnSub"></span>')}
+    }
+    /* subtítulo: Motorizado · estado (como "categoría · visible" del negocio) */
+    var chip=document.querySelector('#pdpChips > span');var est=chip?chip.textContent.trim():'';
+    var sub=document.getElementById('pdpHnSub');var t=['Motorizado',est||'Pidemás'].join(' · ');if(sub&&sub.textContent!==t)sub.textContent=t;
+    /* fila "Foto de perfil" en Mis datos, igual que "Logo del negocio" */
+    var datos=[].slice.call(document.querySelectorAll('#profileTab .pdpCard')).find(function(c){var k=c.querySelector('.pdpKick');return k&&/mis datos/i.test(k.textContent)});
+    if(datos&&!document.getElementById('pdpFotoRow')){
+      var row=document.createElement('div');row.className='pdpFotoRow';row.id='pdpFotoRow';
+      row.innerHTML='<span class="pfrTh" id="pfrTh"></span><div class="pfrTx"><strong>Foto de perfil</strong><small>Se muestra a administración y en tus pedidos. Mejor una foto clara de tu rostro.</small><div class="pfrBtns"><label for="profilePhotoFile" id="pfrLbl">Subir foto</label><button type="button" id="pfrDel" hidden>Quitar</button></div></div>';
+      var head=datos.querySelector('.pdpHead');if(head)head.insertAdjacentElement('afterend',row);else datos.insertBefore(row,datos.firstChild);
+      document.getElementById('pfrDel').addEventListener('click',function(){var d=document.getElementById('pdpRemovePhoto');if(d)d.click()});
+    }
+    var pv=document.getElementById('profilePhotoPreview'),th=document.getElementById('pfrTh');
+    if(pv){var im=pv.querySelector('img'),ini=pv.querySelector('.pdpHnIni');var L=((document.getElementById('profileDisplayName')||{}).textContent||'M').trim().charAt(0).toUpperCase();
+      if(!im){if(!ini){ini=document.createElement('span');ini.className='pdpHnIni';pv.appendChild(ini)}if(ini.textContent!==L)ini.textContent=L;ini.style.cssText='font:800 34px/1 Inter,system-ui,sans-serif!important;color:#C4410C!important';pv.querySelectorAll('i').forEach(function(x){x.style.setProperty('display','none','important')})}
+      else if(ini)ini.remove()}
+    if(pv&&th){var img=pv.querySelector('img');var k=img?'i:'+img.src:'t';if(th.__k!==k){th.__k=k;if(img)th.innerHTML='<img alt="" src="'+img.src.replace(/"/g,'&quot;')+'">';else{var n=(document.getElementById('profileDisplayName')||{}).textContent||'M';th.textContent=n.trim().charAt(0).toUpperCase()}}
+      var lb=document.getElementById('pfrLbl');var lt=img?'Cambiar foto':'Subir foto';if(lb&&lb.textContent!==lt)lb.textContent=lt;
+      var del=document.getElementById('pfrDel'),rm=document.getElementById('pdpRemovePhoto');if(del)del.hidden=!img||!rm;}
+  }
+  setInterval(paso,700);document.addEventListener('DOMContentLoaded',paso);paso();
+})();
+</script>
 </body>
 
 
@@ -10575,7 +10636,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
      if(pp)pp.textContent=(rol&&nombres[rol]?'Entraste con una cuenta '+nombres[rol]+'. ':'')+'Este panel es solo para motorizados. Cierra sesión y entra con tu cuenta de motorizado.';
      if(out)out.textContent='Entrar con otra cuenta';
    }
-   try{db.auth.signOut()}catch(e){}
+   try{db.auth.signOut({scope:'local'})}catch(e){}
  }
  async function checkSuspension(){
    if(checking||blocked)return;checking=true;
@@ -10605,7 +10666,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
      profileChannel=db.channel('pidemas-suspension-perfil').on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles'},payload=>{if(payload?.new?.id===session?.user?.id&&payload.new.activo!==true)showBlocked('suspendida')}).subscribe();
    }catch(e){console.warn('Realtime de suspensión no disponible; se mantiene la comprobación periódica.',e)}
  }
- const salir=$('pidemasSuspendedLogout');if(salir)salir.addEventListener('click',async()=>{try{if(typeof db!=='undefined'&&db.auth)await db.auth.signOut()}catch(e){}location.reload()});
+ const salir=$('pidemasSuspendedLogout');if(salir)salir.addEventListener('click',async()=>{try{if(typeof db!=='undefined'&&db.auth)await db.auth.signOut({scope:'local'})}catch(e){}location.reload()});
  const contact=$('pidemasContactAdminBtn');if(contact)contact.addEventListener('click',()=>{
    let ph='986233533';try{const c=typeof window.pdYapeCfg==='function'?window.pdYapeCfg():null;if(c&&c.whatsapp_admin)ph=String(c.whatsapp_admin)}catch(_){}
    ph=ph.replace(/\D/g,'');if(ph.length===9)ph='51'+ph;
