@@ -26,7 +26,7 @@ dialog[data-pdm-hoja]::backdrop{background:var(--pdmu-velo)!important;-webkit-ba
 [data-pdm-hoja][data-pdm-grip]::before{content:""!important;display:block!important;position:absolute!important;top:8px!important;left:50%!important;width:40px!important;height:5px!important;margin:0 0 0 -20px!important;border-radius:3px!important;background:#E8D9CE!important;z-index:5!important;pointer-events:none!important;opacity:1!important;transform:none!important}
 [data-pdm-oculto]{display:none!important}
 [data-pdm-cab]{position:sticky!important;top:0!important;z-index:4!important;background-color:#fff!important;box-shadow:0 -64px 0 0 #fff!important}
-[data-pdm-grip] > [data-pdm-cab]::after{content:""!important;display:block!important;position:absolute!important;top:-14px!important;left:50%!important;width:40px!important;height:5px!important;margin:0 0 0 -20px!important;border-radius:3px!important;background:#E8D9CE!important;pointer-events:none!important}
+[data-pdm-grip] > [data-pdm-cab][data-pdm-cab-ancho]::after{content:""!important;display:block!important;position:absolute!important;top:-14px!important;left:50%!important;width:40px!important;height:5px!important;margin:0 0 0 -20px!important;border-radius:3px!important;background:#E8D9CE!important;pointer-events:none!important}
 [data-pdm-cab] [data-pdm-titulo]{margin:0!important;font:800 19px/1.25 var(--font,Inter,system-ui,sans-serif)!important;letter-spacing:-.2px!important;color:#C4410C!important;text-transform:none!important}
 [data-pdm-pie]{position:sticky!important;bottom:0!important;z-index:4!important;background-color:#fff!important}
 /* abrir y cerrar rápido */
@@ -88,6 +88,7 @@ body>.toast button{background:#FFF4EC!important;color:#C4410C!important;border:1
 @keyframes pdFhUp{from{transform:translateY(40px);opacity:0}}
 }
 </style>
+
 
 
 <style id="pd-cargando">
@@ -2595,6 +2596,21 @@ html.pdDlgOn,html.pdDlgOn body{overflow:hidden!important}
 html:root body:not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ) #pdDlg{background:rgba(31,26,23,.45)!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px))!important;margin:0!important;max-width:none!important;width:auto!important;height:auto!important}
 html:root body:not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ) #pdDlg .pdDlgCard{background:#fff!important}
 </style>
+<style id="pd-vuelto-css">
+.pdcjRev{display:inline-flex;align-items:center;margin-left:6px;padding:2px 8px;border-radius:999px;font:700 11px/1.4 var(--font,Inter,sans-serif);white-space:nowrap;vertical-align:middle}
+.pdcjRev.pend{background:#FFF7E0;color:#8A5A00}.pdcjRev.ok{background:#E8F5EC;color:#1F6B3A}.pdcjRev.bad{background:#FDECEA;color:#B42318}
+.pdcjNota{display:block;font:500 12px/1.3 var(--font,Inter,sans-serif);color:#B42318;margin-top:3px;font-style:normal}
+.pdcjActs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pdcjAct{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border-radius:999px;border:1px solid #F1E4DC;background:#fff;color:#C4410C;font:700 12.5px var(--font,Inter,sans-serif);text-decoration:none;cursor:pointer}
+.pdcjAct.fuerte{background:#C4410C;border-color:#C4410C;color:#fff}.pdcjAct.ok{background:#1F6B3A;border-color:#1F6B3A;color:#fff}.pdcjAct.bad{color:#B42318;border-color:#F1C4BF}.pdcjAct.gris{color:#8A7B72;cursor:default}.pdcjAct.edit{color:#1D4ED8;border-color:#C9D7FB}
+
+.pdcjVu{display:inline-flex;align-items:center;margin-left:6px;padding:2px 8px;border-radius:999px;font:700 11px/1.4 var(--font,Inter,sans-serif);background:#EEF4FF;color:#1D4ED8;vertical-align:middle;white-space:nowrap}.pdcjVu.caja{background:#FFF4EC;color:#A8360A}
+#pdDlg .pdVuOps{display:grid;gap:10px;margin:14px 0 4px}
+#pdDlg .pdVuOp{display:flex;flex-direction:column;align-items:flex-start;gap:3px;width:100%;min-height:64px;padding:12px 16px;border-radius:16px;border:1.5px solid #F1C9B6;background:#FFF9F5;color:#1F1A17;text-align:left;cursor:pointer;font-family:var(--font,Inter,sans-serif)}
+#pdDlg .pdVuOp b{font:800 16px/1.2 var(--font,Inter,sans-serif);color:#C4410C}
+#pdDlg .pdVuOp small{font:500 13.5px/1.3 var(--font,Inter,sans-serif);color:#6E625A}
+#pdDlg .pdVuOp:active{background:#FBE6DD}
+</style>
 <script id="pd-dialogos-js">
 /* Reemplaza alert, confirm y prompt por tarjetas de la app.
    pdAviso(texto)             → tarjeta pequeña abajo que se va sola
@@ -2613,6 +2629,20 @@ html:root body:not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#
     if(!b&&a.length>90){const k=a.search(/[.?!]\s/);if(k>20&&k<a.length-2){b=a.slice(k+2);a=a.slice(0,k+1)}}return [a,b]}
   function abrir(tipo,texto,valor){
     return new Promise(res=>{
+      if(tipo==='vuelto'){
+        const [vu,to,pa]=texto,M=n=>'S/ '+(Number(n)||0).toFixed(2);
+        let d=document.getElementById('pdDlg');
+        if(!d){d=document.createElement('div');d.id='pdDlg';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');document.body.appendChild(d)}
+        d.innerHTML=`<div class="pdDlgCard"><div class="pdDlgIco">${ICO.pregunta}</div><h3 class="pdDlgT">¿De dónde sacaste el vuelto de ${E(M(vu))}?</h3><p class="pdDlgP">El cliente pagó con ${E(M(pa))} un pedido de ${E(M(to))}. Así administración sabe si usaste el efectivo de tu caja.</p>
+          <div class="pdVuOps"><button type="button" class="pdVuOp" data-v="caja"><b>De mi caja</b><small>Usé el efectivo de cobros anteriores</small></button><button type="button" class="pdVuOp" data-v="propio"><b>No usé la caja</b><small>Lo di con mi propio dinero</small></button></div>
+          <div class="pdDlgBtns uno"><button type="button" class="pdDlgNo">Cancelar</button></div></div>`;
+        d.hidden=false;document.documentElement.classList.add('pdDlgOn');
+        const fin=v=>{d.hidden=true;d.innerHTML='';document.documentElement.classList.remove('pdDlgOn');document.removeEventListener('keydown',tecla,true);res(v)};
+        function tecla(e){if(e.key==='Escape'){e.preventDefault();fin(null)}}
+        document.addEventListener('keydown',tecla,true);
+        d.querySelectorAll('.pdVuOp').forEach(b=>b.onclick=()=>fin(b.dataset.v));d.querySelector('.pdDlgNo').onclick=()=>fin(null);
+        return;
+      }
       let d=document.getElementById('pdDlg');
       if(!d){d=document.createElement('div');d.id='pdDlg';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');document.body.appendChild(d)}
       let [t,p]=partes(texto);if(tipo==='prompt'&&!p)t=t.replace(/:\s*$/,'');const peligro=tipo==='confirm'&&PELIGRO.test(t+' '+p);
@@ -2634,6 +2664,8 @@ html:root body:not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#
   /* una pregunta a la vez */
   function enCola(tipo,t,v){const p=cola.then(()=>abrir(tipo,t,v));cola=p.catch(()=>{});return p}
   window.pdConfirmar=t=>enCola('confirm',t);
+  /* ¿De dónde sacó el vuelto? → 'caja' | 'propio' | null (cancelar) */
+  window.pdElegirVuelto=function(vuelto,total,paga){return enCola('vuelto',[vuelto,total,paga])};
   window.pdPedir=(t,v)=>enCola('prompt',t,v);
   window.pdInfo=t=>enCola('info',t);
   window.pdAviso=function(texto){
@@ -3112,7 +3144,7 @@ if(delta){P.gasAdj=delta*GAS;P.earned+=P.gasAdj;P.gasDays=target}
 }
 const list=[...periods.values()];
 pagos.forEach(r=>{const k=String(r.periodo||'');let P=periods.get(k);if(!P){const f=String(r.fecha||'').slice(0,10);P=f?getP(periodOf(f)):null}if(!P)P=periods.get(cur.key);if(P){P.paid+=Number(r.monto||0);P.payments.push(r)}});
-descs.forEach(r=>{const k=String(r.periodo||'');let P=periods.get(k);if(!P){const f=String(r.fecha||'').slice(0,10);P=f?getP(periodOf(f)):null}if(!P)P=periods.get(cur.key);if(P){P.desc+=Number(r.monto||0);P.descSet=true;P.descRows.push(r)}});
+descs.forEach(r=>{const k=String(r.periodo||'');let P=periods.get(k);if(!P){const f=String(r.fecha||'').slice(0,10);P=f?getP(periodOf(f)):null}if(!P)P=periods.get(cur.key);if(P){P.desc+=Number(r.monto||0);if(/AFP|ONP/i.test(String(r.descripcion||'')))P.descSet=true;P.descRows.push(r)}});
 const all=[...periods.values()];
 all.forEach(P=>{P.earned=P.start.slice(8,10)==='16'?rHalfDown(P.earned):r2(P.earned);P.hours=r2(P.hours);P.gasTotal=r2(P.gasTotal);P.desc=r2(P.desc);P.balance=r2(P.earned-P.desc-P.paid);P.isCurrent=P.key===cur.key});
 all.sort((a,b)=>b.start.localeCompare(a.start));
@@ -3144,7 +3176,7 @@ return {BASE,baseFor,SBM,DAY8,GAS,GAS_CAP,GAS_Q,FIXED_FROM,HOURS,KEYS,LABEL,calc
   const sSub=res.hourly?`${P.worked} jornada${P.worked===1?'':'s'} · ${P.hours} h`:`${dias} día${dias===1?'':'s'} pagado${dias===1?'':'s'}`;
   const gSub=res.hourly?`${P.hours} h trabajadas`:`${P.gasDays} día${P.gasDays===1?'':'s'} × ${money(S.GAS)}`;
   const row=(label,sub,val,cls)=>`<div class="pdslBrRow${cls?' '+cls:''}"><span>${label}${sub?`<small>${sub}</small>`:''}</span><b>${val}</b></div>`;
-  return `<div class="pdslBreak">${row('Sueldo',sSub,money(sueldo))}${row('Gasolina',gSub,money(gas))}${row('Ganado','',money(P.earned),'tot')}${P.desc>0.004?row('Descuento AFP/ONP','','− '+money(P.desc),'neg'):''}${row('Pagado','',money(P.paid))}${row('Por cobrar','',amt,'fin')}</div>`;
+  return `<div class="pdslBreak">${row('Sueldo',sSub,money(sueldo))}${row('Gasolina',gSub,money(gas))}${row('Ganado','',money(P.earned),'tot')}${(P.descRows||[]).length?(()=>{const g=new Map();(P.descRows||[]).forEach(r=>{const d=String(r.descripcion||'Descuento').replace(/^Descuento\s+/i,'').replace(/\s*·.*$/,'');const k=/AFP|ONP/i.test(d)?'AFP/ONP':/^cuota/i.test(d)?'Cuota de préstamo':/^tardanza/i.test(d)?'Tardanzas':/faltante/i.test(d)?'Faltante de caja':d;g.set(k,(g.get(k)||0)+(Number(r.monto)||0))});return [...g].map(([k,v])=>row('Descuento '+k,'','− '+money(v),'neg')).join('')})():''}${row('Pagado','',money(P.paid))}${row('Por cobrar','',amt,'fin')}</div>`;
  }
  window.__pdSueldoDetalle=breakdown;
  
@@ -4545,6 +4577,10 @@ window.confirmPayment=async id=>{
   }
   const validationNotice=document.getElementById("pidemasPaymentValidationNotice");
   if(validationNotice) validationNotice.style.display="none";
+  let vueltoDe='';
+  {const _t=Number(o.total||0),_v=method==="efectivo"&&_t>0?Math.round((amount-_t)*100)/100:0;
+   const _compra=String(o.tipo_servicio||"").toLowerCase().includes("compra")&&!(Number(o.subtotal)>0);
+   if(_v>0.004&&!_compra&&typeof window.pdElegirVuelto==="function"){vueltoDe=await window.pdElegirVuelto(_v,_t,amount);if(!vueltoDe)return;}}
   
 
   
@@ -4578,7 +4614,7 @@ window.confirmPayment=async id=>{
     
 
     const {data:existingMovement,error:checkMovementError}=await db.from("movimientos_caja")
-      .select("id").eq("motorizado_id",moto.id).eq("pedido_id",id).eq("tipo","ingreso").limit(1);
+      .select("id").eq("motorizado_id",moto.id).eq("pedido_id",id).eq("tipo","ingreso").not("descripcion","ilike","INGRESO MANUAL%").limit(1);
     if(checkMovementError){
       show($("appMsg"),"Pago confirmado, pero no se pudo verificar el movimiento de caja: "+checkMovementError.message);
       await loadOrders();await loadCash();return;
@@ -4600,7 +4636,7 @@ window.confirmPayment=async id=>{
     const efectivoRecibido=totalPedido>0&&!compraSinMonto?Number(Math.min(pagoCliente,totalPedido).toFixed(2)):pagoCliente;
     const descripcionCaja=compraSinMonto
       ? "Cobro de compra · servicio S/ "+totalPedido.toFixed(2)+" · cliente pagó S/ "+pagoCliente.toFixed(2)+" (incluye la compra)"
-      : "Cobro de pedido · total S/ "+totalPedido.toFixed(2)+" · cliente pagó con S/ "+pagoCliente.toFixed(2)+" · vuelto entregado S/ "+vuelto.toFixed(2);
+      : "Cobro de pedido · total S/ "+totalPedido.toFixed(2)+" · cliente pagó con S/ "+pagoCliente.toFixed(2)+" · vuelto entregado S/ "+vuelto.toFixed(2)+(vuelto>0.004&&vueltoDe?(vueltoDe==="caja"?" · VUELTO DE CAJA":" · VUELTO CON DINERO PROPIO"):"");
     if((existingMovement||[]).length){
       const {error:me}=await db.from("movimientos_caja")
         .update({monto:efectivoRecibido,descripcion:descripcionCaja})
@@ -5169,7 +5205,7 @@ async function loadCashCore(requestId){
 
   
 
-  const {data:movs,error}=await fetchMotoCashMovements("id,tipo,monto,descripcion,creado_en,pedido_id",false);
+  const {data:movs,error}=await fetchMotoCashMovements("id,tipo,monto,descripcion,creado_en,pedido_id,comprobante_url,revision,revision_nota",false);
 
   if(requestId!==undefined && requestId!==cashLoadRequestId) return;
 
@@ -5452,7 +5488,7 @@ async function loadNotifications(){
     
 
     if(moto?.id){
-      const cash=await db.from("movimientos_caja").select("id,tipo,monto,descripcion,creado_en,pedido_id").eq("motorizado_id",moto.id).order("creado_en",{ascending:false}).limit(20);
+      const cash=await db.from("movimientos_caja").select("id,tipo,monto,descripcion,creado_en,pedido_id,comprobante_url,revision,revision_nota").eq("motorizado_id",moto.id).order("creado_en",{ascending:false}).limit(20);
       if(cash.error)console.warn("No se pudieron cargar los movimientos de caja en avisos",cash.error);
       else (cash.data||[]).forEach(m=>{
         const desc=String(m.descripcion||"");
@@ -6015,6 +6051,29 @@ window.PdCaja=window.PdCaja||(function(){
   function cycleWithAmounts(movs){return split(movs).current.map(m=>Object.assign({},m,{monto:amount(m)}))}
   return {amount,kind,LABEL,clean,split,summary,balance,isBoundary,cycleWithAmounts,r2};
 })();
+try{(function(){const C=window.PdCaja;if(!C||C.vueltoTag)return;const RX=/\s*·\s*VUELTO (DE CAJA|CON DINERO PROPIO)/i;const c0=C.clean;
+C.clean=function(m){return String(c0.call(this,m)||'').replace(RX,'')};
+C.vueltoTag=function(m){const x=String((m&&m.descripcion)||'').match(RX);if(!x)return '';return /CAJA/i.test(x[1])?'<span class="pdcjVu caja">Vuelto de su caja</span>':'<span class="pdcjVu">Vuelto con su dinero</span>'};})()}catch(e){}
+try{(function(){const C=window.PdCaja;if(!C||C.extra)return;
+const a0=C.amount;C.amount=function(m){if(m&&m.tipo==='retiro'&&m.revision==='rechazado')return 0;return a0.call(this,m)};
+const s0=C.summary;C.summary=function(movs){return s0.call(this,(movs||[]).map(m=>m&&m.tipo==='retiro'&&m.revision==='rechazado'?Object.assign({},m,{monto:0}):m))};C.balance=function(movs){return C.summary(C.split(movs).current).balance};C.cycleWithAmounts=function(movs){return C.split(movs).current.map(m=>Object.assign({},m,{monto:C.amount(m)}))};
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+C.revTag=function(m){if(!m||m.tipo!=='retiro'||!m.revision)return '';return m.revision==='aprobado'?'<span class="pdcjRev ok">Aprobado</span>':m.revision==='rechazado'?'<span class="pdcjRev bad">Rechazado · no se descuenta</span>':'<span class="pdcjRev pend">Por revisar</span>'};
+/* modo: 'moto' (puede adjuntar foto) o 'admin' (puede aprobar o rechazar) */
+C.extra=function(m,modo,editado){let h='';
+  if(m.revision==='rechazado'&&m.revision_nota)h+='<em class="pdcjNota">Motivo: '+esc(m.revision_nota)+'</em>';
+  const acts=[];
+  if(m.comprobante_url)acts.push('<a class="pdcjAct" href="'+esc(m.comprobante_url)+'" target="_blank" rel="noopener">Ver comprobante</a>');
+  else if(m.tipo==='retiro'&&m.revision&&m.revision!=='aprobado')acts.push(modo==='moto'?'<button type="button" class="pdcjAct fuerte" data-adj="'+esc(m.id)+'">Adjuntar foto</button>':'<span class="pdcjAct gris">Sin comprobante</span>');
+  if(modo==='moto'&&m.comprobante_url&&m.revision==='rechazado')acts.push('<button type="button" class="pdcjAct" data-adj="'+esc(m.id)+'">Cambiar foto</button>');
+  if(modo==='admin'&&m.tipo==='retiro'&&m.revision==='pendiente'){acts.push('<button type="button" class="pdcjAct ok" data-aprobar="'+esc(m.id)+'">Aprobar</button>');acts.push('<button type="button" class="pdcjAct bad" data-rechazar="'+esc(m.id)+'">Rechazar</button>')}
+  if(modo==='admin'&&m.tipo==='retiro'&&m.revision&&m.revision!=='pendiente')acts.push('<button type="button" class="pdcjAct" data-revertir="'+esc(m.id)+'">Volver a revisar</button>');
+  if(editado)acts.push('<button type="button" class="pdcjAct edit" data-hist="'+esc(m.id)+'">Editado · ver cambios</button>');
+  if(acts.length)h+='<span class="pdcjActs">'+acts.join('')+'</span>';
+  return h};
+})()}catch(e){}
+
+
 
 </script>
 <script id="pdcjm-js">
@@ -6069,7 +6128,7 @@ window.PdCaja=window.PdCaja||(function(){
   let limit=40,closedLimit=10,last=null,reqId=0;
   function movRow(m){
     const k=C.kind(m),a=C.amount(m),inc=m.tipo==='ingreso';
-    return `<div class="pdcjMov"><span><strong>${E(C.clean(m))}<span class="pdcjTag ${inc?'in':''}">${E(k==='fondo'?'Efectivo de administración':C.LABEL[k])}</span></strong><small>${E(hm(m.creado_en))}${m.pedido_id?' · Pedido #'+E(String(m.pedido_id).slice(0,8).toUpperCase()):''}</small></span><span class="pdcjMovR"><b class="${inc?'':'out'}">${inc?'+':'−'} ${money(a)}</b></span></div>`;
+    return `<div class="pdcjMov"><span><strong>${E(C.clean(m))}${C.vueltoTag?C.vueltoTag(m):''}${C.revTag?C.revTag(m):''}<span class="pdcjTag ${inc?'in':''}">${E(k==='fondo'?'Efectivo de administración':C.LABEL[k])}</span></strong><small>${E(hm(m.creado_en))}${m.pedido_id?' · Pedido #'+E(String(m.pedido_id).slice(0,8).toUpperCase()):''}</small>${C.extra?C.extra(m,'moto'):''}</span><span class="pdcjMovR"><b class="${inc?'':'out'}">${inc?'+':'−'} ${money(a)}</b></span></div>`;
   }
   const grouped=list=>{let l='';return list.map(m=>{const k=dayKey(m.creado_en);const h=k!==l?`<div class="pdcjDay"><span>${E(k)}</span></div>`:'';l=k;return h+movRow(m)}).join('')};
   function render(){
@@ -6092,7 +6151,7 @@ window.PdCaja=window.PdCaja||(function(){
     const id=++reqId;const b=$('pdcjmRefresh');b.classList.add('spin');
     if(!last)movBox.innerHTML='<div class="pdcjEmpty">Cargando movimientos…</div>';
     try{
-      const {data,error}=await fetchMotoCashMovements('id,tipo,monto,descripcion,creado_en,pedido_id',false);
+      const {data,error}=await fetchMotoCashMovements('id,tipo,monto,descripcion,creado_en,pedido_id,comprobante_url,revision,revision_nota',false);
       if(id!==reqId)return;
       if(error)throw error;
       last=data||[];render();
@@ -7363,6 +7422,7 @@ function pasar(){
     const st=ST[o.id],msg=box.querySelector('.msg'),btn=box.querySelector('.go')||document.createElement('button');msg.textContent='';
     const total=Number(o.total)||0;let paga=total;
     if(st.modo==='efectivo'){if(!vuelto(box,o))return;const raw=String(box.querySelector('.peCobroMonto').value||'').trim();paga=raw===''?total:Number(raw.replace(',','.'))}
+    let vueltoDe='';if(st.modo==='efectivo'&&paga-total>0.004&&typeof window.pdElegirVuelto==='function'){vueltoDe=await window.pdElegirVuelto(Math.round((paga-total)*100)/100,total,paga);if(!vueltoDe)return}
     if(!(await pdConfirmar(st.modo==='efectivo'?`¿Registrar cobro de ${money(total)} en efectivo?${paga>total?`\nPagó con ${money(paga)} · vuelto ${money(paga-total)}`:''}`:`¿Confirmas que el cliente ya pagó ${money(total)} por Yape al QR de Pidemás? Revisa la constancia en su celular.`)))return;
     btn.disabled=true;btn.textContent='Registrando…';
     try{
@@ -7370,10 +7430,10 @@ function pasar(){
       const {error:ue}=await db.from('pedidos').update(upd).eq('id',o.id).eq('motorizado_id',moto.id);if(ue)throw ue;
       try{await db.from('cobros').upsert({pedido_id:o.id,motorizado_id:moto.id,monto:total,metodo_pago:st.modo,confirmado:true,confirmado_en:new Date().toISOString()},{onConflict:'pedido_id'})}catch(_){}
       if(st.modo==='efectivo'){
-        const {data:prev}=await db.from('movimientos_caja').select('id').eq('motorizado_id',moto.id).eq('pedido_id',o.id).eq('tipo','ingreso').limit(1);
+        const {data:prev}=await db.from('movimientos_caja').select('id').eq('motorizado_id',moto.id).eq('pedido_id',o.id).eq('tipo','ingreso').not('descripcion','ilike','INGRESO MANUAL%').limit(1);
         if(!(prev&&prev.length)){
           const {error:me}=await db.from('movimientos_caja').insert({motorizado_id:moto.id,pedido_id:o.id,tipo:'ingreso',monto:Math.round(total*100)/100,
-            descripcion:(isEnc(o)?'Cobro de encomienda':'Cobro de recojo')+' · total S/ '+total.toFixed(2)+' · cliente pagó con S/ '+paga.toFixed(2)+' · vuelto entregado S/ '+Math.max(0,paga-total).toFixed(2)});
+            descripcion:(isEnc(o)?'Cobro de encomienda':'Cobro de recojo')+' · total S/ '+total.toFixed(2)+' · cliente pagó con S/ '+paga.toFixed(2)+' · vuelto entregado S/ '+Math.max(0,paga-total).toFixed(2)+(vueltoDe?(vueltoDe==='caja'?' · VUELTO DE CAJA':' · VUELTO CON DINERO PROPIO'):'')});
           if(me)throw me;
         }
       }
@@ -10183,6 +10243,65 @@ setInterval(mover,1000);document.addEventListener('DOMContentLoaded',mover);move
   document.addEventListener('keydown',e=>{const s=e.target;if(!apto(s))return;if(e.key===' '||e.key==='Enter'||(e.altKey&&e.key==='ArrowDown')||e.key==='F4'){e.preventDefault();abrir(s)}},true);
 })();
 </script>
+<style id="pd-sueldo-adelanto">
+/* Sueldos: etiqueta de adelanto dentro del día (sin salirse) y día adelantado */
+@layer pd-tipo{
+html:root body:not(#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ) .pdslDay .pdslAdvTag{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;align-self:stretch!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;margin:6px 0 0!important;padding:5px 6px!important;border-radius:10px!important;border:0!important;background:#FFF4EC!important;color:#A8360A!important;white-space:normal!important;overflow:hidden!important;box-sizing:border-box!important;font:800 10.5px/1.15 var(--font)!important;font-style:normal!important;text-align:left!important}
+</style>
+<style id="pd-perfil-moto-como-negocio">
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;align-items:center!important;text-align:left!important;gap:16px!important;padding:18px!important;background:#fff!important;border:1px solid #F1E4DC!important;border-radius:22px!important;color:#1F1A17!important;box-shadow:none!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpAv{width:84px!important;height:84px!important;margin:0!important;flex:0 0 84px!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profilePhotoPreview{width:84px!important;height:84px!important;border-radius:22px!important;background:#FFF4EC!important;border:0!important;box-shadow:none!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#C4410C!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profilePhotoPreview img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:0!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpCam,html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpChips,html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpFotoActs{display:none!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpWho{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;min-width:0!important;text-align:left!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpHnKick{font:800 13px/1.2 var(--font)!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#6E625A!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profileDisplayName{font:800 26px/1.15 var(--font)!important;color:#1F1A17!important;overflow-wrap:anywhere!important;text-align:left!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profileDisplayRole{display:none!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpHnSub{font:500 15px/1.3 var(--font)!important;color:#6E625A!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;gap:16px!important;align-items:center!important;padding:16px!important;border:1px solid #F1E4DC!important;border-radius:18px!important;background:#fff!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTh{width:84px!important;height:84px!important;border-radius:18px!important;background:#FFF4EC!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#C4410C!important;font:800 30px var(--font)!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTh img{width:100%!important;height:100%!important;object-fit:cover!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTx{display:flex!important;flex-direction:column!important;gap:6px!important;min-width:0!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTx strong{font:800 17px/1.2 var(--font)!important;color:#1F1A17!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTx small{font:500 14px/1.35 var(--font)!important;color:#6E625A!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns{display:flex!important;gap:8px!important;flex-wrap:wrap!important;margin-top:4px!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns label,html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns button{all:unset;box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:44px!important;padding:0 18px!important;border-radius:14px!important;font:700 15px var(--font)!important;cursor:pointer!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns label{background:#FBE6DD!important;color:#C4410C!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns button{background:#fff!important;color:#4A3F38!important;border:1px solid #F1E4DC!important}
+html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns button[hidden]{display:none!important}
+</style>
+<script id="pd-perfil-moto-como-negocio-js">
+(function(){
+  function paso(){
+    var hero=document.querySelector('#profileTab .pdp > section.pdpHero');if(!hero)return;
+    if(!hero.classList.contains('pdpHn')){
+      hero.classList.add('pdpHn');
+      var who=hero.querySelector('.pdpWho');
+      if(who&&!who.querySelector('.pdpHnKick')){who.insertAdjacentHTML('afterbegin','<span class="pdpHnKick">Mi perfil</span>');who.insertAdjacentHTML('beforeend','<span class="pdpHnSub" id="pdpHnSub"></span>')}
+    }
+    /* subtítulo: Motorizado · estado (como "categoría · visible" del negocio) */
+    var chip=document.querySelector('#pdpChips > span');var est=chip?chip.textContent.trim():'';
+    var sub=document.getElementById('pdpHnSub');var t=['Motorizado',est||'Pidemás'].join(' · ');if(sub&&sub.textContent!==t)sub.textContent=t;
+    /* fila "Foto de perfil" en Mis datos, igual que "Logo del negocio" */
+    var datos=[].slice.call(document.querySelectorAll('#profileTab .pdpCard')).find(function(c){var k=c.querySelector('.pdpKick');return k&&/mis datos/i.test(k.textContent)});
+    if(datos&&!document.getElementById('pdpFotoRow')){
+      var row=document.createElement('div');row.className='pdpFotoRow';row.id='pdpFotoRow';
+      row.innerHTML='<span class="pfrTh" id="pfrTh"></span><div class="pfrTx"><strong>Foto de perfil</strong><small>Se muestra a administración y en tus pedidos. Mejor una foto clara de tu rostro.</small><div class="pfrBtns"><label for="profilePhotoFile" id="pfrLbl">Subir foto</label><button type="button" id="pfrDel" hidden>Quitar</button></div></div>';
+      var head=datos.querySelector('.pdpHead');if(head)head.insertAdjacentElement('afterend',row);else datos.insertBefore(row,datos.firstChild);
+      document.getElementById('pfrDel').addEventListener('click',function(){var d=document.getElementById('pdpRemovePhoto');if(d)d.click()});
+    }
+    var pv=document.getElementById('profilePhotoPreview'),th=document.getElementById('pfrTh');
+    if(pv){var im=pv.querySelector('img'),ini=pv.querySelector('.pdpHnIni');var L=((document.getElementById('profileDisplayName')||{}).textContent||'M').trim().charAt(0).toUpperCase();
+      if(!im){if(!ini){ini=document.createElement('span');ini.className='pdpHnIni';pv.appendChild(ini)}if(ini.textContent!==L)ini.textContent=L;ini.style.cssText='font:800 34px/1 Inter,system-ui,sans-serif!important;color:#C4410C!important';pv.querySelectorAll('i').forEach(function(x){x.style.setProperty('display','none','important')})}
+      else if(ini)ini.remove()}
+    if(pv&&th){var img=pv.querySelector('img');var k=img?'i:'+img.src:'t';if(th.__k!==k){th.__k=k;if(img)th.innerHTML='<img alt="" src="'+img.src.replace(/"/g,'&quot;')+'">';else{var n=(document.getElementById('profileDisplayName')||{}).textContent||'M';th.textContent=n.trim().charAt(0).toUpperCase()}}
+      var lb=document.getElementById('pfrLbl');var lt=img?'Cambiar foto':'Subir foto';if(lb&&lb.textContent!==lt)lb.textContent=lt;
+      var del=document.getElementById('pfrDel'),rm=document.getElementById('pdpRemovePhoto');if(del)del.hidden=!img||!rm;}
+  }
+  setInterval(paso,700);document.addEventListener('DOMContentLoaded',paso);paso();
+})();
+</script>
 <script id="pd-modal-unico-js">
 /* Detecta las ventanas abiertas, les pone el mismo diseño y permite cerrarlas arrastrando hacia abajo */
 (function(){
@@ -10277,6 +10396,7 @@ function cabecera(h){
       if(!t.hasAttribute('data-pdm-titulo'))t.setAttribute('data-pdm-titulo','');
     }
     const p=getComputedStyle(head).position;if(p!=='fixed'&&p!=='absolute')head.setAttribute('data-pdm-cab','');
+    try{const hw=head.getBoundingClientRect().width,hj=(head.closest('[data-pdm-hoja]')||head.parentElement).getBoundingClientRect().width;if(hj&&hw>=hj*0.8)head.setAttribute('data-pdm-cab-ancho','');else head.removeAttribute('data-pdm-cab-ancho')}catch(e){}
   }
   /* pie con botones: el último bloque de abajo queda fijo */
   let cont=h;if(h.children.length===1&&h.firstElementChild!==head)cont=h.firstElementChild;
@@ -10506,65 +10626,602 @@ document.addEventListener('keydown',e=>{const i=e.target;if(!apto(i))return;if(e
 try{const orig=HTMLInputElement.prototype.showPicker;if(orig)HTMLInputElement.prototype.showPicker=function(){if(apto(this)){abrir(this);return}return orig.apply(this,arguments)}}catch(e){}
 })();
 </script>
-<style id="pd-sueldo-adelanto">
-/* Sueldos: etiqueta de adelanto dentro del día (sin salirse) y día adelantado */
-@layer pd-tipo{
-html:root body:not(#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ#pdZ) .pdslDay .pdslAdvTag{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;align-self:stretch!important;width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;margin:6px 0 0!important;padding:5px 6px!important;border-radius:10px!important;border:0!important;background:#FFF4EC!important;color:#A8360A!important;white-space:normal!important;overflow:hidden!important;box-sizing:border-box!important;font:800 10.5px/1.15 var(--font)!important;font-style:normal!important;text-align:left!important}
-</style>
-<style id="pd-perfil-moto-como-negocio">
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;align-items:center!important;text-align:left!important;gap:16px!important;padding:18px!important;background:#fff!important;border:1px solid #F1E4DC!important;border-radius:22px!important;color:#1F1A17!important;box-shadow:none!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpAv{width:84px!important;height:84px!important;margin:0!important;flex:0 0 84px!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profilePhotoPreview{width:84px!important;height:84px!important;border-radius:22px!important;background:#FFF4EC!important;border:0!important;box-shadow:none!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#C4410C!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profilePhotoPreview img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:0!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpCam,html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpChips,html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpFotoActs{display:none!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpWho{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:4px!important;min-width:0!important;text-align:left!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpHnKick{font:800 13px/1.2 var(--font)!important;letter-spacing:.08em!important;text-transform:uppercase!important;color:#6E625A!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profileDisplayName{font:800 26px/1.15 var(--font)!important;color:#1F1A17!important;overflow-wrap:anywhere!important;text-align:left!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn #profileDisplayRole{display:none!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdp > section.pdpHero.pdpHn .pdpHnSub{font:500 15px/1.3 var(--font)!important;color:#6E625A!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;gap:16px!important;align-items:center!important;padding:16px!important;border:1px solid #F1E4DC!important;border-radius:18px!important;background:#fff!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTh{width:84px!important;height:84px!important;border-radius:18px!important;background:#FFF4EC!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#C4410C!important;font:800 30px var(--font)!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTh img{width:100%!important;height:100%!important;object-fit:cover!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTx{display:flex!important;flex-direction:column!important;gap:6px!important;min-width:0!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTx strong{font:800 17px/1.2 var(--font)!important;color:#1F1A17!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrTx small{font:500 14px/1.35 var(--font)!important;color:#6E625A!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns{display:flex!important;gap:8px!important;flex-wrap:wrap!important;margin-top:4px!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns label,html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns button{all:unset;box-sizing:border-box!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;min-height:44px!important;padding:0 18px!important;border-radius:14px!important;font:700 15px var(--font)!important;cursor:pointer!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns label{background:#FBE6DD!important;color:#C4410C!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns button{background:#fff!important;color:#4A3F38!important;border:1px solid #F1E4DC!important}
-html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp) #profileTab .pdpFotoRow .pfrBtns button[hidden]{display:none!important}
-</style>
-<script id="pd-perfil-moto-como-negocio-js">
+<script id="pd-caja-control-moto">
 (function(){
-  function paso(){
-    var hero=document.querySelector('#profileTab .pdp > section.pdpHero');if(!hero)return;
-    if(!hero.classList.contains('pdpHn')){
-      hero.classList.add('pdpHn');
-      var who=hero.querySelector('.pdpWho');
-      if(who&&!who.querySelector('.pdpHnKick')){who.insertAdjacentHTML('afterbegin','<span class="pdpHnKick">Mi perfil</span>');who.insertAdjacentHTML('beforeend','<span class="pdpHnSub" id="pdpHnSub"></span>')}
-    }
-    /* subtítulo: Motorizado · estado (como "categoría · visible" del negocio) */
-    var chip=document.querySelector('#pdpChips > span');var est=chip?chip.textContent.trim():'';
-    var sub=document.getElementById('pdpHnSub');var t=['Motorizado',est||'Pidemás'].join(' · ');if(sub&&sub.textContent!==t)sub.textContent=t;
-    /* fila "Foto de perfil" en Mis datos, igual que "Logo del negocio" */
-    var datos=[].slice.call(document.querySelectorAll('#profileTab .pdpCard')).find(function(c){var k=c.querySelector('.pdpKick');return k&&/mis datos/i.test(k.textContent)});
-    if(datos&&!document.getElementById('pdpFotoRow')){
-      var row=document.createElement('div');row.className='pdpFotoRow';row.id='pdpFotoRow';
-      row.innerHTML='<span class="pfrTh" id="pfrTh"></span><div class="pfrTx"><strong>Foto de perfil</strong><small>Se muestra a administración y en tus pedidos. Mejor una foto clara de tu rostro.</small><div class="pfrBtns"><label for="profilePhotoFile" id="pfrLbl">Subir foto</label><button type="button" id="pfrDel" hidden>Quitar</button></div></div>';
-      var head=datos.querySelector('.pdpHead');if(head)head.insertAdjacentElement('afterend',row);else datos.insertBefore(row,datos.firstChild);
-      document.getElementById('pfrDel').addEventListener('click',function(){var d=document.getElementById('pdpRemovePhoto');if(d)d.click()});
-    }
-    var pv=document.getElementById('profilePhotoPreview'),th=document.getElementById('pfrTh');
-    if(pv){var im=pv.querySelector('img'),ini=pv.querySelector('.pdpHnIni');var L=((document.getElementById('profileDisplayName')||{}).textContent||'M').trim().charAt(0).toUpperCase();
-      if(!im){if(!ini){ini=document.createElement('span');ini.className='pdpHnIni';pv.appendChild(ini)}if(ini.textContent!==L)ini.textContent=L;ini.style.cssText='font:800 34px/1 Inter,system-ui,sans-serif!important;color:#C4410C!important';pv.querySelectorAll('i').forEach(function(x){x.style.setProperty('display','none','important')})}
-      else if(ini)ini.remove()}
-    if(pv&&th){var img=pv.querySelector('img');var k=img?'i:'+img.src:'t';if(th.__k!==k){th.__k=k;if(img)th.innerHTML='<img alt="" src="'+img.src.replace(/"/g,'&quot;')+'">';else{var n=(document.getElementById('profileDisplayName')||{}).textContent||'M';th.textContent=n.trim().charAt(0).toUpperCase()}}
-      var lb=document.getElementById('pfrLbl');var lt=img?'Cambiar foto':'Subir foto';if(lb&&lb.textContent!==lt)lb.textContent=lt;
-      var del=document.getElementById('pfrDel'),rm=document.getElementById('pdpRemovePhoto');if(del)del.hidden=!img||!rm;}
+  if(window.__pdCajaCtl)return;window.__pdCajaCtl=1;
+  const $=id=>document.getElementById(id);
+  const M=n=>'S/ '+(Number(n)||0).toFixed(2);
+  const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const D=()=>{try{return db}catch(e){return window.db}};
+  const ME=()=>{try{return moto}catch(e){return null}};
+  const ref=id=>'#'+String(id||'').slice(0,8).toUpperCase();
+  /* ---------- subir foto de comprobante ---------- */
+  async function subirFoto(file){
+    if(!/^image\/(jpeg|png|webp)$/i.test(file.type)||file.size>8*1024*1024)throw new Error('La foto debe ser JPG, PNG o WEBP y pesar máximo 8 MB.');
+    const {data:u}=await D().auth.getUser();const uid=u&&u.user&&u.user.id;if(!uid)throw new Error('Tu sesión expiró. Vuelve a ingresar.');
+    const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type]||'jpg';
+    const path=uid+'/comprobante-'+Date.now()+'.'+ext,b=D().storage.from('fotos-motorizados');
+    const up=await b.upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(up.error)throw new Error('No se pudo subir la foto: '+up.error.message);
+    const url=b.getPublicUrl(path)?.data?.publicUrl;if(!url)throw new Error('No se pudo obtener la foto.');return url;
   }
-  setInterval(paso,700);document.addEventListener('DOMContentLoaded',paso);paso();
+  function elegirFoto(){return new Promise(res=>{const i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('capture','environment');i.setAttribute('data-pd-cloud','1');i.style.display='none';document.body.appendChild(i);i.addEventListener('change',()=>{const f=i.files&&i.files[0];i.remove();res(f||null)});i.click();setTimeout(()=>{if(document.body.contains(i)&&!i.files.length){}},60000)})}
+  document.addEventListener('click',async e=>{
+    const b=e.target.closest&&e.target.closest('[data-adj]');if(!b)return;e.preventDefault();
+    const f=await elegirFoto();if(!f)return;b.disabled=true;const t=b.textContent;b.textContent='Subiendo…';
+    try{const url=await subirFoto(f);const m=ME();const {error}=await D().from('movimientos_caja').update({comprobante_url:url}).eq('id',b.dataset.adj).eq('motorizado_id',m.id);if(error)throw error;
+      (window.pdExito||window.pdAviso)('Comprobante enviado. Administración lo revisará.');if(window.loadCash)await window.loadCash()}
+    catch(err){(window.pdAviso||alert)(err.message||String(err));b.disabled=false;b.textContent=t}
+  });
+  /* ---------- ingreso manual: elegir el pedido ---------- */
+  async function pedidosRecientes(){
+    const m=ME();if(!m)return [];
+    const desde=new Date(Date.now()-4*864e5).toISOString();
+    const {data}=await D().from('pedidos').select('id,nombre_cliente,total,costo_delivery,estado,creado_en,negocio_id,tipo_servicio').eq('motorizado_id',m.id).gte('creado_en',desde).order('creado_en',{ascending:false}).limit(40);
+    return (data||[]).filter(o=>!['cancelado','rechazado'].includes(String(o.estado||'').toLowerCase()));
+  }
+  async function armarSelect(){
+    const src=$('cashInSource');if(!src)return;
+    let w=$('pdCashPedidoWrap');
+    if(!w){w=document.createElement('div');w.id='pdCashPedidoWrap';w.className='pdCashPedido';
+      w.innerHTML='<label for="cashInPedido">¿De qué pedido es este dinero?</label><select id="cashInPedido"><option value="">Cargando tus pedidos…</option></select><small>Así administración sabe de dónde salió cada sol.</small>';
+      const other=$('cashInOtherSource');(other||src).insertAdjacentElement('afterend',w)}
+    const sel=$('cashInPedido');const prev=sel.value;
+    const list=await pedidosRecientes();
+    sel.innerHTML='<option value="" disabled'+(prev?'':' selected')+'>Elige el pedido</option>'+list.map(o=>'<option value="'+E(o.id)+'">'+E(ref(o.id)+' · '+(o.nombre_cliente||'Cliente')+' · '+M(o.total))+'</option>').join('')+'<option value="ninguno">No es de un pedido (fondo, otro motivo)</option>';
+    if(prev&&[...sel.options].some(x=>x.value===prev))sel.value=prev;
+  }
+  /* reemplaza el registro de ingreso manual para guardar el pedido */
+  function engancharIngreso(){
+    const btn=$('addCashIn');if(!btn||btn.__pdPed)return;btn.__pdPed=1;
+    btn.addEventListener('click',async ev=>{
+      const sel=$('cashInPedido');if(!sel)return;
+      ev.stopImmediatePropagation();ev.preventDefault();
+      const msg=$('cashInMsg'),m=ME();if(!m){msg.textContent='Inicia sesión para registrar dinero en tu caja.';return}
+      const amount=Number($('cashInAmount').value),source=$('cashInSource').value,other=($('cashInOtherSource')?.value||'').trim(),desc=source==='Otros'?other:source;
+      if(!Number.isFinite(amount)||amount<=0){msg.textContent='Ingresa un monto mayor que S/ 0.00.';return}
+      if(!source||!desc){msg.textContent=source==='Otros'?'Escribe el origen del dinero al seleccionar Otros.':'Elige de quién recibiste el efectivo.';return}
+      if(!sel.value){msg.textContent='Elige de qué pedido es este dinero, o «No es de un pedido».';sel.focus();return}
+      const pid=sel.value==='ninguno'?null:sel.value;
+      btn.disabled=true;msg.textContent='Registrando ingreso...';
+      try{const {error}=await D().from('movimientos_caja').insert({motorizado_id:m.id,tipo:'ingreso',monto:Math.round(amount*100)/100,pedido_id:pid,descripcion:'INGRESO MANUAL DE CAJA · '+desc+(pid?' · Pedido '+ref(pid):'')});if(error)throw error;
+        $('cashInAmount').value='';$('cashInSource').value='';sel.value='';if($('cashInOtherSource'))$('cashInOtherSource').value='';try{toggleCashInOther()}catch(_){}
+        msg.textContent='Ingreso registrado correctamente.';if(window.loadCash)await window.loadCash()}
+      catch(e){msg.textContent='No se pudo agregar el dinero: '+String(e?.message||e)}finally{btn.disabled=false}
+    },true);
+  }
+  /* ---------- pago / gasto: foto del comprobante ---------- */
+  function engancharGasto(){
+    const btn=$('addExpense');if(!btn||btn.__pdFoto)return;btn.__pdFoto=1;
+    const o=$('expenseOtherReason')||$('expenseReason');
+    const w=document.createElement('div');w.className='pdCashPedido';w.id='pdExpFotoWrap';
+    w.innerHTML='<label>Foto del comprobante</label><button type="button" class="pdFotoBtn" id="pdExpFoto">Tomar o elegir foto</button><small id="pdExpFotoTx">Boleta, ticket o guía. Administración la revisa antes de descontarlo.</small>';
+    o.insertAdjacentElement('afterend',w);
+    let foto=null;
+    $('pdExpFoto').addEventListener('click',async()=>{const f=await elegirFoto();if(!f)return;foto=f;$('pdExpFoto').textContent='Foto lista ✓ (cambiar)';$('pdExpFotoTx').textContent=f.name});
+    btn.addEventListener('click',async ev=>{
+      ev.stopImmediatePropagation();ev.preventDefault();
+      const m=ME(),msg=$('expenseMsg');if(!m)return;
+      const amount=Number($('expenseAmount').value),reason=$('expenseReason').value,other=($('expenseOtherReason').value||'').trim(),desc=reason==='Otros'?other:reason;
+      if(!Number.isFinite(amount)||amount<=0){msg.textContent='Ingresa un monto válido.';return}
+      if(!reason||!desc){msg.textContent=reason==='Otros'?'Escribe el detalle del pago al seleccionar Otros.':'Elige para qué usaste el efectivo.';return}
+      const aAdmin=/administrador/i.test(reason);
+      if(!foto&&!aAdmin){msg.textContent='Toma una foto del comprobante. Si no tienes, podrás adjuntarla después desde Movimientos, pero quedará por revisar.';
+        if(!(await pdConfirmar('¿Registrar el pago sin foto del comprobante?\nQuedará «Por revisar» hasta que adjuntes la foto.')))return}
+      btn.disabled=true;msg.textContent='Registrando pago...';
+      try{let url=null;if(foto)url=await subirFoto(foto);
+        const {error}=await D().from('movimientos_caja').insert({motorizado_id:m.id,tipo:'retiro',monto:Math.round(amount*100)/100,descripcion:desc,comprobante_url:url});if(error)throw error;
+        $('expenseAmount').value='';$('expenseReason').value='';$('expenseOtherReason').value='';try{toggleExpenseOther()}catch(_){}
+        foto=null;$('pdExpFoto').textContent='Tomar o elegir foto';$('pdExpFotoTx').textContent='Boleta, ticket o guía. Administración la revisa antes de descontarlo.';
+        msg.textContent='Pago registrado. Administración lo revisará.';if(window.loadCash)await window.loadCash()}
+      catch(e){msg.textContent='No se pudo registrar el pago: '+String(e?.message||e)}finally{btn.disabled=false}
+    },true);
+  }
+  /* ---------- alerta de caja alta y resumen del día ---------- */
+  let tope=null,avisado=0;
+  async function leerTope(){if(tope!==null)return tope;try{const {data}=await D().from('ajustes_pidemas').select('valor').eq('clave','caja_alerta').maybeSingle();tope=Number(data&&data.valor&&data.valor.monto)||0}catch(e){tope=0}return tope}
+  const hoyLima=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Lima'});
+  const diaLima=v=>new Date(v).toLocaleDateString('en-CA',{timeZone:'America/Lima'});
+  async function alPintar(movs){
+    const C=window.PdCaja;if(!C)return;const bal=C.balance(movs||[]);const t=await leerTope();
+    const hero=$('pdcjmHero');
+    if(hero){let a=$('pdCajaAlta');if(t>0&&bal>=t){if(!a){a=document.createElement('div');a.id='pdCajaAlta';a.className='pdCajaAlta';hero.appendChild(a)}a.textContent='Tu caja pasó '+M(t)+'. Entrega el efectivo a administración lo antes posible.';
+        if(Date.now()-avisado>30*60e3){avisado=Date.now();(window.pdAviso||alert)('Tu caja tiene '+M(bal)+'. Entrega el efectivo a administración.')}}else if(a)a.remove()}
+    /* resumen de hoy */
+    const host=$('pdcjmHero');if(!host)return;
+    let r=$('pdResumenHoy');if(!r){r=document.createElement('section');r.className='pdcjCard';r.id='pdResumenHoy';host.insertAdjacentElement('afterend',r)}
+    const hoy=hoyLima(),L=(movs||[]).filter(m=>diaLima(m.creado_en)===hoy);
+    const s={ef:0,man:0,adm:0,pag:0,gas:0,ent:0,yape:0};
+    L.forEach(m=>{const k=C.kind(m),a=C.amount(m);if(m.tipo==='ingreso'){if(k==='fondo')s.adm+=a;else if(/^INGRESO MANUAL/i.test(m.descripcion||''))s.man+=a;else s.ef+=a}else{if(k==='pago')s.pag+=a;else if(k==='entrega'||k==='liquidacion')s.ent+=a;else if(k!=='reinicio')s.gas+=a}});
+    try{const m=ME();const ini=new Date(hoy+'T00:00:00-05:00').toISOString();const {data}=await D().from('cobros').select('monto,metodo_pago').eq('motorizado_id',m.id).eq('metodo_pago','yape').gte('confirmado_en',ini);(data||[]).forEach(c=>s.yape+=Number(c.monto)||0)}catch(_){}
+    const nom=(()=>{try{return moto.nombre_completo||'Motorizado'}catch(e){return 'Motorizado'}})();
+    const txt=['*Resumen del día · '+nom+'*',new Date().toLocaleDateString('es-PE',{timeZone:'America/Lima',weekday:'long',day:'2-digit',month:'long'}),'','Cobros en efectivo: '+M(s.ef),'Otros ingresos: '+M(s.man),'Efectivo de administración: '+M(s.adm),'Cobros por Yape (no van a caja): '+M(s.yape),'Pagos de compras/encomiendas: '+M(s.pag),'Gastos: '+M(s.gas),'Entregado a administración: '+M(s.ent),'','*Saldo en caja: '+M(bal)+'*'].join('\n');
+    const html='<div class="pdcjHead"><span><span class="pdcjKick">Hoy</span><strong>Resumen del día</strong></span></div><div class="pdResGrid"><div><span>Efectivo cobrado</span><b>'+M(s.ef+s.man)+'</b></div><div><span>Yape</span><b>'+M(s.yape)+'</b></div><div><span>Pagos y gastos</span><b>'+M(s.pag+s.gas)+'</b></div><div><span>Entregado</span><b>'+M(s.ent)+'</b></div></div><a class="pdResWa" target="_blank" rel="noopener" href="https://wa.me/?text='+encodeURIComponent(txt)+'">Enviar resumen por WhatsApp</a>';
+    if(r.__h!==html){r.__h=html;r.innerHTML=html}
+  }
+  document.addEventListener('pd:caja',e=>{alPintar(e.detail).catch(()=>{});if($('cashInPedido')&&document.activeElement!==$('cashInPedido'))armarSelect().catch(()=>{})});
+  setInterval(()=>{try{engancharIngreso();engancharGasto();if($('cashInSource')&&!$('pdCashPedidoWrap'))armarSelect()}catch(e){}},1200);
+  document.addEventListener('focusin',e=>{if(e.target&&e.target.id==='cashInPedido'&&!e.target.__fresh){e.target.__fresh=1;armarSelect().finally(()=>setTimeout(()=>{e.target.__fresh=0},30000))}});
 })();
 </script>
+<style id="pd-caja-control-moto-css">
+html:root body:not(#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc) .pdcjAct{height:auto!important;padding:7px 12px!important;line-height:1.25!important;text-align:left!important;white-space:normal!important}
+
+html:root body:not(#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc) .pdcjBtn.alt{background:#fff!important;color:#B42318!important;border:1px solid #F1C4BF!important;margin-top:8px!important;box-shadow:none!important}
+html:root body:not(#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc) .pdcjAct{display:inline-flex!important;align-items:center!important;min-height:34px!important;padding:0 12px!important;border-radius:999px!important;border:1px solid #F1E4DC!important;background:#fff!important;color:#C4410C!important;font:700 12.5px var(--font,Inter,sans-serif)!important;text-decoration:none!important;cursor:pointer!important;box-shadow:none!important;width:auto!important;margin:0!important}
+html:root body:not(#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc) .pdcjAct.fuerte{background:#C4410C!important;border-color:#C4410C!important;color:#fff!important}
+html:root body:not(#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc) .pdcjAct.ok{background:#1F6B3A!important;border-color:#1F6B3A!important;color:#fff!important}
+html:root body:not(#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc) .pdcjAct.bad{color:#B42318!important;border-color:#F1C4BF!important}
+html:root body:not(#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc) .pdcjAct.gris{color:#8A7B72!important;cursor:default!important}
+html:root body:not(#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc) .pdcjAct.edit{color:#1D4ED8!important;border-color:#C9D7FB!important}
+
+.pdCashPedido{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.pdCashPedido label{font:700 14px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdCashPedido small{font:500 12.5px/1.3 var(--font,Inter,sans-serif);color:#6E625A}
+.pdFotoBtn{min-height:46px;border-radius:14px;border:1.5px dashed #F1C9B6;background:#FFF9F5;color:#C4410C;font:700 15px var(--font,Inter,sans-serif);cursor:pointer}
+.pdCajaAlta{margin-top:10px;padding:10px 12px;border-radius:12px;background:#FFF7E0;color:#8A5A00;font:700 13.5px/1.35 var(--font,Inter,sans-serif)}
+.pdResGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.pdResGrid div{background:#FFF9F5;border:1px solid #F1E4DC;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.pdResGrid span{font:600 12px var(--font,Inter,sans-serif);color:#6E625A}.pdResGrid b{font:800 16px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdResWa{display:flex;align-items:center;justify-content:center;min-height:46px;margin-top:10px;border-radius:14px;background:#1F9D55;color:#fff!important;font:700 15px var(--font,Inter,sans-serif);text-decoration:none}
+</style>
+<script id="pd-sueldo-control-moto">
+(function(){
+  if(window.__pdSueldoMoto)return;window.__pdSueldoMoto=1;
+  const $=id=>document.getElementById(id);
+  const M=n=>'S/ '+(Number(n)||0).toFixed(2);
+  const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const D=()=>{try{return db}catch(e){return window.db}};
+  const ME=()=>{try{return moto}catch(e){return null}};
+  const fD=i=>{try{return new Date(String(i).slice(0,10)+'T12:00:00').toLocaleDateString('es-PE',{day:'2-digit',month:'short'})}catch(e){return i}};
+  const hoy=()=>new Date().toLocaleDateString('en-CA',{timeZone:'America/Lima'});
+  let cierres=[],prest=[],cuotas=[],just=[],foto=null,cargando=false,ultima=0;
+  async function cargar(){
+    const m=ME();if(!m||cargando)return;cargando=true;
+    try{const [c,p,q,j]=await Promise.all([
+      D().from('quincenas_cerradas').select('*').eq('motorizado_id',m.id).order('inicio',{ascending:false}).limit(8),
+      D().from('prestamos').select('*').eq('motorizado_id',m.id).order('creado_en',{ascending:false}),
+      D().from('control_sueldos').select('id,monto,prestamo_id').eq('motorizado_id',m.id).not('prestamo_id','is',null),
+      D().from('justificaciones').select('*').eq('motorizado_id',m.id).order('fecha',{ascending:false}).limit(10)]);
+      cierres=c.data||[];prest=p.data||[];cuotas=q.data||[];just=j.data||[];ultima=Date.now();pintar();
+    }finally{cargando=false}
+  }
+  function pintar(){
+    const ref=$('pdwPays');if(!ref)return;const sec=ref.closest('section');if(!sec)return;
+    let c=$('pdsmCard');if(!c){c=document.createElement('section');c.className='pdslCard';c.id='pdsmCard';sec.insertAdjacentElement('afterend',c)}
+    const pend=cierres.filter(q=>!q.recibido_conforme_en);
+    const bol=cierres.length?cierres.map(q=>'<div class="pdsmRow"><div><strong>'+E((q.detalle&&q.detalle.label)||q.periodo)+'</strong><small>Ganado '+M(q.ganado)+' · descuentos '+M(q.descuentos)+' · pendiente '+M(q.pendiente)+'</small>'+(q.recibido_conforme_en?'<span class="pdcjRev ok">Recibiste conforme</span>':'<span class="pdcjRev pend">Falta tu conforme</span>')+'</div><div class="pdsmBtns"><button type="button" class="pdcjAct" data-sm="ver" data-id="'+E(q.id)+'">Ver boleta</button>'+(q.recibido_conforme_en?'':'<button type="button" class="pdcjAct fuerte" data-sm="ok" data-id="'+E(q.id)+'">Recibí conforme</button>')+'</div></div>').join(''):'<p class="pdslNote">Cuando administración cierre tu quincena, tu boleta aparecerá aquí.</p>';
+    const pr=prest.filter(p=>p.activo).map(p=>{const pag=cuotas.filter(x=>String(x.prestamo_id)===String(p.id));const s=pag.reduce((a,x)=>a+(Number(x.monto)||0),0);const rest=Math.max(0,p.monto-s);return rest>0.004?'<div class="pdsmRow"><div><strong>Préstamo '+M(p.monto)+(p.motivo?' · '+E(p.motivo):'')+'</strong><small>Cuota '+pag.length+' de '+p.cuotas+' · te falta pagar '+M(rest)+'</small></div></div>':''}).join('');
+    const js=just.slice(0,4).map(j=>'<div class="pdsmRow"><div><strong>'+E(fD(j.fecha))+' · '+E(j.motivo)+'</strong><small>'+(j.visto_en?'Administración la vio':'Enviada')+'</small></div></div>').join('');
+    c.innerHTML='<div class="pdslHead"><span><span class="pdslKick">Boletas</span><strong>Mis boletas de pago</strong></span></div>'+bol
+      +(pr?'<div class="pdslHead" style="margin-top:14px"><span><span class="pdslKick">Préstamos</span><strong>Mis préstamos</strong></span></div>'+pr+'<p class="pdslNote">Se descuenta una cuota de tu sueldo en cada quincena.</p>':'')
+      +'<div class="pdslHead" style="margin-top:14px"><span><span class="pdslKick">Faltas</span><strong>Justificar una falta</strong></span></div>'
+      +'<p class="pdslNote">Envía el motivo y una foto (certificado, constancia). La falta se descuenta igual; la justificación queda registrada para administración.</p>'
+      +'<div class="pdsmForm"><label>Fecha de la falta<input type="date" id="pdsmFecha" max="'+hoy()+'"></label><label>Motivo<input id="pdsmMotivo" maxlength="160" placeholder="Ej. Cita médica"></label><button type="button" class="pdFotoBtn" id="pdsmFoto">'+(foto?'Foto lista ✓ (cambiar)':'Agregar foto (opcional)')+'</button><button type="button" class="btn" id="pdsmEnviar">Enviar justificación</button><div class="muted" id="pdsmMsg" role="status"></div></div>'+(js?'<div class="pdsmJs">'+js+'</div>':'');
+    if(pend.length&&!pintar.avisado){pintar.avisado=1;(window.pdAviso||alert)('Tienes '+pend.length+' boleta'+(pend.length===1?'':'s')+' por confirmar en Mi billetera › Sueldo.')}
+  }
+  function verBoleta(q){
+    const d=q.detalle||{},nom=(ME()||{}).nombre_completo||'';
+    const row=(l,v,c)=>'<div class="pdsmB'+(c?' '+c:'')+'"><span>'+l+'</span><b>'+v+'</b></div>';
+    let v=$('pdsmVelo');if(v)v.remove();v=document.createElement('div');v.id='pdsmVelo';v.className='pdsmVelo';
+    v.innerHTML='<div class="pdsmHoja" role="dialog" aria-modal="true" aria-label="Boleta de pago"><div class="pdsmTop"><strong>Boleta de pago</strong><button type="button" class="pdsmX" aria-label="Cerrar">×</button></div><div class="pdsmBol"><div class="pdsmBolTop"><b>Pidemás Delivery</b><span>'+E(d.label||q.periodo)+'</span></div><div class="pdsmWho">'+E(nom)+'</div>'
+      +row('Días pagados',(d.dias||0)+(d.descansos?' + '+d.descansos+' desc.':''))+(d.faltas?row('Faltas',d.faltas):'')+row('Sueldo',M(d.sueldo))+row('Gasolina',M(d.gasolina))+row('Ganado',M(q.ganado),'tot')
+      +(d.descuentos||[]).map(x=>row(E(x.d||'Descuento'),'− '+M(x.m),'neg')).join('')+(d.pagos||[]).map(x=>row('Pago '+E(fD(x.f)),M(x.m))).join('')+row('Pendiente',M(q.pendiente),'tot')+'</div>'
+      +(q.recibido_conforme_en?'<p class="pdsmOk">✓ Confirmaste que recibiste conforme.</p>':'<button type="button" class="btn" data-sm="ok" data-id="'+E(q.id)+'">Recibí conforme</button>')+'</div>';
+    document.body.appendChild(v);const x=()=>v.remove();v.querySelector('.pdsmX').onclick=x;v.addEventListener('click',e=>{if(e.target===v)x()});
+  }
+  async function subir(file){
+    const {data:u}=await D().auth.getUser();const uid=u&&u.user&&u.user.id;if(!uid)throw new Error('Tu sesión expiró.');
+    const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type]||'jpg';const path=uid+'/justificante-'+Date.now()+'.'+ext,b=D().storage.from('fotos-motorizados');
+    const up=await b.upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(up.error)throw new Error('No se pudo subir la foto: '+up.error.message);return b.getPublicUrl(path)?.data?.publicUrl||null;
+  }
+  document.addEventListener('click',async e=>{
+    const t=e.target;if(!t.closest)return;
+    const s=t.closest('[data-sm]');
+    if(s){const q=cierres.find(x=>String(x.id)===s.dataset.id);if(!q)return;
+      if(s.dataset.sm==='ver')return verBoleta(q);
+      if(s.dataset.sm==='ok'){if(!(await pdConfirmar('¿Confirmas que revisaste tu boleta y recibiste conforme?\n'+((q.detalle&&q.detalle.label)||'')+' · ganado '+M(q.ganado))))return;
+        s.disabled=true;const {error}=await D().from('quincenas_cerradas').update({recibido_conforme_en:new Date().toISOString()}).eq('id',q.id);
+        if(error){(window.pdAviso||alert)('No se pudo guardar: '+error.message);s.disabled=false;return}
+        const v=$('pdsmVelo');if(v)v.remove();(window.pdExito||window.pdAviso)('¡Listo! Confirmaste tu boleta.');cargar()}
+      return}
+    if(t.closest('#pdsmFoto')){const i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('data-pd-cloud','1');i.onchange=()=>{foto=i.files&&i.files[0]||null;const b=$('pdsmFoto');if(b)b.textContent=foto?'Foto lista ✓ (cambiar)':'Agregar foto (opcional)'};i.click();return}
+    if(t.closest('#pdsmEnviar')){const m=ME(),f=$('pdsmFecha').value,mo=$('pdsmMotivo').value.trim(),msg=$('pdsmMsg'),btn=$('pdsmEnviar');
+      if(!f){msg.textContent='Elige la fecha de la falta.';return}if(!mo){msg.textContent='Escribe el motivo.';return}
+      btn.disabled=true;msg.textContent='Enviando…';
+      try{let url=null;if(foto){if(!/^image\//.test(foto.type)||foto.size>8*1024*1024)throw new Error('La foto debe ser una imagen de máximo 8 MB.');url=await subir(foto)}
+        const {error}=await D().from('justificaciones').insert({motorizado_id:m.id,fecha:f,motivo:mo,foto_url:url});if(error)throw error;
+        foto=null;msg.textContent='';(window.pdExito||window.pdAviso)('Justificación enviada a administración.');await cargar()}
+      catch(err){msg.textContent='No se pudo enviar: '+(err.message||err)}finally{btn.disabled=false}}
+  });
+  setInterval(()=>{const r=$('pdwPays');if(r&&r.getClientRects().length&&ME()&&Date.now()-ultima>60000)cargar();else if(r&&ME()&&!$('pdsmCard')&&ultima)pintar()},1500);
+})();
+</script>
+<style id="pd-sueldo-control-moto-css">
+#pdsmCard .pdsmRow{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:1px solid #F8EFEA}
+#pdsmCard .pdsmRow > div:first-child{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+#pdsmCard .pdsmRow strong{font:700 15px/1.25 var(--font,Inter,sans-serif);color:#1F1A17}
+#pdsmCard .pdsmRow small{font:500 13px/1.35 var(--font,Inter,sans-serif);color:#6E625A}
+#pdsmCard .pdsmRow .pdcjRev{margin-left:0}
+#pdsmCard .pdsmBtns{display:flex;flex-wrap:wrap;gap:6px}
+#pdsmCard .pdsmForm{display:flex;flex-direction:column;gap:10px}
+#pdsmCard .pdsmForm label{display:flex;flex-direction:column;gap:6px;font:700 14px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdsmVelo{position:fixed;inset:0;z-index:2147483646;background:rgba(31,26,23,.45);display:flex;align-items:flex-end;justify-content:center}
+.pdsmHoja{width:100%;max-width:560px;max-height:calc(100dvh - 56px);overflow:auto;background:#fff;border-radius:24px 24px 0 0;padding:16px 18px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;font-family:var(--font,Inter,sans-serif)}
+.pdsmTop{display:flex;justify-content:space-between;align-items:center}.pdsmTop strong{font:800 20px var(--font,Inter,sans-serif);color:#C4410C}
+.pdsmX{width:44px;height:44px;border-radius:14px;border:1px solid #F1E4DC;background:#fff;font:500 24px/1 var(--font,Inter,sans-serif);color:#1F1A17}
+.pdsmBol{border:1px solid #F1E4DC;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.pdsmBolTop{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #C4410C;padding-bottom:8px;margin-bottom:6px}.pdsmBolTop b{font:900 17px var(--font,Inter,sans-serif);color:#C4410C}.pdsmBolTop span{font:600 12.5px var(--font,Inter,sans-serif);color:#6E625A}
+.pdsmWho{font:800 16px var(--font,Inter,sans-serif);color:#1F1A17;margin-bottom:4px}
+.pdsmB{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed #F1E4DC;font:500 14px var(--font,Inter,sans-serif);color:#1F1A17}.pdsmB.tot{font-weight:800}.pdsmB.neg b{color:#B42318}
+.pdsmOk{margin:0;font:700 14px var(--font,Inter,sans-serif);color:#1F6B3A}
+</style>
+<script id="pd-pedidos-control-moto">
+/* Prueba de entrega (código o foto) · Cliente no contesta */
+(function(){
+  if(window.__pdPedMoto)return;window.__pdPedMoto=1;
+  const $=id=>document.getElementById(id);
+  const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const D=()=>{try{return db}catch(e){return window.db}};
+  const OR=()=>{try{return Array.isArray(orders)?orders:[]}catch(e){return []}};
+  const ME=()=>{try{return moto}catch(e){return null}};
+  const ref=id=>'#'+String(id||'').slice(0,8).toUpperCase();
+  const tel=t=>{const d=String(t||'').replace(/\D/g,'');if(!d)return '';return d.startsWith('51')?d:(d.length===9?'51'+d:d)};
+  const aviso=t=>(window.pdAvisoMoto||window.pdAviso||alert)(t);
+  const ESPERA=10;
+  function hoja(titulo,html){
+    let v=$('pdpeVelo');if(v)v.remove();v=document.createElement('div');v.id='pdpeVelo';v.className='pdsmVelo';
+    v.innerHTML='<div class="pdsmHoja" role="dialog" aria-modal="true" aria-label="'+E(titulo)+'"><div class="pdsmTop"><strong>'+E(titulo)+'</strong><button type="button" class="pdsmX" aria-label="Cerrar">×</button></div>'+html+'</div>';
+    document.body.appendChild(v);return v;
+  }
+  async function subir(file,pref){
+    const {data:u}=await D().auth.getUser();const uid=u&&u.user&&u.user.id;if(!uid)throw new Error('Tu sesión expiró.');
+    if(!/^image\//.test(file.type)||file.size>10*1024*1024)throw new Error('La foto debe ser una imagen de máximo 10 MB.');
+    const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type]||'jpg';const path=uid+'/'+pref+'-'+Date.now()+'.'+ext,b=D().storage.from('fotos-motorizados');
+    const up=await b.upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(up.error)throw new Error('No se pudo subir la foto: '+up.error.message);
+    return b.getPublicUrl(path)?.data?.publicUrl||null;
+  }
+  function foto(){return new Promise(res=>{const i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('capture','environment');i.setAttribute('data-pd-cloud','1');i.style.display='none';document.body.appendChild(i);i.addEventListener('change',()=>{const f=i.files&&i.files[0];i.remove();res(f||null)});i.click()})}
+
+  /* ---------- 1. Prueba de entrega ---------- */
+  function pedirPrueba(o){return new Promise(res=>{
+    const v=hoja('Confirma la entrega','<p class="pdpeTx">Pídele al cliente su <b>código de entrega</b> de 4 números. Lo ve en el seguimiento de su pedido.</p><input id="pdpeCod" class="pdpeCod" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="• • • •"><p class="pdpeMsg" id="pdpeMsg"></p><button type="button" class="btn" id="pdpeOk">Confirmar entrega</button><button type="button" class="pdpeAlt" id="pdpeFoto">El cliente no tiene el código: tomar foto de la entrega</button>');
+    let hecho=false;const fin=r=>{if(hecho)return;hecho=true;v.remove();res(r)};
+    v.querySelector('.pdsmX').onclick=()=>fin(false);v.addEventListener('click',e=>{if(e.target===v)fin(false)});
+    const inp=$('pdpeCod'),msg=$('pdpeMsg');setTimeout(()=>inp.focus(),80);
+    inp.addEventListener('input',()=>{inp.value=inp.value.replace(/\D/g,'').slice(0,4);msg.textContent=''});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')$('pdpeOk').click()});
+    $('pdpeOk').onclick=async()=>{const c=inp.value;if(c.length!==4){msg.textContent='Escribe los 4 números.';return}
+      const b=$('pdpeOk');b.disabled=true;b.textContent='Verificando…';
+      try{const r=await D().rpc('verificar_entrega',{p_pedido:o.id,p_codigo:c,p_foto:null});
+        if(r.error){if(/function|does not exist|schema cache/i.test(r.error.message))return fin(true);throw r.error}
+        if(r.data==='ok'||r.data==='sin_codigo')return fin(true);
+        msg.textContent=r.data==='incorrecto'?'Código incorrecto. Pídeselo otra vez al cliente.':'No se pudo verificar ('+r.data+').';
+      }catch(err){msg.textContent='No se pudo verificar: '+(err.message||err)}
+      b.disabled=false;b.textContent='Confirmar entrega'};
+    $('pdpeFoto').onclick=async()=>{const f=await foto();if(!f)return;const b=$('pdpeFoto');b.disabled=true;b.textContent='Subiendo foto…';
+      try{const url=await subir(f,'entrega');const r=await D().rpc('verificar_entrega',{p_pedido:o.id,p_codigo:null,p_foto:url});
+        if(r.error&&!/function|does not exist|schema cache/i.test(r.error.message))throw r.error;return fin(true)}
+      catch(err){msg.textContent=err.message||String(err);b.disabled=false;b.textContent='El cliente no tiene el código: tomar foto de la entrega'}};
+  })}
+  function envolver(){
+    const orig=window.deliverOrder;if(typeof orig!=='function'||orig.__pdpe)return false;
+    const w=async function(id){
+      const o=OR().find(x=>String(x.id)===String(id));
+      if(!o||o.entrega_verificada||(String(o.tipo_servicio||'')==='encomienda'&&(o.guia_url||o.agencia_id)))return orig.apply(this,arguments);
+      const cola=leerCola(),enCola=cola.find(x=>String(x.id)===String(id));
+      if(enCola&&navigator.onLine){const r=await D().rpc('verificar_entrega',{p_pedido:o.id,p_codigo:enCola.codigo,p_foto:null}).catch(e=>({error:e}));
+        if(!r.error&&r.data==='incorrecto'){guardarCola(cola.filter(x=>x!==enCola));aviso('El código que anotaste sin señal para '+ref(o.id)+' es incorrecto. Pídeselo de nuevo al cliente.');return}
+        guardarCola(cola.filter(x=>x!==enCola));return orig.apply(this,arguments)}
+      if(!navigator.onLine){const c=await pedirOffline(o);if(!c)return;guardarCola(cola.filter(x=>String(x.id)!==String(id)).concat([{id:String(id),codigo:c,t:Date.now()}]));pintarCola();aviso('Sin señal: la entrega de '+ref(o.id)+' quedó guardada y se enviará sola cuando vuelva el internet.');return}
+      const okp=await pedirPrueba(o);if(!okp)return;
+      o.entrega_verificada=o.entrega_verificada||'codigo';
+      return orig.apply(this,arguments);
+    };w.__pdpe=1;w.__orig=orig;window.deliverOrder=w;return true;
+  }
+  /* --- Modo sin señal: cola de entregas --- */
+  const KC='pidemas-moto-entregas-pendientes';
+  function leerCola(){try{return JSON.parse(localStorage.getItem(KC)||'[]')}catch(e){return []}}
+  function guardarCola(c){try{localStorage.setItem(KC,JSON.stringify(c))}catch(e){}pintarCola()}
+  function pedirOffline(o){return new Promise(res=>{
+    const v=hoja('Sin señal','<p class="pdpeTx">No hay internet. Escribe el <b>código de entrega</b> del cliente y la entrega se enviará sola cuando vuelva la señal.</p><input id="pdpeCodOff" class="pdpeCod" inputmode="numeric" maxlength="4" placeholder="• • • •"><p class="pdpeMsg" id="pdpeMsgOff"></p><button type="button" class="btn" id="pdpeOkOff">Guardar entrega</button>');
+    let hecho=false;const fin=r=>{if(hecho)return;hecho=true;v.remove();res(r)};v.querySelector('.pdsmX').onclick=()=>fin(null);v.addEventListener('click',e=>{if(e.target===v)fin(null)});
+    const i=$('pdpeCodOff');i.oninput=()=>{i.value=i.value.replace(/\D/g,'').slice(0,4)};setTimeout(()=>i.focus(),80);
+    $('pdpeOkOff').onclick=()=>{if(i.value.length!==4){$('pdpeMsgOff').textContent='Escribe los 4 números.';return}fin(i.value)};
+  })}
+  function pintarCola(){const c=leerCola();let b=$('pdpeCola');if(!c.length){if(b)b.remove();return}
+    if(!b){b=document.createElement('div');b.id='pdpeCola';b.className='pdpeCola';document.body.appendChild(b)}
+    b.textContent=(navigator.onLine?'Enviando ':'Sin señal · ')+c.length+' entrega'+(c.length===1?'':'s')+' pendiente'+(c.length===1?'':'s')+(navigator.onLine?'…':' de enviar')}
+  let enviando=false;
+  async function enviarCola(){if(enviando||!navigator.onLine)return;const c=leerCola();if(!c.length)return;enviando=true;pintarCola();
+    try{for(const x of c){try{await window.deliverOrder(x.id)}catch(e){}}}finally{enviando=false;pintarCola()}}
+  window.addEventListener('online',()=>{pintarCola();setTimeout(enviarCola,1500)});window.addEventListener('offline',pintarCola);
+  setInterval(enviarCola,30000);setTimeout(()=>{pintarCola();enviarCola()},4000);
+  if(!envolver()){const t=setInterval(()=>{if(envolver())clearInterval(t)},500)}
+
+  /* ---------- 2. Cliente no contesta ---------- */
+  const restante=o=>{const t=new Date(o.no_contesta_desde).getTime();return Number.isFinite(t)?Math.max(0,t+ESPERA*60000-Date.now()):null};
+  async function noContesta(o){
+    const now=new Date().toISOString();
+    if(!o.no_contesta_desde){const r=await D().from('pedidos').update({no_contesta_desde:now}).eq('id',o.id).eq('motorizado_id',ME()?.id);if(r.error&&!/no_contesta/.test(r.error.message)){aviso('No se pudo registrar: '+r.error.message);return}o.no_contesta_desde=now}
+    pintarEspera(o);
+  }
+  let tick=null;
+  function pintarEspera(o){
+    const w=tel(o.telefono_receptor||o.telefono_cliente);
+    const msg='Hola, soy '+(String(ME()?.nombre_completo||'tu motorizado').split(' ')[0])+' de *Pidemás Delivery*. Estoy afuera con tu pedido '+ref(o.id)+' en '+(o.direccion_entrega||'tu dirección')+'. Por favor contéstame o sal a recibirlo. Esperaré '+ESPERA+' minutos.';
+    const v=hoja('El cliente no contesta','<p class="pdpeTx">Llámalo y escríbele. Si en '+ESPERA+' minutos no responde, podrás marcar el pedido como <b>no entregado</b>. Administración ya ve que estás esperando.</p><div class="pdpeTimer" id="pdpeTimer">--:--</div>'
+      +(w?'<a class="pdpeWa" target="_blank" rel="noopener" href="https://wa.me/'+w+'?text='+encodeURIComponent(msg)+'">Escribir por WhatsApp</a><a class="pdpeAlt" href="tel:+'+w+'">Llamar al cliente</a>':'<p class="pdpeMsg">Este pedido no tiene teléfono del cliente.</p>')
+      +'<label class="pdpeLbl">Motivo<select id="pdpeMot"><option>No contesta y no sale a recibir</option><option>Dirección incorrecta o no existe</option><option>El cliente rechazó el pedido</option><option>Otro</option></select></label><input id="pdpeDet" class="pdpeIn" maxlength="120" placeholder="Detalle (opcional)"><button type="button" class="btn" id="pdpeNo" disabled>Marcar como no entregado</button><p class="pdpeMsg" id="pdpeMsg2"></p>');
+    const cerrar=()=>{clearInterval(tick);v.remove()};v.querySelector('.pdsmX').onclick=cerrar;v.addEventListener('click',e=>{if(e.target===v)cerrar()});
+    const upd=()=>{const r=restante(o);const el=$('pdpeTimer'),b=$('pdpeNo');if(!el)return clearInterval(tick);if(r==null){el.textContent='';b.disabled=false;return}
+      const s=Math.ceil(r/1000);el.textContent=s?String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'):'Tiempo cumplido';el.classList.toggle('fin',!s);b.disabled=!!s};
+    clearInterval(tick);upd();tick=setInterval(upd,1000);
+    $('pdpeNo').onclick=async()=>{const mot=$('pdpeMot').value,det=($('pdpeDet').value||'').trim();const motivo=[mot!=='Otro'?mot:'',det].filter(Boolean).join(' · ')||'Cliente no contesta';
+      if(!(await pdConfirmar('¿Marcar el pedido '+ref(o.id)+' como NO ENTREGADO?\nMotivo: '+motivo+'\nRegresa con el pedido según te indique Administración.')))return;
+      const b=$('pdpeNo');b.disabled=true;b.textContent='Guardando…';
+      const base={estado:'cancelado',cancelado_en:new Date().toISOString(),observaciones:[o.observaciones||'','NO ENTREGADO POR MOTORIZADO: '+motivo].filter(Boolean).join(' | ')};
+      let r=await D().from('pedidos').update(Object.assign({},base,{cancelado_por:'motorizado',no_entregado:true,motivo_cancelacion:motivo})).eq('id',o.id).eq('motorizado_id',ME()?.id);
+      if(r.error&&/cancelado_por|no_entregado|motivo_cancelacion|schema cache/.test(r.error.message))r=await D().from('pedidos').update(base).eq('id',o.id).eq('motorizado_id',ME()?.id);
+      if(r.error){$('pdpeMsg2').textContent='No se pudo guardar: '+r.error.message;b.disabled=false;b.textContent='Marcar como no entregado';return}
+      cerrar();try{const mm=$('pidemasOrderFullModal');if(mm)mm.classList.remove('is-open');document.body.classList.remove('pidemas-order-modal-lock')}catch(_){}
+      (window.pdExito||aviso)('Pedido marcado como no entregado. Administración fue avisada.');try{await loadOrders()}catch(_){}};
+  }
+  function boton(){
+    const m=$('pidemasOrderFullModal');if(!m||!m.getClientRects().length)return;
+    const id=String(m.dataset.orderId||'');const o=OR().find(x=>String(x.id)===id);const acts=m.querySelector('.pidemas-order-modal-actions');
+    const ya=m.querySelector('#pdpeNcBtn');
+    if(!o||!acts||String(o.estado)!=='en_entrega'){if(ya)ya.remove();return}
+    if(ya&&ya.dataset.id===id)return;if(ya)ya.remove();
+    const b=document.createElement('button');b.type='button';b.id='pdpeNcBtn';b.className='pdpeNc';b.dataset.id=id;b.textContent=o.no_contesta_desde?'Cliente no contesta · ver espera':'El cliente no contesta';
+    b.onclick=()=>noContesta(o);acts.appendChild(b);
+  }
+  setInterval(boton,700);
+})();
+</script>
+<style id="pd-pedidos-control-moto-css">
+.pdpeTx{margin:0;font:500 15px/1.45 var(--font,Inter,sans-serif);color:#1F1A17}
+.pdpeCod{box-sizing:border-box;width:100%;height:64px;border:2px solid #F1C9B6;border-radius:16px;text-align:center;font:800 32px var(--font,Inter,sans-serif);letter-spacing:14px;color:#C4410C;background:#FFF9F5;outline:none}
+.pdpeCod:focus{border-color:#C4410C}
+.pdpeMsg{margin:0;min-height:18px;font:600 13.5px var(--font,Inter,sans-serif);color:#B42318}
+.pdpeAlt{display:flex;align-items:center;justify-content:center;text-align:center;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid #F1C9B6;background:#fff;color:#C4410C;font:700 14px var(--font,Inter,sans-serif);text-decoration:none;cursor:pointer}
+.pdpeWa{display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:14px;background:#25D366;color:#fff;font:800 15px var(--font,Inter,sans-serif);text-decoration:none}
+.pdpeTimer{text-align:center;font:800 40px var(--font,Inter,sans-serif);color:#C4410C;letter-spacing:2px}
+.pdpeTimer.fin{font-size:22px;color:#1F6B3A}
+.pdpeLbl{display:flex;flex-direction:column;gap:6px;font:700 14px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdpeLbl select,.pdpeIn{box-sizing:border-box;width:100%;min-height:46px;border:1px solid #F1E4DC;border-radius:12px;padding:0 12px;font:500 15px var(--font,Inter,sans-serif);background:#fff;color:#1F1A17}
+.pdpeCola{position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:2147483000;padding:10px 14px;border-radius:14px;background:#1F1A17;color:#fff;font:700 13.5px var(--font,Inter,sans-serif);text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+html body #pidemasOrderFullModal .pidemas-order-modal-actions button.pdpeNc{width:100%!important;min-height:44px!important;margin-top:8px!important;border-radius:14px!important;border:1px solid #FCA5A5!important;background:#FEF2F2!important;color:#B42318!important;font:700 14px var(--font,Inter,sans-serif)!important;box-shadow:none!important}
+</style>
+<script id="pd-moto-mejoras-js">
+/* Ruta del día · Ganancias · Calificaciones · Descanso · Aviso de llegada · Historial · Recordatorio de cierre de caja */
+(function(){
+  if(window.__pdMotoMej)return;window.__pdMotoMej=1;
+  const $=id=>document.getElementById(id);
+  const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const M=n=>'S/ '+(Number(n)||0).toFixed(2);
+  const D=()=>{try{return db}catch(e){return window.db}};
+  const ME=()=>{try{return moto}catch(e){return null}};
+  const OR=()=>{try{return Array.isArray(orders)?orders:[]}catch(e){return []}};
+  const T=v=>{const t=new Date(v).getTime();return Number.isFinite(t)?t:0};
+  const ref=id=>'#'+String(id||'').slice(0,8).toUpperCase();
+  const est=o=>String(o&&o.estado||'').toLowerCase();
+  const tel=t=>{const d=String(t||'').replace(/\D/g,'');if(!d)return '';return d.startsWith('51')?d:(d.length===9?'51'+d:d)};
+  const fH=v=>{try{return new Date(v).toLocaleString('es-PE',{timeZone:'America/Lima',day:'2-digit',month:'short',hour:'numeric',minute:'2-digit'})}catch(e){return ''}};
+  const diaLima=v=>new Date(v).toLocaleDateString('en-CA',{timeZone:'America/Lima'});
+  const aviso=t=>(window.pdAvisoMoto||window.pdAviso||alert)(t);
+  const ACTIVOS=['asignado','aceptado','pedido_aceptado','camino_recojo','en_camino','en_entrega','camino_entrega'];
+  const RECOGIDO=['en_camino','en_entrega','camino_entrega'];
+  function hoja(titulo,html){
+    let v=$('pdmmVelo');if(v)v.remove();v=document.createElement('div');v.id='pdmmVelo';v.className='pdsmVelo';
+    v.innerHTML='<div class="pdsmHoja" role="dialog" aria-modal="true" aria-label="'+E(titulo)+'"><div class="pdsmTop"><strong>'+E(titulo)+'</strong><button type="button" class="pdsmX" aria-label="Cerrar">×</button></div><div class="pdmmB">'+html+'</div></div>';
+    document.body.appendChild(v);const c=()=>v.remove();v.querySelector('.pdsmX').onclick=c;v.addEventListener('click',e=>{if(e.target===v)c()});
+    return v.querySelector('.pdmmB');
+  }
+  const rad=x=>x*Math.PI/180;
+  const km=(a,b)=>{if(!a||!b)return null;const R=6371,dl=rad(b[0]-a[0]),dn=rad(b[1]-a[1]);const h=Math.sin(dl/2)**2+Math.cos(rad(a[0]))*Math.cos(rad(b[0]))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+  let pos=null;
+  function leerPos(){return new Promise(res=>{if(!navigator.geolocation)return res(pos);navigator.geolocation.getCurrentPosition(p=>{pos=[p.coords.latitude,p.coords.longitude];res(pos)},()=>{const m=ME();res(pos||(m&&m.latitud&&m.longitud?[+m.latitud,+m.longitud]:null))},{enableHighAccuracy:true,timeout:8000,maximumAge:30000})})}
+  const pt=(a,b)=>{const x=Number(a),y=Number(b);return Number.isFinite(x)&&Number.isFinite(y)&&x&&y?[x,y]:null};
+  const negs=new Map();
+  async function negocio(id){if(!id)return null;if(negs.has(id))return negs.get(id);let n=null;try{const r=await D().from('negocios').select('id,nombre,direccion,latitud,longitud').eq('id',id).maybeSingle();n=r.data||null}catch(e){}negs.set(id,n);return n}
+  const gmaps=p=>'https://www.google.com/maps/dir/?api=1&destination='+p[0]+','+p[1]+'&travelmode=driving';
+
+  /* ---------- Tarjeta en Inicio ---------- */
+  function tarjeta(){
+    const home=$('pdHomeCard');if(!home||!home.parentNode)return;const m=ME();if(!m)return;
+    let c=$('pdmmTools');
+    if(!c){c=document.createElement('section');c.id='pdmmTools';c.addEventListener('click',e=>{const b=e.target.closest('[data-mm]');if(!b)return;({descanso,ruta,ganancias,calificaciones,historial})[b.dataset.mm]()})}
+    if(c.previousElementSibling!==home)home.after(c);
+    const des=!!m.en_descanso,act=OR().filter(o=>ACTIVOS.includes(est(o))).length;
+    const h='<button type="button" data-mm="descanso" class="pdmmDes '+(des?'on':'')+'"><i></i><span><b>'+(des?'Estás en descanso':'Disponible para pedidos')+'</b><small>'+(des?'Toca para volver a estar disponible':'Toca si vas a almorzar o descansar')+'</small></span></button>'
+      +'<div class="pdmmGrid"><button type="button" data-mm="ruta"><b>Ruta del día</b><small>'+(act?act+' pedido'+(act===1?'':'s')+' en curso':'Sin pedidos en curso')+'</small></button><button type="button" data-mm="ganancias"><b>Mis ganancias</b><small>Hoy, semana y quincena</small></button><button type="button" data-mm="calificaciones"><b>Mis calificaciones</b><small>'+(calN?'★ '+calP.toFixed(1)+' · '+calN+' opinión'+(calN===1?'':'es'):'Lo que dicen los clientes')+'</small></button><button type="button" data-mm="historial"><b>Historial</b><small>Buscar entregas pasadas</small></button></div>';
+    if(c.__h!==h){c.__h=h;c.innerHTML=h}
+  }
+
+  /* ---------- 4. Descanso ---------- */
+  async function descanso(){
+    const m=ME();if(!m)return;const v=!m.en_descanso;
+    if(v&&OR().some(o=>ACTIVOS.includes(est(o)))&&!(await pdConfirmar('Todavía tienes pedidos en curso. ¿Igual quieres ponerte en descanso? No te asignarán pedidos nuevos.')))return;
+    const r=await D().from('motorizados').update({en_descanso:v,en_descanso_desde:v?new Date().toISOString():null}).eq('id',m.id);
+    if(r.error){aviso(/en_descanso/.test(r.error.message)?'Esta opción todavía no está activada. Avísale a administración.':'No se pudo cambiar: '+r.error.message);return}
+    m.en_descanso=v;m.en_descanso_desde=v?new Date().toISOString():null;tarjeta();
+    (window.pdExito||aviso)(v?'Listo, estás en descanso. Administración ya lo ve.':'¡Bienvenido de vuelta! Ya puedes recibir pedidos.');
+  }
+
+  /* ---------- 1. Ruta del día ---------- */
+  async function ruta(){
+    const b=hoja('Ruta del día','<p class="pdmmMut">Calculando la mejor ruta…</p>');
+    const yo=await leerPos();const paradas=[];
+    for(const o of OR().filter(o=>ACTIVOS.includes(est(o)))){
+      if(!RECOGIDO.includes(est(o))){let p=pt(o.latitud_recojo,o.longitud_recojo),nom=o.direccion_recojo||'';if(!p&&o.negocio_id){const n=await negocio(o.negocio_id);if(n){p=pt(n.latitud,n.longitud);nom=n.nombre||n.direccion||nom}}
+        paradas.push({o,tipo:'recojo',p,nom:nom||'Punto de recojo'})}
+      paradas.push({o,tipo:'entrega',p:pt(o.latitud_entrega,o.longitud_entrega),nom:o.direccion_entrega||o.nombre_cliente||'Cliente'});
+    }
+    if(!paradas.length){b.innerHTML='<p class="pdmmMut">No tienes pedidos en curso. Cuando te asignen pedidos, aquí verás en qué orden te conviene ir.</p>';return}
+    const orden=[],hechos=new Set();let aqui=yo;
+    while(orden.length<paradas.length){
+      const cand=paradas.filter(s=>!orden.includes(s)&&(s.tipo==='recojo'||!paradas.some(r=>r.tipo==='recojo'&&r.o===s.o&&!orden.includes(r))));
+      cand.sort((a,c)=>{const da=a.p&&aqui?km(aqui,a.p):999,dc=c.p&&aqui?km(aqui,c.p):999;return da-dc});
+      const s=cand[0];if(!s)break;orden.push(s);if(s.p)aqui=s.p;
+    }
+    let tot=0,prev=yo;orden.forEach(s=>{if(s.p&&prev){s.d=km(prev,s.p);tot+=s.d}if(s.p)prev=s.p});
+    const pts=orden.filter(s=>s.p);
+    const todo=pts.length?'https://www.google.com/maps/dir/?api=1'+(yo?'&origin='+yo[0]+','+yo[1]:'')+'&destination='+pts[pts.length-1].p.join(',')+(pts.length>1?'&waypoints='+pts.slice(0,-1).slice(0,9).map(s=>s.p.join(',')).join('|'):'')+'&travelmode=driving':'';
+    b.innerHTML=(tot?'<div class="pdmmStat"><span>Recorrido aproximado</span><b>'+tot.toFixed(1)+' km</b></div>':'')
+      +orden.map((s,i)=>'<div class="pdmmStop"><span class="pdmmN '+s.tipo+'">'+(i+1)+'</span><span class="pdmmTx"><b>'+(s.tipo==='recojo'?'Recoger':'Entregar')+' '+E(ref(s.o.id))+'</b><small>'+E(s.nom)+(s.d!=null?' · '+s.d.toFixed(1)+' km':'')+'</small></span>'+(s.p?'<a class="pdmmGo" target="_blank" rel="noopener" href="'+gmaps(s.p)+'">Ir</a>':'<small class="pdmmSin">Sin ubicación</small>')+'</div>').join('')
+      +(todo?'<a class="btn pdmmTodo" target="_blank" rel="noopener" href="'+todo+'">Abrir toda la ruta en Google Maps</a>':'')
+      +'<p class="pdmmMut">Primero recoges y luego entregas, siempre yendo al punto más cercano.'+(yo?'':' Activa tu GPS para calcular mejor.')+'</p>';
+  }
+
+  /* ---------- 2. Ganancias ---------- */
+  const KMETA='pidemas-moto-meta-dia';
+  async function ganancias(){
+    const b=hoja('Mis ganancias','<p class="pdmmMut">Cargando…</p>');const m=ME();
+    const now=new Date(),dl=diaLima(now),[y,mo,d]=dl.split('-').map(Number);
+    const iniQ=new Date(Date.UTC(y,mo-1,d<=15?1:16,5)),ini7=new Date(Date.now()-6*864e5);const desde=new Date(Math.min(iniQ,ini7)).toISOString();
+    const r=await D().from('pedidos').select('id,costo_delivery,entregado_en,creado_en').eq('motorizado_id',m.id).eq('estado','entregado').gte('creado_en',new Date(Math.min(iniQ,ini7)-864e5).toISOString()).limit(2000);
+    if(r.error){b.innerHTML='<p class="pdmmErr">'+E(r.error.message)+'</p>';return}
+    const P=(r.data||[]).map(p=>({...p,t:T(p.entregado_en||p.creado_en)}));
+    const sum=L=>({n:L.length,v:L.reduce((s,p)=>s+(Number(p.costo_delivery)||0),0)});
+    const hoy=sum(P.filter(p=>diaLima(p.t)===dl)),sem=sum(P.filter(p=>diaLima(p.t)>=diaLima(ini7))),qui=sum(P.filter(p=>p.t>=iniQ.getTime()));
+    let meta=+(localStorage.getItem(KMETA)||0);
+    const pint=()=>{const pc=meta?Math.min(100,Math.round(hoy.n*100/meta)):0;
+      b.innerHTML='<div class="pdmmGrid3"><div><span>Hoy</span><b>'+hoy.n+'</b><small>'+M(hoy.v)+'</small></div><div><span>7 días</span><b>'+sem.n+'</b><small>'+M(sem.v)+'</small></div><div><span>Quincena</span><b>'+qui.n+'</b><small>'+M(qui.v)+'</small></div></div>'
+        +'<p class="pdmmMut">Número de entregas y delivery que generaste. Tu sueldo y descuentos los ves en Billetera.</p>'
+        +'<div class="pdmmLbl">Mi meta de hoy</div>'+(meta?'<div class="pdmmBar"><s style="width:'+pc+'%"></s></div><p class="pdmmMut"><b>'+hoy.n+' de '+meta+'</b> entregas'+(hoy.n>=meta?' · ¡Meta cumplida! 🎉':' · te faltan '+(meta-hoy.n))+'</p>':'<p class="pdmmMut">Ponte una meta de entregas para hoy.</p>')
+        +'<div class="pdmmMeta"><input id="pdmmMetaIn" inputmode="numeric" maxlength="3" placeholder="Ej. 15" value="'+(meta||'')+'"><button type="button" class="btn" id="pdmmMetaOk">Guardar meta</button></div>';
+      $('pdmmMetaOk').onclick=()=>{meta=Math.max(0,parseInt($('pdmmMetaIn').value,10)||0);try{localStorage.setItem(KMETA,String(meta))}catch(e){}pint()}};
+    pint();
+  }
+
+  /* ---------- 3. Calificaciones ---------- */
+  let calP=0,calN=0;
+  async function leerCal(){const m=ME();if(!m)return [];const r=await D().from('calificaciones').select('pedido_id,estrellas_motorizado,comentario,creado_en').eq('motorizado_id',m.id).order('creado_en',{ascending:false}).limit(300);const L=(r.data||[]).filter(c=>Number(c.estrellas_motorizado)>0);calN=L.length;calP=L.length?L.reduce((s,c)=>s+Number(c.estrellas_motorizado),0)/L.length:0;return L}
+  async function calificaciones(){
+    const b=hoja('Mis calificaciones','<p class="pdmmMut">Cargando…</p>');const L=await leerCal().catch(()=>[]);
+    if(!L.length){b.innerHTML='<p class="pdmmMut">Todavía no tienes calificaciones. Cuando los clientes califiquen tus entregas, las verás aquí.</p>';return}
+    const st=v=>'★'.repeat(Math.round(v))+'☆'.repeat(5-Math.round(v));
+    b.innerHTML='<div class="pdmmCal"><b>'+calP.toFixed(1)+'</b><span class="pdmmStars">'+st(calP)+'</span><small>'+L.length+' calificación'+(L.length===1?'':'es')+'</small></div>'
+      +[5,4,3,2,1].map(n=>{const c=L.filter(x=>Math.round(x.estrellas_motorizado)===n).length;return '<div class="pdmmDist"><span>'+n+'★</span><i><s style="width:'+Math.round(c*100/L.length)+'%"></s></i><b>'+c+'</b></div>'}).join('')
+      +'<div class="pdmmLbl">Comentarios</div>'+(L.filter(c=>c.comentario).slice(0,25).map(c=>'<div class="pdmmRow"><span><b class="pdmmStars">'+st(c.estrellas_motorizado)+'</b><small>'+E(c.comentario)+' · '+E(fH(c.creado_en))+'</small></span></div>').join('')||'<p class="pdmmMut">Sin comentarios todavía.</p>');
+    tarjeta();
+  }
+
+  /* ---------- 6. Historial ---------- */
+  async function historial(){
+    const b=hoja('Historial de entregas','<p class="pdmmMut">Cargando…</p>');const m=ME();
+    const r=await D().from('pedidos').select('id,estado,nombre_cliente,telefono_cliente,direccion_entrega,total,costo_delivery,metodo_pago,creado_en,entregado_en,motivo_cancelacion').eq('motorizado_id',m.id).in('estado',['entregado','cancelado']).gte('creado_en',new Date(Date.now()-90*864e5).toISOString()).order('creado_en',{ascending:false}).limit(500);
+    if(r.error){b.innerHTML='<p class="pdmmErr">'+E(r.error.message)+'</p>';return}
+    const P=r.data||[];
+    b.innerHTML='<div class="pdmmFil"><input id="pdmmHq" placeholder="Cliente, dirección o código" autocomplete="off"><input id="pdmmHd" type="date"></div><div id="pdmmHl"></div>';
+    const pint=()=>{const q=($('pdmmHq').value||'').trim().toLowerCase(),d=$('pdmmHd').value;
+      const L=P.filter(p=>(!d||diaLima(p.entregado_en||p.creado_en)===d)&&(!q||[ref(p.id),p.nombre_cliente,p.telefono_cliente,p.direccion_entrega].join(' ').toLowerCase().includes(q)));
+      $('pdmmHl').innerHTML=L.length?L.slice(0,120).map(p=>'<div class="pdmmRow"><span><b>'+E(ref(p.id))+' · '+E(p.nombre_cliente||'Cliente')+'</b><small>'+E(fH(p.entregado_en||p.creado_en))+' · '+E(p.direccion_entrega||'')+(est(p)==='cancelado'?' · <em>Anulado'+(p.motivo_cancelacion?': '+E(p.motivo_cancelacion):'')+'</em>':'')+'</small></span><b>'+M(p.total)+'</b></div>').join('')+(L.length>120?'<p class="pdmmMut">Mostrando 120 de '+L.length+'. Filtra por fecha.</p>':''):'<p class="pdmmMut">No hay pedidos con ese filtro.</p>'};
+    $('pdmmHq').oninput=pint;$('pdmmHd').onchange=pint;pint();
+  }
+
+  /* ---------- 5. Aviso de llegada ---------- */
+  const avisados=new Set();
+  function msgLlegada(o){const m=ME();return 'Hola'+(o.nombre_cliente?' '+String(o.nombre_cliente).split(' ')[0]:'')+', soy '+String(m&&m.nombre_completo||'tu motorizado').split(' ')[0]+' de *Pidemás Delivery*. 🛵 Estoy llegando con tu pedido '+ref(o.id)+'. Por favor ten listo'+(String(o.metodo_pago||'')==='efectivo'?' el pago y':'')+' tu teléfono a la mano.'}
+  function botonLlegada(){
+    const m=$('pidemasOrderFullModal');if(!m||!m.getClientRects().length)return;const id=String(m.dataset.orderId||'');const o=OR().find(x=>String(x.id)===id);const acts=m.querySelector('.pidemas-order-modal-actions');
+    let b=m.querySelector('#pdmmLlego');const w=o&&tel(o.telefono_receptor||o.telefono_cliente);
+    if(!o||!acts||!RECOGIDO.includes(est(o))||!w){if(b)b.remove();return}
+    if(b&&b.dataset.id===id)return;if(b)b.remove();
+    b=document.createElement('a');b.id='pdmmLlego';b.className='pdmmLlego';b.dataset.id=id;b.target='_blank';b.rel='noopener';b.textContent='Avisar al cliente que estoy llegando';b.href='https://wa.me/'+w+'?text='+encodeURIComponent(msgLlegada(o));b.onclick=()=>avisados.add(id);acts.prepend(b);
+  }
+  async function cerca(){
+    const L=OR().filter(o=>RECOGIDO.includes(est(o))&&!avisados.has(String(o.id))&&pt(o.latitud_entrega,o.longitud_entrega)&&tel(o.telefono_receptor||o.telefono_cliente));if(!L.length)return;
+    const yo=await leerPos();if(!yo)return;
+    for(const o of L){const d=km(yo,pt(o.latitud_entrega,o.longitud_entrega));if(d!=null&&d<=0.3){avisados.add(String(o.id));
+      let t=$('pdmmCerca');if(t)t.remove();t=document.createElement('div');t.id='pdmmCerca';t.className='pdmmCerca';
+      t.innerHTML='<span><b>Estás cerca de '+E(o.nombre_cliente||'tu cliente')+'</b><small>'+Math.round(d*1000)+' m · '+E(ref(o.id))+'</small></span><a target="_blank" rel="noopener" href="https://wa.me/'+tel(o.telefono_receptor||o.telefono_cliente)+'?text='+encodeURIComponent(msgLlegada(o))+'">Avisar</a><button type="button" aria-label="Cerrar">×</button>';
+      t.querySelector('button').onclick=()=>t.remove();t.querySelector('a').onclick=()=>setTimeout(()=>t.remove(),300);document.body.appendChild(t);
+      try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(_){}break}}
+  }
+
+  /* ---------- 7. Recordatorio de cierre de caja ---------- */
+  function cierreCaja(){
+    const m=ME();if(!m||!m.horario_fin)return;const k='pidemas-moto-cierre-'+diaLima(Date.now());try{if(localStorage.getItem(k))return}catch(e){}
+    const [h,mi]=String(m.horario_fin).split(':').map(Number);if(!Number.isFinite(h))return;
+    const f=new Intl.DateTimeFormat('en-US',{timeZone:'America/Lima',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());const ahora=(+f.find(x=>x.type==='hour').value%24)*60+(+f.find(x=>x.type==='minute').value);
+    if(ahora<h*60+(mi||0)||ahora>h*60+(mi||0)+180)return;
+    const txt=String(window.__pidemasMotoCashBalanceText||'').trim();const val=parseFloat(txt.replace(/[^\d.-]/g,''))||0;
+    try{localStorage.setItem(k,'1')}catch(e){}
+    if(val<=0)return;
+    const b=hoja('Fin de tu turno','<p class="pdmmTx">Tu horario terminó. Antes de irte, entrega tu caja a administración.</p><div class="pdmmStat"><span>Saldo en caja</span><b>'+E(txt)+'</b></div><button type="button" class="btn" id="pdmmIrCaja">Ir a mi caja</button>');
+    $('pdmmIrCaja').onclick=()=>{$('pdmmVelo')?.remove();document.querySelector('#nav [data-tab="cash"]')?.click()};
+    try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(_){}
+  }
+
+  let n=0;
+  setInterval(()=>{if(!ME()||!D())return;n++;try{tarjeta()}catch(e){}try{botonLlegada()}catch(e){}
+    if(n%20===5)cerca().catch(()=>{});if(n%60===10)try{cierreCaja()}catch(e){}if(n===4||n%900===0)leerCal().then(tarjeta).catch(()=>{});
+    if(n%30===15){const m=ME();D().from('motorizados').select('en_descanso,en_descanso_desde').eq('id',m.id).maybeSingle().then(r=>{if(r&&r.data){m.en_descanso=!!r.data.en_descanso;m.en_descanso_desde=r.data.en_descanso_desde}}).catch(()=>{})}
+  },1000);
+  window.pdMotoMej={ruta,ganancias,calificaciones,historial,descanso};
+})();
+</script>
+<style id="pd-moto-mejoras-css">
+html body #homeTab#homeTab#homeTab > #pdmmTools#pdmmTools{display:flex!important}
+#pdmmTools{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
+#pdmmTools button{all:unset;box-sizing:border-box;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#pdmmTools .pdmmDes{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;background:#ECFDF3;border:1px solid #ABEFC6}
+#pdmmTools .pdmmDes i{flex:0 0 12px;width:12px;height:12px;border-radius:50%;background:#16A34A;box-shadow:0 0 0 4px rgba(22,163,74,.18)}
+#pdmmTools .pdmmDes.on{background:#FFF7ED;border-color:#FED7AA}
+#pdmmTools .pdmmDes.on i{background:#EA580C;box-shadow:0 0 0 4px rgba(234,88,12,.18)}
+#pdmmTools .pdmmDes span{display:flex;flex-direction:column;gap:2px}
+#pdmmTools b{font:800 14.5px var(--font,Inter,sans-serif);color:#1F1A17}
+#pdmmTools small{font:500 12.5px/1.3 var(--font,Inter,sans-serif);color:#6E625A}
+#pdmmTools .pdmmGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#pdmmTools .pdmmGrid button{display:flex;flex-direction:column;gap:3px;min-height:64px;padding:12px 14px;border-radius:16px;background:#fff;border:1px solid #F1E4DC}
+.pdmmB{display:flex;flex-direction:column;gap:10px}
+.pdmmMut,.pdmmTx{margin:0;font:500 13.5px/1.45 var(--font,Inter,sans-serif);color:#6E625A}
+.pdmmTx{font-size:15px;color:#1F1A17}
+.pdmmErr{margin:0;font:600 13.5px var(--font,Inter,sans-serif);color:#B42318}
+.pdmmLbl{margin-top:6px;font:800 14px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdmmStat{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-radius:16px;background:#C4410C;color:#fff;font:600 13.5px var(--font,Inter,sans-serif)}
+.pdmmStat b{font:800 22px var(--font,Inter,sans-serif)}
+.pdmmStop{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F5ECE6}
+.pdmmN{flex:0 0 30px;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:800 14px var(--font,Inter,sans-serif);color:#fff;background:#C4410C}
+.pdmmN.recojo{background:#1F1A17}
+.pdmmTx{display:flex;flex-direction:column;min-width:0;flex:1}
+.pdmmStop .pdmmTx b{font:700 14px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdmmStop .pdmmTx small{font:500 12.5px/1.35 var(--font,Inter,sans-serif);color:#6E625A}
+.pdmmGo{flex:0 0 auto;padding:8px 14px;border-radius:12px;background:#FFF1E8;color:#C4410C;font:800 13.5px var(--font,Inter,sans-serif);text-decoration:none}
+.pdmmSin{font:600 11.5px var(--font,Inter,sans-serif);color:#9A8F87}
+.pdmmTodo{display:flex;align-items:center;justify-content:center;text-decoration:none;margin-top:4px}
+.pdmmGrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pdmmGrid3 div{display:flex;flex-direction:column;gap:2px;padding:10px;border-radius:14px;background:#FFF9F5;border:1px solid #F1E4DC;text-align:center}
+.pdmmGrid3 span{font:600 12px var(--font,Inter,sans-serif);color:#6E625A}
+.pdmmGrid3 b{font:900 24px var(--font,Inter,sans-serif);color:#C4410C}
+.pdmmGrid3 small{font:700 12.5px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdmmBar{height:12px;border-radius:999px;background:#F5ECE6;overflow:hidden}
+.pdmmBar s{display:block;height:100%;background:#16A34A;border-radius:999px}
+.pdmmMeta,.pdmmFil{display:flex;gap:8px}
+.pdmmMeta input,.pdmmFil input{flex:1;min-width:0;box-sizing:border-box;min-height:46px;border:1px solid #F1E4DC;border-radius:12px;padding:0 12px;font:500 15px var(--font,Inter,sans-serif);background:#fff;color:#1F1A17}
+.pdmmFil input[type=date]{flex:0 0 150px}
+.pdmmMeta .btn{flex:0 0 auto;width:auto;padding:0 16px}
+.pdmmRow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F5ECE6}
+.pdmmRow > span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pdmmRow b{font:700 14px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdmmRow small{font:500 12.5px/1.35 var(--font,Inter,sans-serif);color:#6E625A}
+.pdmmCal{display:flex;flex-direction:column;align-items:center}
+.pdmmCal > b{font:900 40px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdmmCal small{font:600 13px var(--font,Inter,sans-serif);color:#6E625A}
+.pdmmStars{color:#F59E0B!important;letter-spacing:1px}
+.pdmmDist{display:grid;grid-template-columns:30px 1fr 24px;align-items:center;gap:8px;font:600 12.5px var(--font,Inter,sans-serif);color:#6E625A}
+.pdmmDist i{height:10px;border-radius:6px;background:#F5ECE6;overflow:hidden}
+.pdmmDist s{display:block;height:100%;background:#C4410C}
+.pdmmDist b{text-align:right;color:#1F1A17}
+html body #pidemasOrderFullModal .pidemas-order-modal-actions a.pdmmLlego{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:46px;margin-bottom:8px;border-radius:14px;background:#25D366;color:#fff;font:800 14.5px var(--font,Inter,sans-serif);text-decoration:none}
+.pdmmCerca{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));z-index:2147483000;display:flex;align-items:center;gap:10px;padding:12px 12px 12px 16px;border-radius:16px;background:#fff;border:1px solid #F1C9B6;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.pdmmCerca span{display:flex;flex-direction:column;flex:1;min-width:0}
+.pdmmCerca b{font:800 14.5px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdmmCerca small{font:500 12.5px var(--font,Inter,sans-serif);color:#6E625A}
+.pdmmCerca a{padding:10px 14px;border-radius:12px;background:#25D366;color:#fff;font:800 14px var(--font,Inter,sans-serif);text-decoration:none}
+.pdmmCerca button{all:unset;width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#FFF1E8;color:#C4410C;font-size:20px;cursor:pointer}
+</style>
 </body>
 
 
