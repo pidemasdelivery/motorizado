@@ -2362,7 +2362,7 @@ html body:has(#pdcfBg) #nav,html body:has(#pdcfBg) .nav,html body:has(#pdcfBg) #
 html body #pdcfBg section{margin-bottom:0px!important}
 </style>
 <meta name="pd-instalacion" content="1">
-<meta name="pd-version" content="202611161632">
+<meta name="pd-version" content="202611161652">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Pidemás | Panel Motorizado</title>
@@ -2700,6 +2700,7 @@ html:root body:not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#
   const visto=new WeakMap();
   function revisarMsg(el){
     if(!el||el.closest('#pdDlg,#pdAvisoPila,#pdPermGate,#pdAlerts,#pdxAlerts,#pdAvisoStack'))return;
+    if(el.closest('.pdpaW,.pdpa,.pidemas-order-modal-content,#pdoBody,.adminOrderCard,.pdDS')||el.querySelector('.pdpaW,button,input,select,textarea')||el.children.length>4)return;
     const t=(el.textContent||'').replace(/\s+/g,' ').trim();
     if(!t){if(el.dataset.pdExitoOculto){el.style.removeProperty('display');delete el.dataset.pdExitoOculto}return}
     if(visto.get(el)===t)return;visto.set(el,t);
@@ -6800,7 +6801,7 @@ C.extra=function(m,modo,editado){let h='';
       if(o.listo_para_recojo===true)cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>El negocio marcó: pedido listo</b>${o.en_local_en?'':'<br>Ya puedes ir a recogerlo.'}</span></div>`);
       else if(o.negocio_aceptado_en&&Number(o.tiempo_preparacion_min)>0){const t=new Date(new Date(o.negocio_aceptado_en).getTime()+Number(o.tiempo_preparacion_min)*60000);cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>El negocio está preparando</b><br>Listo aprox. a las ${E(hhmm(t))}</span></div>`)}
 
-      if(o.codigo_recojo)cards.push(`<div class="pfCard dark"><span><b>CÓDIGO DE RECOJO</b><small>Díselo al local para que te entreguen</small></span><span class="pfCode">${E(o.codigo_recojo)}</span></div>`);
+      if(o.codigo_recojo&&o.negocio_id)cards.push(`<div class="pfCard dark"><span><b>CÓDIGO DE RECOJO</b><small>Díselo al local para que te entreguen</small></span><span class="pfCode">${E(o.codigo_recojo)}</span></div>`);
     }
     
 
@@ -7550,7 +7551,7 @@ function pasar(){
   function html(o){
     const yape=String(o.metodo_pago||'').toLowerCase()==='yape';
     let pc=null;try{if(!yape&&(svc(o)!=='compra'||Number(o.subtotal)>0)&&typeof extractCashPayment==='function')pc=extractCashPayment(o.observaciones,o.total)}catch(e){}
-    const extra=o.pago_acordado==='solo_delivery'?'Solo el delivery: los productos ya están pagados.':svc(o)==='compra'&&Number(o.subtotal)>0?`Compra ${money(o.subtotal)} + servicio ${money(o.costo_delivery)}.`:'';
+    const extra=o.pago_acordado==='solo_delivery'?'Solo el delivery: los productos ya están pagados.':svc(o)==='compra'&&Number(o.subtotal)>0?`Compra ${money(o.subtotal)} + servicio ${money(o.costo_delivery)}. `+(yape?'El cliente paga con Yape a Pidemás: solo confirma el Yape (no entra a tu caja).':'Cobra en efectivo: entra a tu caja y repone lo que gastaste.'):'';
     return `<div class="pdCobroEnt pdCobroUI"><span class="k">Cobro al entregar</span><h4>Cobra ${money(aCobrar(o))}</h4>
       <p>${yape?'Muestra el QR de Yape y confirma cuando veas el pago en el celular del cliente.':'Antes de entregar, cóbrale al cliente. Escribe cuánto te entrega y toca <b>Confirmar cobro</b>.'}${extra?'<br>'+E(extra):''}</p>
       ${pc&&pc.paid!=null?`<div class="pc">Paga con ${money(pc.paid)} · lleva <b>${money(pc.change)}</b> de vuelto</div>`:''}
@@ -10939,7 +10940,7 @@ html:root body:not(#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#pdAc#
     const orig=window.deliverOrder;if(typeof orig!=='function'||orig.__pdpe)return false;
     const w=async function(id){
       const o=OR().find(x=>String(x.id)===String(id));
-      if(!o||o.entrega_verificada||(String(o.tipo_servicio||'')==='encomienda'&&(o.guia_url||o.agencia_id)))return orig.apply(this,arguments);
+      if(!o||o.entrega_verificada||!o.negocio_id||(String(o.tipo_servicio||'')==='encomienda'&&(o.guia_url||o.agencia_id)))return orig.apply(this,arguments);
       const cola=leerCola(),enCola=cola.find(x=>String(x.id)===String(id));
       if(enCola&&navigator.onLine){const r=await D().rpc('verificar_entrega',{p_pedido:o.id,p_codigo:enCola.codigo,p_foto:null}).catch(e=>({error:e}));
         if(!r.error&&r.data==='incorrecto'){guardarCola(cola.filter(x=>x!==enCola));aviso('El código que anotaste sin señal para '+ref(o.id)+' es incorrecto. Pídeselo de nuevo al cliente.');return}
@@ -11544,6 +11545,7 @@ new MutationObserver(function(ms){for(var i=0;i<ms.length;i++){var m=ms[i];var t
 @keyframes pdYNp{50%{transform:scale(.7);opacity:.6}}
 </style>
 <style id="pd-pasos-css">
+html:root body dialog#pdSeg#pdSeg .sqBody{flex:1 1 auto!important;min-height:0!important;height:auto!important}
 html:root body .pdpaW{display:flex!important;flex-direction:column!important;gap:8px!important;margin:0 0 12px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
 html:root body .pdpa{display:block!important;background:#fff!important;border:1px solid #EFE3DA!important;border-radius:16px!important;overflow:hidden!important;flex:0 0 auto!important;box-shadow:none!important;margin:0!important;padding:0!important}
 html:root body .pdpa.cur{border:1.5px solid #C4410C!important}
@@ -11596,7 +11598,7 @@ html:root body #pidemasOrderFullModalContent .pdpa.done:not(.open) .pdpaH,html:r
   function titulos(o){
     const k=svc(o);
     if(k==='compra')return ['Ir a comprar','Comprar','Llevar al cliente','Cobrar','Confirmar entrega'];
-    if(k==='recojo')return ['Ir a recoger','Recoger','Llevar a quien recibe','Cobrar','Confirmar entrega'];
+    if(k==='recojo'||!o.negocio_id)return ['Ir a recoger','Recoger','Llevar a quien recibe','Cobrar','Entregar'];
     return ['Ir al local','Recoger con código','Llevar al cliente','Cobrar','Confirmar entrega'];
   }
   function info(o,i,modal){
@@ -11604,7 +11606,8 @@ html:root body #pidemasOrderFullModalContent .pdpa.done:not(.open) .pdpaH,html:r
     const rec=[neg,o.direccion_recojo].filter(Boolean);
     const pa=String(o.pago_acordado||'');
     if(i===0)return {sum:rec.join(' · ')||'Recojo',body:'<div class="pdpaI"><small>'+(svc(o)==='compra'?'Compra en':'Recojo')+'</small><b>'+E(rec[0]||o.direccion_recojo||'Lugar de recojo')+'</b>'+(rec[1]&&rec[1]!==rec[0]?'<span>'+E(rec[1])+'</span>':'')+(o.referencia_recojo?'<span>Ref.: '+E(o.referencia_recojo)+'</span>':'')+'</div>'};
-    if(i===1){if(svc(o)==='compra')return {sum:Number(o.subtotal)>0?'Compra '+money(o.subtotal):'Compra registrada',body:'<div class="pdpaI"><small>Compra</small><b>'+(Number(o.subtotal)>0?money(o.subtotal):'Registrada')+'</b></div>'};
+    if(i===1){if(svc(o)==='compra')return {sum:Number(o.subtotal)>0?'Gastaste '+money(o.subtotal):'Sin monto de compra',body:'<div class="pdpaI"><small>Compra</small><b>'+(Number(o.subtotal)>0?money(o.subtotal):'Falta el monto')+'</b></div>'};
+      if(!o.negocio_id)return {sum:'Recogido',body:'<div class="pdpaI"><small>Recojo</small><b>Recogido</b></div>'};
       return {sum:o.codigo_recojo?'Código '+o.codigo_recojo+' · recogido':'Pedido recogido',body:'<div class="pdpaI"><small>Código de recojo</small><span class="cod">'+E(o.codigo_recojo||'—')+'</span><span>Ya recogiste el pedido.</span></div>'}}
     if(i===2){const cli=[o.nombre_cliente,o.direccion_entrega].filter(Boolean);return {sum:cli.join(' · ')||'Entrega',body:'<div class="pdpaI"><small>Entrega</small><b>'+E(o.nombre_cliente||'Cliente')+'</b>'+(o.direccion_entrega?'<span>'+E(o.direccion_entrega)+'</span>':'')+(o.referencia_entrega?'<span>Ref.: '+E(o.referencia_entrega)+'</span>':'')+'</div>'}}
     if(i===3){const m=aCobrar(o);const met=pa==='yape_negocio'?'Yape del negocio':String(o.metodo_pago||'').toLowerCase()==='yape'?'Yape':'efectivo';
