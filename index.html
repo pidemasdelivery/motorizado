@@ -2361,7 +2361,8 @@ html body #pdcfBg{z-index:2147483647!important;padding-bottom:env(safe-area-inse
 html body:has(#pdcfBg) #nav,html body:has(#pdcfBg) .nav,html body:has(#pdcfBg) #pdFixToast{visibility:hidden!important;pointer-events:none!important}
 html body #pdcfBg section{margin-bottom:0px!important}
 </style>
-<meta name="pd-version" content="20261102235835">
+<meta name="pd-instalacion" content="1">
+<meta name="pd-version" content="202611161540">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Pidemás | Panel Motorizado</title>
@@ -2850,6 +2851,7 @@ html body #pdInstalar .shr{display:inline-block;vertical-align:-3px;width:16px;h
   const instalada=()=>matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
   const ua=navigator.userAgent||'';
   const iOS=/iphone|ipad|ipod/i.test(ua)||(/macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
+  const android=/android/i.test(ua)&&!/wv\)|; wv/i.test(ua);
   const iOSSafari=iOS&&/safari/i.test(ua)&&!/crios|fxios|edgios|opios|gsa\//i.test(ua);
   const NO='pdInstalarNo:'+location.pathname.replace(/[^/]*$/,''),DIAS=14; /* cada app guarda su propia respuesta */
   const descartado=()=>{const t=Number(ls.get(NO)||0);return t&&Date.now()-t<DIAS*864e5};
@@ -2858,13 +2860,14 @@ html body #pdInstalar .shr{display:inline-block;vertical-align:-3px;width:16px;h
       const cs=getComputedStyle(el);if(cs.position!=='fixed'||cs.display==='none'||cs.visibility==='hidden'||el.hidden)continue;
       const r=el.getBoundingClientRect();if(r.width*r.height>W*H*0.45)return true}return false}
   let aviso=null,card=null,intentos=0;
-  addEventListener('beforeinstallprompt',e=>{e.preventDefault();aviso=e;programar(6000)});
+  addEventListener('beforeinstallprompt',e=>{e.preventDefault();aviso=e;programar(400)});
+  setTimeout(function(){if(!aviso&&android&&!instalada())programar(0)},3000);
   addEventListener('appinstalled',()=>{ls.set(NO,String(Date.now()+3650*864e5));if(card)card.hidden=true});
   function programar(ms){if(instalada()||descartado()||card&&!card.hidden)return;clearTimeout(programar.t);programar.t=setTimeout(intentar,ms)}
   function intentar(){
     if(instalada()||descartado())return;
-    if(!aviso&&!iOSSafari)return;
-    if(hayVentana()||document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){if(++intentos<40)programar(5000);return}
+    if(!aviso&&!iOSSafari&&!android)return;
+    if(hayVentana()||document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){if(++intentos<40)programar(1500);return}
     mostrar();
   }
   function mostrar(){
@@ -2873,6 +2876,7 @@ html body #pdInstalar .shr{display:inline-block;vertical-align:-3px;width:16px;h
     const ico='<span class="ico"'+(icono?' style="background-image:url(\''+icono.replace(/'/g,'%27')+'\')"':'')+'>'+(icono?'':'P')+'</span>';
     card.innerHTML=aviso
       ?ico+'<span class="tx"><b>Instala '+NOMBRE+'</b><small>Ábrela desde tu inicio, más rápida y a pantalla completa.</small></span><span class="bt"><button type="button" class="si">Instalar</button><button type="button" class="no">Ahora no</button></span>'
+      :android?ico+'<span class="tx"><b>Instala '+NOMBRE+'</b><small>Toca ⋮ (arriba a la derecha) y luego «Instalar app» o «Agregar a pantalla principal». Si ya la tienes, ábrela desde tu inicio.</small></span><span class="bt"><button type="button" class="no">Entendido</button></span>'
       :ico+'<span class="tx"><b>Instala '+NOMBRE+'</b><small>Toca <svg class="shr" viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> Compartir y luego «Agregar a inicio».</small></span><span class="bt"><button type="button" class="no">Entendido</button></span>';
     card.hidden=false;
     const hd=document.querySelector('header.top,header');const r=hd&&hd.getBoundingClientRect();
@@ -2881,7 +2885,7 @@ html body #pdInstalar .shr{display:inline-block;vertical-align:-3px;width:16px;h
     const si=card.querySelector('.si');
     if(si)si.onclick=async()=>{const ev=aviso;aviso=null;card.hidden=true;if(!ev)return;try{ev.prompt();const r=await ev.userChoice;if(r&&r.outcome!=='accepted')ls.set(NO,String(Date.now()))}catch(e){}};
   }
-  if(iOSSafari&&!instalada())programar(12000);
+  if(iOSSafari&&!instalada())programar(400);
 })();
 </script>
 
@@ -6769,7 +6773,7 @@ C.extra=function(m,modo,editado){let h='';
     {re:/continueEncomienda\(/,txt:()=>'Desliza para continuar'},
     {re:/markInDelivery\(/,txt:()=>'Desliza: llegué donde el cliente'},
     {re:/deliverOrder\(/,txt:()=>'Desliza: pedido entregado',green:true},
-    {re:/confirmPayment\(/,txt:(o,b)=>'Desliza: cobré '+(((b&&b.textContent)||'').match(/S\/\s*[\d.,]+/)||[money(o.total)])[0]}
+    {re:/confirmPayment\(/,txt:(o,b)=>(o&&o.pago_acordado==='yape_negocio'&&String(o.metodo_pago||'').toLowerCase()==='yape'?'Desliza: ya yapeó ':'Desliza: cobré ')+(((b&&b.textContent)||'').match(/S\/\s*[\d.,]+/)||[money(o.total)])[0]}
   ];
 
   function enhance(modal){
@@ -6813,6 +6817,7 @@ C.extra=function(m,modo,editado){let h='';
       if(prepaid(o))cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Ya pagado · no cobres nada</b><br>${o.pago_acordado==='pagado'?'El cliente pagó productos y delivery al negocio.':'El cliente ya pagó.'}</span></div>`);
       else if(o.pago_acordado==='solo_delivery'&&o.pago_confirmado!==true)cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra solo el delivery: ${E(money(o.costo_delivery))}</b><br>Los productos ya están pagados al negocio. Efectivo o Yape (QR).</span></div>`);
       else if(o.pago_confirmado===true)cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Cobro registrado · ${E(money(o.total))}</b>${Number(o.monto_recibido)>Number(o.total)?'<br>Pagó con '+E(money(o.monto_recibido))+' · vuelto '+E(money(Number(o.monto_recibido)-Number(o.total))):''}${(typeof window.pdCobraAlRecoger==='function'&&window.pdCobraAlRecoger(o))?'<br>Cobrado al recoger: no cobres al entregar.':''}</span></div>`);
+      else if(o.pago_acordado==='yape_negocio')cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra ${E(tot)} con el Yape del negocio</b><br>Muestra el QR del negocio al llegar (no el de Pidemás).</span></div>`);
       else if(m==='yape')cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra ${E(tot)} con Yape</b><br>Muestra el QR al llegar.</span></div>`);
       else{const pc=(svcKey(o)!=='compra'||Number(o.subtotal)>0)&&typeof extractCashPayment==='function'?extractCashPayment(o.observaciones,o.total):{};cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra ${E(tot)} en efectivo</b><br>${pc.paid!=null?`Paga con S/ ${Number(pc.paid).toFixed(2)} · lleva <b>S/ ${Number(pc.change||0).toFixed(2)}</b> de vuelto`:'Al llegar, escribe el monto que te dan.'}</span></div>`)}
     }
@@ -7185,13 +7190,33 @@ function pasar(){
     try{if(!DB())return;const u=DB().storage.from('restaurantes').getPublicUrl('config/yape.json').data.publicUrl+'?t='+Date.now();const r=await fetch(u,{cache:'no-store'});if(r.ok)cfg=await r.json()}catch(e){}
   }
   window.pdYapeCfg=()=>cfg;
+  const NY={},NYp={};
+  window.pdNegYapeCfg=function(nid){
+    nid=String(nid||'');if(!nid)return null;
+    if(NY[nid]&&Date.now()-NY[nid].t<10*60*1000)return NY[nid].d;
+    if(!NYp[nid]&&DB()){NYp[nid]=1;Promise.resolve(DB().from('negocios').select('id,nombre,yape_qr_url,yape_numero,yape_titular').eq('id',nid).maybeSingle()).then(r=>{if(r&&r.data)NY[nid]={t:Date.now(),d:{url:r.data.yape_qr_url||'',numero:r.data.yape_numero||'',titular:r.data.yape_titular||'',nombre:r.data.nombre||''}}}).catch(()=>{}).finally(()=>{delete NYp[nid]})}
+    return NY[nid]?NY[nid].d:null;
+  };
+  /* Pedido donde el cliente paga todo con el Yape del negocio */
+  window.pdQrDePedido=function(id){
+    let o=null;try{o=(Array.isArray(orders)?orders:[]).find(x=>String(x.id)===String(id))}catch(e){}
+    if(o&&String(o.pago_acordado||'')==='yape_negocio'){const n=window.pdNegYapeCfg(o.negocio_id);return {negocio:true,cargando:!n,url:n&&n.url||'',numero:n&&n.numero||'',titular:n&&n.titular||'',nombre:n&&n.nombre||'el negocio'}}
+    return {negocio:false,url:cfg&&cfg.url||'',numero:cfg&&cfg.numero||'',titular:cfg&&cfg.titular||'',nombre:'Pidemás'};
+  };
   const base=window.showYapeQr;
   window.showYapeQr=function(id){
     if(typeof base==='function')base(id);
     const ov=document.getElementById('yapeQrOverlay');if(!ov)return;
+    const qn=window.pdQrDePedido(id);if(qn.negocio){aplicarNeg(ov,qn,id);return}
     if(!cfg){load().then(()=>{if(cfg&&document.getElementById('yapeQrOverlay')===ov)apply(ov)});return}
     apply(ov);load();
   };
+  function aplicarNeg(ov,q,id){
+    if(q.cargando){setTimeout(()=>{if(document.getElementById('yapeQrOverlay')===ov)aplicarNeg(ov,window.pdQrDePedido(id),id)},600);return}
+    const img=ov.querySelector('img');if(img&&q.url)img.src=q.url;if(img)img.alt='QR de Yape de '+q.nombre;
+    const old=ov.querySelector('.pdQrDatos');if(old)old.remove();
+    const m=ov.querySelector('.muted');if(m){const d=document.createElement('div');d.className='pdQrDatos';d.style.cssText='margin-top:8px;font:700 15px Inter,Arial,sans-serif;color:var(--fr-ink)';d.textContent=['Yape de '+q.nombre,q.numero,q.titular].filter(Boolean).join(' · ');m.after(d)}
+  }
   function apply(ov){
     const img=ov.querySelector('img');
     if(img&&cfg.url){const fallback=img.src;img.onerror=()=>{img.onerror=null;img.src=fallback};img.src=cfg.url}
@@ -7628,10 +7653,13 @@ function pasar(){
       let q=box.querySelector('.pdQrInline');
       if(!yape){q&&q.remove();return}
       const c=typeof window.pdYapeCfg==='function'?window.pdYapeCfg():null;
-      const datos=[c&&c.numero?'Yape '+c.numero:'',c&&c.titular?c.titular:''].filter(Boolean).join(' · ')||'Yape de Pidemás';
-      const src=qrSrc();const key=src.slice(-40)+'|'+datos+'|'+monto;
+      const qn=o&&typeof window.pdQrDePedido==='function'?window.pdQrDePedido(o.id):{negocio:false};
+      if(qn.negocio&&qn.cargando)return;
+      const datos=qn.negocio?([qn.numero?'Yape '+qn.numero:'',qn.titular].filter(Boolean).join(' · ')||'Yape de '+qn.nombre):([c&&c.numero?'Yape '+c.numero:'',c&&c.titular?c.titular:''].filter(Boolean).join(' · ')||'Yape de Pidemás');
+      const src=qn.negocio?qn.url:qrSrc();const key=src.slice(-40)+'|'+datos+'|'+monto;
       if(q&&q.dataset.key===key)return;
-      const h=`<b>Muestra este QR al cliente</b><span class="pdQrAmt">${money(monto)}</span><img alt="QR de Yape de Pidemás" src="${E(src)}"><small>${E(datos)}</small><small>Confirma solo cuando veas la constancia del pago en el celular del cliente.</small>`;
+      const quien=qn.negocio?'Yape de '+qn.nombre:'Yape de Pidemás';
+      const h=(qn.negocio&&!src)?`<b>${E(quien)}</b><span class="pdQrAmt">${money(monto)}</span><small>El negocio no tiene su QR cargado. Pídele al cliente que yapee al ${E(qn.numero||'número del negocio')} y confirma cuando veas el pago.</small>`:`<b>Muestra este QR al cliente</b><span class="pdQrAmt">${money(monto)}</span><img alt="QR de ${E(quien)}" src="${E(src)}"><small>${E(quien+(datos?' · '+datos:''))}</small><small>${qn.negocio?'Cuando el cliente yapee, desliza. El negocio confirmará si le llegó.':'Confirma solo cuando veas la constancia del pago en el celular del cliente.'}</small>`;
       if(!q){q=document.createElement('div');q.className='pdQrInline';const ref=box.querySelector('.qr')||box.querySelector('.slot')||box.querySelector('.go');ref?ref.before(q):box.appendChild(q)}
       q.innerHTML=h;q.dataset.key=key;
       const b=box.querySelector('.qr');if(b&&b.textContent!=='Ver QR en grande')b.textContent='Ver QR en grande';document.querySelectorAll('#pidemasOrderFullModal .pidemas-order-modal-actions button').forEach(x=>{if(/Mostrar QR de Yape/.test(x.textContent))x.textContent='Ver QR en grande'});
@@ -8196,6 +8224,11 @@ window.pdTxt=function(s){
         if(tipo==='Recojo y entrega'&&!fin)C.push({t:'Paga quien recibe'});
       }
       if(!pc&&!cancel&&mm==='Efectivo'){const d=efectivoMarca(o);if(d&&Number(d.monto)>0)C.push({t:'Paga con <b>'+money(d.monto)+'</b> · vuelto <b>'+money(Math.max(0,Number(d.monto)-tot))+'</b>'})}
+    }else if(pa==='yape_negocio'){
+      C.push(pc?{t:'Cobrado con el Yape del negocio · <b>'+money(tot)+'</b>',c:'ok'}:{t:(fin?'Pago por confirmar':'Cobrar')+' <b>'+money(tot)+'</b> con el Yape del negocio',c:fin?'warn':'dk'});
+      if(o.yape_negocio_estado==='esperando')C.push({t:'Esperando que el negocio confirme el Yape',c:'warn'});else if(o.yape_negocio_estado==='llego')C.push({t:'El negocio confirmó que le llegó el Yape',c:'ok'});else if(o.yape_negocio_estado==='no_llego')C.push({t:'Al negocio NO le llegó el Yape',c:'warn'});
+      if(o.delivery_negocio_cobrado_en)C.push({t:'Delivery pagado a Pidemás',c:'ok'});
+      else if(PANEL!=='moto'&&fin)C.push({t:'Cobrar delivery <b>'+money(del)+'</b> al negocio',c:'warn'});
     }else if(pa==='pagado'){
       C.push({t:'Pagó todo al negocio',c:'dk'});
       if(/DELIVERY PAGADO POR EL NEGOCIO/i.test(ob)||o.delivery_negocio_cobrado_en)C.push({t:'Delivery pagado a Pidemás',c:'ok'});
@@ -8317,12 +8350,15 @@ window.pdTxt=function(s){
     if(nuevo==='yape')obs=obs.replace(/\s*\|?\s*__PIDEMAS_PAGO_EFECTIVO__\{[^}]*\}/,'');  
     obs=[obs,'CAMBIO DE PAGO: '+(NOMBRE[antes]||antes)+' → '+NOMBRE[nuevo]+' (lo informó el motorizado a las '+hora+')'].filter(Boolean).join(' | ');
     const c=(()=>{try{return db}catch(e){return window.db}})();if(!c)return;
-    let q=c.from('pedidos').update({metodo_pago:nuevo,observaciones:obs}).eq('id',o.id);
+    const patchPago={metodo_pago:nuevo,observaciones:obs};
+    /* Si iba a pagar con el Yape del negocio y paga en efectivo, el dinero lo tiene el motorizado: el pedido pasa a «efectivo» para que Pidemás le pague los productos al negocio */
+    if(String(o.pago_acordado||'')==='yape_negocio'&&nuevo==='efectivo'){patchPago.pago_acordado='efectivo';patchPago.yape_negocio_estado=null;patchPago.observaciones=obs+' | YA NO PAGA CON EL YAPE DEL NEGOCIO: PAGA EN EFECTIVO AL MOTORIZADO'}
+    let q=c.from('pedidos').update(patchPago).eq('id',o.id);
     try{if(typeof moto!=='undefined'&&moto&&moto.id)q=q.eq('motorizado_id',moto.id)}catch(e){}
     window.__pdCambioPropio={code:'#'+String(o.id).slice(0,8).toUpperCase(),t:Date.now()};
     const {error}=await q;
     if(error){(window.pdAvisoMoto||alert)('No se pudo cambiar el método de pago: '+error.message);return}
-    o.metodo_pago=nuevo;o.observaciones=obs;
+    o.metodo_pago=nuevo;o.observaciones=patchPago.observaciones;if('pago_acordado' in patchPago){o.pago_acordado=patchPago.pago_acordado;o.yape_negocio_estado=null}
     try{const n=(typeof orders!=='undefined'?orders:[]).find(x=>String(x.id)===String(o.id));if(n){n.metodo_pago=nuevo;n.observaciones=obs}}catch(e){}
     try{if(typeof window.loadOrders==='function')await window.loadOrders()}catch(e){}
     try{const modal=document.getElementById('pidemasOrderFullModal');const card=document.querySelector('.order[data-order-id="'+o.id+'"]');if(modal&&card&&typeof window.populateFullOrderModal==='function')window.populateFullOrderModal(card,modal)}catch(e){}
@@ -8801,17 +8837,19 @@ window.pdTxt=function(s){
       const img=box.querySelector('img');if(!img)return;
       if(!box.dataset.pdQr){box.dataset.pdQr='1';box.classList.add('pdQrChico');
         const h=document.createElement('span');h.className='pdQrHint';h.textContent='Toca el QR para agrandarlo';img.after(h);
-        box.addEventListener('click',e=>{if(!e.target.closest('img,.pdQrHint'))return;const amt=box.querySelector('.pdQrAmt')?.textContent||'';grande(img.src,'Cobro por Yape'+(amt?' · '+amt:''),'Muéstraselo al cliente. Ciérralo cuando termine de pagar.')});
+        box.addEventListener('click',e=>{if(!e.target.closest('img,.pdQrHint'))return;const amt=box.querySelector('.pdQrAmt')?.textContent||'';const dat=box.querySelector('img + small, small')?.textContent||'';grande(img.src,'Cobro por Yape'+(amt?' · '+amt:''),(dat&&!/^Toca/.test(dat)?dat+'. ':'')+'Muéstraselo al cliente. Ciérralo cuando termine de pagar.')});
       }
       const modal=box.closest('#pidemasOrderFullModal')||document;
       modal.querySelectorAll('button[onclick*="showYapeQr("]').forEach(b=>{if(b.style.getPropertyValue('display')!=='none')b.style.setProperty('display','none','important')});
     });
-    const u=qrUrl();if(!u)return;
     document.querySelectorAll('button[onclick*="showYapeQr("]').forEach(b=>{
       if(b.style.getPropertyValue('display')==='none')return;
+      const bid=((b.getAttribute('onclick')||'').match(/showYapeQr\(\s*['"]?([^'")]+)/)||[])[1]||'';
+      const qn=bid&&typeof window.pdQrDePedido==='function'?window.pdQrDePedido(bid):{negocio:false};
+      const u=qn.negocio?qn.url:qrUrl();if(!u)return;
       if(b.dataset.pdQr===u)return;b.dataset.pdQr=u;
       b.classList.add('pdQrMini');
-      b.innerHTML=`<img src="${u.replace(/"/g,'&quot;')}" alt="QR de Yape"><span>Toca el QR para agrandarlo<small>Muéstraselo al cliente para que pague. Ciérralo al terminar.</small></span>`;
+      const cY=qn.negocio?qn:(typeof window.pdYapeCfg==='function'?window.pdYapeCfg():null);const dY=[qn.negocio?'Yape de '+qn.nombre:'',cY&&cY.numero?'Yape '+cY.numero:'',cY&&cY.titular?cY.titular:''].filter(Boolean).join(' · ');b.innerHTML=`<img src="${u.replace(/"/g,'&quot;')}" alt="QR de Yape"><span>Toca el QR para agrandarlo<small>${(dY?dY+'. ':'').replace(/[<>&]/g,'')}Muéstraselo al cliente para que pague.</small></span>`;
     });
   }
    
@@ -10307,7 +10345,7 @@ html:root body:not(#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#pdMp#
 (function(){
 if(window.__pdmu)return;window.__pdmu=1;
 /* Pantallas completas que NO son ventanas: carga, ingreso, mapas grandes, menú lateral, avisos arriba */
-const NO=/pdCarga|piCartaCarga|loginView|login|Login|pdmcFull|pdubMapa|pdmpMapa|pdVerMapa|Mapa|Suspend|PermGate|Confeti|confeti|MenuShade|pdMenu|sideMenu|drawer|Drawer|pdxAlerts|toast|Toast|pdfx|pdInstalar|pdUpd|pdA\b|splash|Splash/;
+const NO=/pdYNAviso|pdCarga|piCartaCarga|loginView|login|Login|pdmcFull|pdubMapa|pdmpMapa|pdVerMapa|Mapa|Suspend|PermGate|Confeti|confeti|MenuShade|pdMenu|sideMenu|drawer|Drawer|pdxAlerts|toast|Toast|pdfx|pdInstalar|pdUpd|pdA\b|splash|Splash/;
 const POSIBLE=/modal|Modal|sheet|Sheet|overlay|Overlay|dialog|Dialog|hoja|Hoja|velo|Velo|popup|Popup|Bg\b|Fondo|Wrap\b|pdpm|pdcf|pdDlg|pdExito|Exito|Shade/;
 const vw=()=>innerWidth,vh=()=>innerHeight;
 function nombre(e){return (e.id||'')+' '+(typeof e.className==='string'?e.className:'')}
@@ -10385,23 +10423,16 @@ function cabecera(h){
     const t=titulo(head);
     if(t){
       /* lo que acompaña al título (etiqueta de arriba, subtítulo de abajo, ícono) se oculta */
-      for(let x=t;x&&x!==head;x=x.parentElement){
-        for(const sib of x.parentElement.children){
-          if(sib===x||sib.hasAttribute('data-pdm-oculto')||!visto(sib)||tieneInter(sib))continue;
-          if(sib.tagName==='STYLE'||sib.tagName==='SCRIPT')continue;
-          sib.setAttribute('data-pdm-oculto','');
-        }
-      }
-      for(const k of t.querySelectorAll('*'))if(!tieneInter(k)&&k.tagName!=='BR')k.setAttribute('data-pdm-oculto','');
-      if(!t.hasAttribute('data-pdm-titulo'))t.setAttribute('data-pdm-titulo','');
+      /* ya no se oculta nada de la cabecera: logos, etiquetas y subtítulos se mantienen */
     }
     const p=getComputedStyle(head).position;if(p!=='fixed'&&p!=='absolute')head.setAttribute('data-pdm-cab','');
     try{const hw=head.getBoundingClientRect().width,hj=(head.closest('[data-pdm-hoja]')||head.parentElement).getBoundingClientRect().width;if(hj&&hw>=hj*0.8)head.setAttribute('data-pdm-cab-ancho','');else head.removeAttribute('data-pdm-cab-ancho')}catch(e){}
   }
   /* pie con botones: el último bloque de abajo queda fijo */
   let cont=h;if(h.children.length===1&&h.firstElementChild!==head)cont=h.firstElementChild;
-  const ult=[...cont.children].filter(c=>visto(c)&&c!==head).pop();
-  if(ult&&ult!==head&&ult.querySelector('button,a,[role="button"]')){
+  h.querySelectorAll('[data-pdm-pie]').forEach(x=>x.removeAttribute('data-pdm-pie'));
+  const kids=[...cont.children].filter(c=>visto(c)&&c!==head);const ult=kids.length>1?kids[kids.length-1]:null;
+  if(ult&&ult!==head&&ult!==cont.firstElementChild&&!ult.matches(CERRAR)&&!ult.querySelector(CERRAR)&&!ult.querySelector('[data-pdm-titulo],h1,h2')&&ult.querySelector('button,a,[role="button"]')){
     const r=ult.getBoundingClientRect();
     if(r.height<230&&!ult.querySelector('ul,ol,table')&&ult.querySelectorAll('button,a').length<=4){const p=getComputedStyle(ult).position;if(p!=='fixed'&&p!=='absolute')ult.setAttribute('data-pdm-pie','')}
   }
@@ -11292,6 +11323,9 @@ buscar();
 })();
 </script>
 <style id="pd-hojas-sin-brinco">
+/* el fondo aparece de una vez (sin desvanecer) para que la ventana no se vea transparente al subir */
+@keyframes pdDlgFondo{from{opacity:1}to{opacity:1}}
+@keyframes pdSelFade{from{opacity:1}to{opacity:1}}
 /* Las ventanas suben desde abajo en un solo movimiento, sin saltito ni parpadeo */
 @keyframes pdDlgSube{from{transform:translateY(100%);opacity:1}to{transform:none;opacity:1}}
 @keyframes pdFhUp{from{transform:translateY(100%);opacity:1}to{transform:none;opacity:1}}
@@ -11301,6 +11335,212 @@ buscar();
 @keyframes pdcfUp{from{transform:translateY(100%);opacity:1}to{transform:none;opacity:1}}
 @keyframes pdmUp{from{transform:translateY(100%);opacity:1}to{transform:none;opacity:1}}
 @keyframes pdpmUp{from{transform:translateY(100%);opacity:1}to{transform:none;opacity:1}}
+</style>
+<style id="pd-velo-recto">html body [data-pdm-velo][data-pdm-velo][data-pdm-velo],html body [data-pd-sin-velo][data-pd-sin-velo][data-pd-sin-velo],html body .pdnOv.pdnOv.pdnOv{border-radius:0!important;border:0!important;box-shadow:none!important;outline:0!important}</style>
+<style id="pd-hojas-iguales">
+html:root body:not(#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh) .pdsmHoja{padding:0!important;gap:0!important;background:#FFF9F5!important;border-radius:24px 24px 0 0!important;border:1px solid #EFE3DA!important;border-bottom:0!important;box-shadow:none!important;overflow-y:auto!important}
+html:root body:not(#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh) .pdsmHoja > .pdsmTop{position:sticky!important;top:0!important;z-index:4!important;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin:0!important;padding:22px 16px 12px!important;background:#fff!important;border-bottom:1px solid #EFE3DA!important;border-radius:24px 24px 0 0!important;box-shadow:0 -64px 0 0 #fff!important}
+html:root body:not(#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh) .pdsmHoja > .pdsmTop strong{font:800 19px/1.25 var(--font,Inter,sans-serif)!important;color:#C4410C!important;letter-spacing:-.01em!important;margin:0!important}
+html:root body:not(#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh) .pdsmHoja .pdsmX{flex:0 0 40px!important;width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;border-radius:12px!important;border:1px solid #EFE3DA!important;background:#fff!important;color:#1F1A17!important;font:500 22px/1 var(--font,Inter,sans-serif)!important;display:grid!important;place-items:center!important}
+html:root body:not(#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh) .pdsmHoja > :not(.pdsmTop){margin-left:16px!important;margin-right:16px!important}
+html:root body:not(#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh) .pdsmHoja > .pdsmTop + *{margin-top:14px!important}
+html:root body:not(#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh) .pdsmHoja > :not(.pdsmTop) ~ :not(.pdsmTop){margin-top:12px!important}
+html:root body:not(#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh) .pdsmHoja > :last-child:not(.pdsmTop){margin-bottom:calc(20px + env(safe-area-inset-bottom,0px))!important}
+html:root body:not(#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh#pdQh) .pdsmHoja > .pdmmB{padding:0!important;background:transparent!important}
+</style>
+<script id="pd-guardado-auto">
+/* Al guardar dentro de una ventana: aviso «Guardado» como notificación y la ventana se cierra sola */
+(function(){
+if(window.__pdGuardadoAuto)return;window.__pdGuardadoAuto=1;
+var OK=/(guardad[oa]s?|actualizad[oa]s?|registrad[oa]s?|cambios aplicados|quedaron listos?)\b/i;
+var NO=/(no se|no pud|error|falt|intenta|revisa|se guardar[áa]|guardar\b|en vivo|hace \d|sin guardar|pendiente)/i;
+var MSG=/msg|Msg|mensaje|Mensaje|aviso|Aviso|status|estado|Ok\b|exito|Exito|ok\b/;
+var HOJA='[data-pdm-hoja],.pdnSh,.pdsmHoja,.pdPwHoja,.pdxSheetCard,.pcSheet,.sheet,[role=dialog],.pdmSheet,.pdoSheet,.pdpm-sheet';
+var CERRAR='.pdnX,.pdsmX,.pdPwX,.pcX,.pdpm-x,.pdoX,[data-close],[aria-label="Cerrar"],[aria-label="cerrar"],.close,.closeBtn,.x-icon';
+var ocupado=0,yaAviso=0,mio=false;
+function envolver(n){var f=window[n];if(typeof f!=='function'||f.__pdGA)return;var w=function(){if(!mio)yaAviso=Date.now();return f.apply(this,arguments)};w.__pdGA=1;try{window[n]=w}catch(_){}}
+setInterval(function(){envolver('pdExito');envolver('toast')},700);
+function avisar(t){
+  if(Date.now()-yaAviso<3000)return;/* la app ya mostró su propio aviso: no se repite */
+  mio=true;setTimeout(function(){mio=false},0);
+  t=String(t||'Guardado').trim().replace(/^✓\s*/,'');
+  try{if(typeof window.pdExito==='function'){window.pdExito(t);return}}catch(_){}
+  try{if(typeof window.toast==='function'){window.toast('✓ '+t);return}}catch(_){}
+  var d=document.createElement('div');d.textContent='✓ '+t;d.setAttribute('role','status');
+  d.style.cssText='position:fixed;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom));z-index:2147483647;padding:14px 16px;border-radius:14px;background:#1F6B3A;color:#fff;font:700 15px var(--font,Inter,sans-serif);text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.18);transition:opacity .25s';
+  document.body.appendChild(d);setTimeout(function(){d.style.opacity='0';setTimeout(function(){d.remove()},300)},2400);
+}
+function cerrarHoja(h){
+  var b=null,L=h.querySelectorAll(CERRAR);for(var i=0;i<L.length;i++){var x=L[i];if(x.getClientRects().length&&!x.closest('input,textarea')){b=x;break}}
+  if(!b){var bs=h.querySelectorAll('button');for(var j=0;j<bs.length;j++){if(/^(×|✕|✖)$/.test((bs[j].textContent||'').trim())){b=bs[j];break}}}
+  if(b){b.click();return}
+  try{document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true}))}catch(_){}
+}
+var hechos=new WeakMap();
+var PROG=/^(guardando|actualizando|enviando|subiendo|procesando|registrando)\b/i;
+function esMensaje(el,txt){return el.getAttribute('role')==='status'||el.hasAttribute('aria-live')||MSG.test((el.id||'')+' '+(typeof el.className==='string'?el.className:''))||/^✓/.test(txt)}
+function ocultar(el,si){if(si){el.setAttribute('data-pd-msg-oculto','');el.style.setProperty('display','none','important')}else if(el.hasAttribute('data-pd-msg-oculto')){el.removeAttribute('data-pd-msg-oculto');el.style.removeProperty('display')}}
+function revisar(el){
+  if(!el||el.nodeType!==1)return;
+  var txt=(el.textContent||'').trim();
+  if(el.closest('button,label,h1,h2,h3,input,textarea,select'))return;
+  var h=el.closest(HOJA);if(!h)return;
+  if(txt.length>170)return;
+  if(!txt){return}
+  var msg=esMensaje(el,txt);
+  /* mensaje de «guardando…»: no se muestra, el botón ya indica que está trabajando */
+  if(msg&&PROG.test(txt)){ocultar(el,true);return}
+  if(msg&&OK.test(txt)&&!NO.test(txt)){
+    ocultar(el,true);
+    if(Date.now()-ocupado<2500||hechos.get(el)===txt)return;hechos.set(el,txt);ocupado=Date.now();
+    if(h.getClientRects().length)cerrarHoja(h);
+    setTimeout(function(){avisar(txt)},260);
+    return;
+  }
+  if(msg)ocultar(el,false);/* los errores sí se ven en la ventana */
+}
+new MutationObserver(function(ms){for(var i=0;i<ms.length;i++){var m=ms[i];var t=m.type==='characterData'?m.target.parentElement:m.target;revisar(t);if(m.type==='childList'){for(var j=0;j<m.addedNodes.length;j++){var n=m.addedNodes[j];if(n.nodeType===1){revisar(n);var k=n.querySelectorAll&&n.querySelectorAll('[role=status],[aria-live]');if(k)for(var q=0;q<k.length;q++)revisar(k[q])}}}}}).observe(document.documentElement,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['class']});
+})();
+</script>
+<script id="pd-actualizar">
+/* Actualizaciones:
+   · Normales (pd-version): la app se actualiza sola, sin preguntar, en un momento en que no estés usando una ventana ni escribiendo.
+   · Que requieren reinstalar (pd-instalacion: cambia ícono, nombre o pantalla de arranque): solo entonces se muestra un aviso. */
+(function(){
+  if(window.__pdActualizar)return;window.__pdActualizar=1;
+  var mv=document.querySelector('meta[name="pd-version"]');if(!mv)return;var V=mv.content;
+  var mi=document.querySelector('meta[name="pd-instalacion"]');var I=mi?mi.content:'1';
+  var ls={get:function(k){try{return localStorage.getItem(k)}catch(e){return null}},set:function(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+  var url=location.pathname,ultimo=0,pendiente=false,toque=Date.now();
+  var instalada=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true;
+  ['pointerdown','keydown','scroll','touchstart'].forEach(function(e){addEventListener(e,function(){toque=Date.now()},{passive:true,capture:true})});
+
+  /* --- 1. actualización normal: silenciosa --- */
+  function chequear(){
+    if(document.hidden||Date.now()-ultimo<60000)return;ultimo=Date.now();
+    fetch(url+'?pdv='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){
+      var m=t&&t.match(/<meta name="pd-version" content="([^"]+)"/);if(m&&m[1]!==V){pendiente=true;intentar()}
+    }).catch(function(){});
+  }
+  function ocupado(){
+    var a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return true;
+    var hs=document.querySelectorAll('[data-pdm-hoja],.pdnSh,.pdsmHoja,.pdPwHoja,[role=dialog],dialog[open]');
+    for(var i=0;i<hs.length;i++){if(hs[i].getClientRects().length&&hs[i].id!=='pdInstalar')return true}
+    return Date.now()-toque<20000;
+  }
+  function recargar(){var fin=function(){location.reload()};
+    try{if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(rs){rs.forEach(function(r){try{r.update()}catch(_){}})}).catch(function(){})}catch(_){}
+    fetch(location.href,{cache:'reload'}).then(fin,fin);setTimeout(fin,3000)}
+  function intentar(){if(!pendiente)return;if(document.hidden||!ocupado())recargar()}
+  setInterval(intentar,5000);
+  document.addEventListener('visibilitychange',function(){if(document.hidden){if(pendiente)recargar()}else chequear()});
+  addEventListener('focus',chequear);
+  setTimeout(chequear,2500);setInterval(chequear,5*60000);
+
+  /* --- 2. actualización que requiere reinstalar: solo esta avisa --- */
+  if(instalada){
+    var guardada=ls.get('pd-instalacion');
+    if(!guardada){ls.set('pd-instalacion',I)}
+    else if(Number(I)>Number(guardada)&&ls.get('pd-instalacion-no')!==I){setTimeout(avisoReinstalar,1500)}
+  }
+  addEventListener('appinstalled',function(){ls.set('pd-instalacion',I)});
+  function avisoReinstalar(){
+    if(document.getElementById('pdReinstalar'))return;
+    var d=document.createElement('div');d.id='pdReinstalar';d.setAttribute('role','status');
+    d.innerHTML='<span class="pdaIco" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg></span><span class="pdaTx"><b>Reinstala la app</b><small>Hay una mejora en el ícono o la pantalla de inicio. Borra la app y vuelve a instalarla desde el enlace de siempre.</small></span><span class="pdaBt"><button type="button" class="ok">Entendido</button></span>';
+    d.querySelector('.ok').onclick=function(){ls.set('pd-instalacion-no',I);d.remove()};
+    document.body.appendChild(d);
+  }
+  var st=document.createElement('style');st.textContent='#pdReinstalar{position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top));z-index:2147483647;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border-radius:16px;background:#fff;border:1px solid #F1C9B6;box-shadow:0 10px 30px rgba(31,26,23,.16);font-family:var(--font,Inter,system-ui,sans-serif)}#pdReinstalar .pdaIco{flex:0 0 38px;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#FFF1E8;color:#C4410C}#pdReinstalar .pdaIco svg{width:20px;height:20px}#pdReinstalar .pdaTx{flex:1;min-width:0;display:flex;flex-direction:column}#pdReinstalar b{font-weight:800;font-size:14.5px;line-height:1.25;color:#1F1A17}#pdReinstalar small{font-weight:500;font-size:12.5px;line-height:1.3;color:#6E625A}#pdReinstalar button{min-height:40px;padding:0 14px;border:0;border-radius:12px;background:#C4410C;color:#fff;font-weight:800;font-size:14px;font-family:inherit;cursor:pointer}';
+  document.head.appendChild(st);
+})();
+</script>
+
+<script id="pd-yape-negocio-moto-js">
+/* Cobro con el Yape del negocio: el negocio confirma si le llegó y le avisa directo al motorizado */
+(function(){
+  if(window.__pdYNM)return;window.__pdYNM=1;
+  const L=()=>{try{return Array.isArray(orders)?orders:[]}catch(e){return []}};
+  const D=()=>{try{return db}catch(e){return window.db}};
+  const money=n=>'S/ '+(Number(n)||0).toFixed(2);
+  const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const cod=id=>'#'+String(id||'').replace(/-/g,'').slice(0,8).toUpperCase();
+  const esYN=o=>o&&String(o.pago_acordado||'')==='yape_negocio'&&String(o.metodo_pago||'').toLowerCase()==='yape';
+  const visto={};let cpBase=null;
+  function banner(tipo,titulo,texto){
+    let b=document.getElementById('pdYNAviso');
+    if(!b){b=document.createElement('div');b.id='pdYNAviso';b.setAttribute('role','alert');document.body.appendChild(b);b.addEventListener('click',e=>{if(e.target.closest('button'))b.hidden=true})}
+    b.className='t-'+tipo;b.hidden=false;
+    b.innerHTML='<b>'+E(titulo)+'</b><span>'+E(texto)+'</span><button type="button">Entendido</button>';
+    try{navigator.vibrate&&navigator.vibrate(tipo==='mal'?[300,120,300,120,300]:[200,80,200])}catch(e){}
+  }
+  async function preguntar(o){
+    const now=new Date().toISOString();
+    const {error}=await D().from('pedidos').update({yape_negocio_estado:'esperando',yape_negocio_en:now}).eq('id',o.id);
+    if(error){banner('mal','No se pudo avisar al negocio',error.message);return}
+    o.yape_negocio_estado='esperando';o.yape_negocio_en=now;visto[o.id]='esperando';
+    banner('esp','Le preguntamos al negocio','Apenas confirme si le llegó el Yape de '+money(o.total)+', te avisamos aquí.');pintar();
+  }
+  function envolver(){
+    const cp=window.confirmPayment;if(typeof cp!=='function'||cp.__yn)return;
+    cpBase=cp;
+    const f=async function(id){
+      const o=L().find(x=>String(x.id)===String(id));
+      if(!esYN(o)||o.pago_confirmado===true||o.yape_negocio_estado==='llego')return cp.apply(this,arguments);
+      if(o.yape_negocio_estado==='esperando'){banner('esp','Esperando al negocio','Todavía no confirma si le llegó el Yape. Espera un momento.');return}
+      return preguntar(o);
+    };
+    f.__yn=1;window.confirmPayment=f;
+  }
+  function pintar(){
+    const m=document.getElementById('pidemasOrderFullModal');if(!m)return;
+    const o=L().find(x=>String(x.id)===String(m.dataset.orderId||''));
+    const box=m.querySelector('.pdCobroEnt');
+    let st=box&&box.querySelector('.pdYNEst');
+    if(!box||!esYN(o)||o.pago_confirmado===true){st&&st.remove();return}
+    const e=o.yape_negocio_estado||'';
+    const h=e==='esperando'?'<span class="dot"></span><span><b>Esperando al negocio…</b><small>Le preguntamos si le llegó el Yape de '+money(o.total)+'.</small></span>'
+      :e==='llego'?'<span class="ok">✓</span><span><b>El negocio confirmó el Yape</b><small>Ya puedes terminar la entrega.</small></span>'
+      :e==='no_llego'?'<span class="no">✗</span><span><b>Al negocio no le llegó el Yape</b><small>Pide al cliente que revise su Yape y vuelve a deslizar, o cobra en efectivo.</small></span>'
+      :'<span class="in">i</span><span><b>Cobra con el Yape del negocio</b><small>Cuando el cliente yapee, desliza. El negocio confirmará si le llegó.</small></span>';
+    if(!st){st=document.createElement('div');st.className='pdYNEst';const ref=box.querySelector('.pdQrInline');ref?ref.after(st):box.appendChild(st)}
+    if(st.dataset.e!==e){st.dataset.e=e;st.className='pdYNEst e-'+(e||'nada');st.innerHTML=h}
+  }
+  function revisar(){
+    L().forEach(o=>{
+      if(!esYN(o))return;const e=o.yape_negocio_estado||'',a=visto[o.id];
+      if(a===undefined){visto[o.id]=e;return}
+      if(a===e)return;visto[o.id]=e;
+      if(e==='llego'){banner('ok','✓ Le llegó el Yape al negocio','Pedido '+cod(o.id)+' · '+money(o.total)+'. Ya puedes terminar la entrega.');
+        if(o.pago_confirmado!==true&&String(o.estado||'').toLowerCase()==='en_entrega'&&cpBase){Promise.resolve(cpBase(o.id)).catch(()=>{})}}
+      else if(e==='no_llego')banner('mal','✗ Al negocio NO le llegó el Yape','Pedido '+cod(o.id)+' · '+money(o.total)+'. Pide al cliente que revise su Yape o cobra en efectivo.');
+    });
+    pintar();
+  }
+  async function refrescar(){
+    const ids=L().filter(o=>esYN(o)&&o.yape_negocio_estado==='esperando').map(o=>o.id);if(!ids.length||!D())return;
+    try{const {data}=await D().from('pedidos').select('id,yape_negocio_estado,yape_negocio_en,pago_confirmado,pago_acordado,metodo_pago').in('id',ids);
+      (data||[]).forEach(r=>{const o=L().find(x=>String(x.id)===String(r.id));if(o)Object.assign(o,r)});revisar()}catch(e){}
+  }
+  setInterval(envolver,700);envolver();
+  setInterval(revisar,1500);setInterval(refrescar,4000);
+})();
+</script>
+<style id="pd-yape-negocio-moto-css">
+#pdYNAviso{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:2147483647;display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:18px;background:#fff;border:2px solid #C4410C;box-shadow:0 10px 30px rgba(31,26,23,.18);font-family:Inter,system-ui,sans-serif;color:#1F1A17}
+#pdYNAviso[hidden]{display:none!important}
+#pdYNAviso b{font:800 17px/1.25 Inter,system-ui,sans-serif}
+#pdYNAviso span{font:500 15px/1.4 Inter,system-ui,sans-serif;color:#4A3F38}
+#pdYNAviso button{margin-top:6px;min-height:46px;border:0;border-radius:12px;background:#C4410C;color:#fff;font:800 15px Inter,system-ui,sans-serif}
+#pdYNAviso.t-ok{border-color:#15803D}#pdYNAviso.t-ok b{color:#0F5E2E}#pdYNAviso.t-ok button{background:#15803D}
+#pdYNAviso.t-mal{border-color:#B42318}#pdYNAviso.t-mal b{color:#B42318}#pdYNAviso.t-mal button{background:#B42318}
+.pdYNEst{display:flex;gap:10px;align-items:flex-start;margin-top:8px;padding:12px;border-radius:14px;background:#FFF9F5;border:1px solid #EFE3DA;font-family:Inter,system-ui,sans-serif;text-align:left}
+.pdYNEst b{display:block;font:800 15px Inter,system-ui,sans-serif;color:#1F1A17}.pdYNEst small{display:block;font:500 14px/1.4 Inter,system-ui,sans-serif;color:#6B5E55}
+.pdYNEst>span:first-child{flex:0 0 24px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 14px Inter,sans-serif;color:#fff;background:#C4410C}
+.pdYNEst .ok{background:#15803D!important}.pdYNEst .no{background:#B42318!important}
+.pdYNEst .dot{background:#F1C9B6!important;animation:pdYNp 1s ease-in-out infinite}
+.pdYNEst.e-llego{background:#E9F6EE;border-color:#BBE5C8}.pdYNEst.e-no_llego{background:#FEF3F2;border-color:#FDA29B}
+@keyframes pdYNp{50%{transform:scale(.7);opacity:.6}}
 </style>
 </body>
 
