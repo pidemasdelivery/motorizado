@@ -11030,11 +11030,11 @@ html body #pidemasOrderFullModal .pidemas-order-modal-actions button.pdpeNc{widt
   function tarjeta(){
     const home=$('pdHomeCard');if(!home||!home.parentNode)return;const m=ME();if(!m)return;
     let c=$('pdmmTools');
-    if(!c){c=document.createElement('section');c.id='pdmmTools';c.addEventListener('click',e=>{const b=e.target.closest('[data-mm]');if(!b)return;({descanso,ruta,ganancias,calificaciones,historial})[b.dataset.mm]()})}
+    if(!c){c=document.createElement('section');c.id='pdmmTools';c.addEventListener('click',e=>{const b=e.target.closest('[data-mm]');if(!b)return;({descanso,ruta,rendimiento,calificaciones,historial})[b.dataset.mm]()})}
     if(c.previousElementSibling!==home)home.after(c);
     const des=!!m.en_descanso,act=OR().filter(o=>ACTIVOS.includes(est(o))).length;
     const h='<button type="button" data-mm="descanso" class="pdmmDes '+(des?'on':'')+'"><i></i><span><b>'+(des?'Estás en descanso':'Disponible para pedidos')+'</b><small>'+(des?'Toca para volver a estar disponible':'Toca si vas a almorzar o descansar')+'</small></span></button>'
-      +'<div class="pdmmGrid"><button type="button" data-mm="ruta"><b>Ruta del día</b><small>'+(act?act+' pedido'+(act===1?'':'s')+' en curso':'Sin pedidos en curso')+'</small></button><button type="button" data-mm="ganancias"><b>Mis ganancias</b><small>Hoy, semana y quincena</small></button><button type="button" data-mm="calificaciones"><b>Mis calificaciones</b><small>'+(calN?'★ '+calP.toFixed(1)+' · '+calN+' opinión'+(calN===1?'':'es'):'Lo que dicen los clientes')+'</small></button><button type="button" data-mm="historial"><b>Historial</b><small>Buscar entregas pasadas</small></button></div>';
+      +'<div class="pdmmGrid"><button type="button" data-mm="ruta"><b>Ruta del día</b><small>'+(act?act+' pedido'+(act===1?'':'s')+' en curso':'Sin pedidos en curso')+'</small></button><button type="button" data-mm="rendimiento"><b>Mi rendimiento</b><small>Entregas, tiempos y meta</small></button><button type="button" data-mm="calificaciones"><b>Mis calificaciones</b><small>'+(calN?'★ '+calP.toFixed(1)+' · '+calN+' opinión'+(calN===1?'':'es'):'Lo que dicen los clientes')+'</small></button><button type="button" data-mm="historial"><b>Historial</b><small>Buscar entregas pasadas</small></button></div>';
     if(c.__h!==h){c.__h=h;c.innerHTML=h}
   }
 
@@ -11073,22 +11073,28 @@ html body #pidemasOrderFullModal .pidemas-order-modal-actions button.pdpeNc{widt
       +'<p class="pdmmMut">Primero recoges y luego entregas, siempre yendo al punto más cercano.'+(yo?'':' Activa tu GPS para calcular mejor.')+'</p>';
   }
 
-  /* ---------- 2. Ganancias ---------- */
+  /* ---------- 2. Mi rendimiento ---------- */
   const KMETA='pidemas-moto-meta-dia';
-  async function ganancias(){
-    const b=hoja('Mis ganancias','<p class="pdmmMut">Cargando…</p>');const m=ME();
-    const now=new Date(),dl=diaLima(now),[y,mo,d]=dl.split('-').map(Number);
-    const iniQ=new Date(Date.UTC(y,mo-1,d<=15?1:16,5)),ini7=new Date(Date.now()-6*864e5);const desde=new Date(Math.min(iniQ,ini7)).toISOString();
-    const r=await D().from('pedidos').select('id,costo_delivery,entregado_en,creado_en').eq('motorizado_id',m.id).eq('estado','entregado').gte('creado_en',new Date(Math.min(iniQ,ini7)-864e5).toISOString()).limit(2000);
+  async function rendimiento(){
+    const b=hoja('Mi rendimiento','<p class="pdmmMut">Cargando…</p>');const m=ME();
+    const dl=diaLima(Date.now()),[y,mo,d]=dl.split('-').map(Number);
+    const iniQ=new Date(Date.UTC(y,mo-1,d<=15?1:16,5)).getTime(),ini7=Date.now()-6*864e5;
+    let r=await D().from('pedidos').select('id,estado,creado_en,asignado_en,aceptado_en,en_camino_en,entregado_en,no_entregado').eq('motorizado_id',m.id).in('estado',['entregado','cancelado']).gte('creado_en',new Date(Math.min(iniQ,ini7)-864e5).toISOString()).limit(3000);
+    if(r.error)r=await D().from('pedidos').select('id,estado,creado_en,asignado_en,aceptado_en,en_camino_en,entregado_en').eq('motorizado_id',m.id).in('estado',['entregado','cancelado']).gte('creado_en',new Date(Math.min(iniQ,ini7)-864e5).toISOString()).limit(3000);
     if(r.error){b.innerHTML='<p class="pdmmErr">'+E(r.error.message)+'</p>';return}
-    const P=(r.data||[]).map(p=>({...p,t:T(p.entregado_en||p.creado_en)}));
-    const sum=L=>({n:L.length,v:L.reduce((s,p)=>s+(Number(p.costo_delivery)||0),0)});
-    const hoy=sum(P.filter(p=>diaLima(p.t)===dl)),sem=sum(P.filter(p=>diaLima(p.t)>=diaLima(ini7))),qui=sum(P.filter(p=>p.t>=iniQ.getTime()));
+    const P=(r.data||[]).map(p=>({...p,t:T(p.entregado_en||p.creado_en)}));const ent=P.filter(p=>est(p)==='entregado');
+    const cnt=f=>ent.filter(f).length;
+    const nHoy=cnt(p=>diaLima(p.t)===dl),n7=cnt(p=>p.t>=ini7-864e5&&diaLima(p.t)>=diaLima(ini7)),nQ=cnt(p=>p.t>=iniQ);
+    const mins=(a,c)=>a&&c?(T(c)-T(a))/60000:null,ok2=x=>x!=null&&x>=0&&x<240,avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+    const per=ent.filter(p=>p.t>=iniQ);
+    const viaje=per.map(p=>mins(p.en_camino_en,p.entregado_en)).filter(ok2),acep=per.map(p=>mins(p.asignado_en,p.aceptado_en)).filter(ok2);
+    const aTiempo=viaje.filter(x=>x<=25).length,noE=P.filter(p=>p.t>=iniQ&&p.no_entregado).length;
+    const f=v=>v==null?'—':Math.round(v)+' min';
     let meta=+(localStorage.getItem(KMETA)||0);
-    const pint=()=>{const pc=meta?Math.min(100,Math.round(hoy.n*100/meta)):0;
-      b.innerHTML='<div class="pdmmGrid3"><div><span>Hoy</span><b>'+hoy.n+'</b><small>'+M(hoy.v)+'</small></div><div><span>7 días</span><b>'+sem.n+'</b><small>'+M(sem.v)+'</small></div><div><span>Quincena</span><b>'+qui.n+'</b><small>'+M(qui.v)+'</small></div></div>'
-        +'<p class="pdmmMut">Número de entregas y delivery que generaste. Tu sueldo y descuentos los ves en Billetera.</p>'
-        +'<div class="pdmmLbl">Mi meta de hoy</div>'+(meta?'<div class="pdmmBar"><s style="width:'+pc+'%"></s></div><p class="pdmmMut"><b>'+hoy.n+' de '+meta+'</b> entregas'+(hoy.n>=meta?' · ¡Meta cumplida! 🎉':' · te faltan '+(meta-hoy.n))+'</p>':'<p class="pdmmMut">Ponte una meta de entregas para hoy.</p>')
+    const pint=()=>{const pc=meta?Math.min(100,Math.round(nHoy*100/meta)):0;
+      b.innerHTML='<div class="pdmmLbl">Entregas</div><div class="pdmmGrid3"><div><span>Hoy</span><b>'+nHoy+'</b></div><div><span>7 días</span><b>'+n7+'</b></div><div><span>Quincena</span><b>'+nQ+'</b></div></div>'
+        +'<div class="pdmmLbl">Tus tiempos en la quincena</div><div class="pdmmGrid2"><div><span>Entregas en promedio</span><b>'+f(avg(viaje))+'</b><small>desde que sales con el pedido</small></div><div><span>Aceptas en promedio</span><b>'+f(avg(acep))+'</b><small>desde que te asignan</small></div><div><span>Entregas a tiempo</span><b>'+(viaje.length?Math.round(aTiempo*100/viaje.length)+'%':'—')+'</b><small>en 25 min o menos</small></div><div><span>No entregados</span><b>'+noE+'</b><small>cliente no recibió</small></div></div>'
+        +'<div class="pdmmLbl">Mi meta de hoy</div>'+(meta?'<div class="pdmmBar"><s style="width:'+pc+'%"></s></div><p class="pdmmMut"><b>'+nHoy+' de '+meta+'</b> entregas'+(nHoy>=meta?' · ¡Meta cumplida! 🎉':' · te faltan '+(meta-nHoy))+'</p>':'<p class="pdmmMut">Ponte una meta de entregas para hoy.</p>')
         +'<div class="pdmmMeta"><input id="pdmmMetaIn" inputmode="numeric" maxlength="3" placeholder="Ej. 15" value="'+(meta||'')+'"><button type="button" class="btn" id="pdmmMetaOk">Guardar meta</button></div>';
       $('pdmmMetaOk').onclick=()=>{meta=Math.max(0,parseInt($('pdmmMetaIn').value,10)||0);try{localStorage.setItem(KMETA,String(meta))}catch(e){}pint()}};
     pint();
@@ -11159,7 +11165,7 @@ html body #pidemasOrderFullModal .pidemas-order-modal-actions button.pdpeNc{widt
     if(n%20===5)cerca().catch(()=>{});if(n%60===10)try{cierreCaja()}catch(e){}if(n===4||n%900===0)leerCal().then(tarjeta).catch(()=>{});
     if(n%30===15){const m=ME();D().from('motorizados').select('en_descanso,en_descanso_desde').eq('id',m.id).maybeSingle().then(r=>{if(r&&r.data){m.en_descanso=!!r.data.en_descanso;m.en_descanso_desde=r.data.en_descanso_desde}}).catch(()=>{})}
   },1000);
-  window.pdMotoMej={ruta,ganancias,calificaciones,historial,descanso};
+  window.pdMotoMej={ruta,rendimiento,calificaciones,historial,descanso};
 })();
 </script>
 <style id="pd-moto-mejoras-css">
@@ -11196,6 +11202,11 @@ html body #homeTab#homeTab#homeTab > #pdmmTools#pdmmTools{display:flex!important
 .pdmmGrid3 span{font:600 12px var(--font,Inter,sans-serif);color:#6E625A}
 .pdmmGrid3 b{font:900 24px var(--font,Inter,sans-serif);color:#C4410C}
 .pdmmGrid3 small{font:700 12.5px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdmmGrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pdmmGrid2 div{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:14px;background:#FFF9F5;border:1px solid #F1E4DC}
+.pdmmGrid2 span{font:600 12px var(--font,Inter,sans-serif);color:#6E625A}
+.pdmmGrid2 b{font:800 18px var(--font,Inter,sans-serif);color:#1F1A17}
+.pdmmGrid2 small{font:500 11px var(--font,Inter,sans-serif);color:#9A8F87}
 .pdmmBar{height:12px;border-radius:999px;background:#F5ECE6;overflow:hidden}
 .pdmmBar s{display:block;height:100%;background:#16A34A;border-radius:999px}
 .pdmmMeta,.pdmmFil{display:flex;gap:8px}
@@ -11221,6 +11232,19 @@ html body #pidemasOrderFullModal .pidemas-order-modal-actions a.pdmmLlego{displa
 .pdmmCerca small{font:500 12.5px var(--font,Inter,sans-serif);color:#6E625A}
 .pdmmCerca a{padding:10px 14px;border-radius:12px;background:#25D366;color:#fff;font:800 14px var(--font,Inter,sans-serif);text-decoration:none}
 .pdmmCerca button{all:unset;width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#FFF1E8;color:#C4410C;font-size:20px;cursor:pointer}
+</style>
+<style id="pd-perfil-moto-compacto">
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn{padding:16px!important;gap:14px!important;border-radius:18px!important;min-height:0!important;align-items:center!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpAv{flex:0 0 64px!important;width:64px!important;height:64px!important;min-width:64px!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpAv > *:not(input):not(label){width:64px!important;height:64px!important;font-size:24px!important;border-radius:18px!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpAv img{width:64px!important;height:64px!important;border-radius:18px!important;object-fit:cover!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpWho{gap:3px!important;margin:0!important;padding:0!important;min-height:0!important;height:auto!important;align-self:center!important;justify-content:center!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpWho > span:nth-child(3),html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpWho > .pdpChips{display:none!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn{align-content:center!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpWho > *,html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn > *{margin:0!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpHnKick{font-size:11px!important;font-weight:600!important;letter-spacing:.06em!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpWho > span:nth-child(2){font-size:20px!important;line-height:1.2!important}
+html:root body:not(#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq#pdMq) #profileTab .pdp > section.pdpHero.pdpHn .pdpHnSub{font-size:13px!important;font-weight:400!important}
 </style>
 </body>
 
