@@ -8,7 +8,7 @@
    el mismo velo detrás y se cierran arrastrando hacia abajo.
    Va en la primera capa (@layer pdmu) para que ningún estilo anterior lo pise. */
 @layer pdmu{
-:root{--pdmu-top:56px;--pdmu-h:calc(100dvh - var(--pdmu-top));--pdmu-w:560px;--pdmu-r:24px;--pdmu-velo:rgba(31,26,23,.52)}
+:root{--pdmu-top:56px;--pdmu-h:calc(100dvh - var(--pdmu-top));--pdmu-w:560px;--pdmu-r:24px;--pdmu-velo:transparent}
 [data-pdm-velo]{background:var(--pdmu-velo)!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important;transform:none!important;filter:none!important;perspective:none!important;contain:none!important;will-change:auto!important}
 [data-pdm-velo="caja"]{background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 #pdFondoHoja,#pdVelo,#pdmuVelo{background:var(--pdmu-velo)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
@@ -10446,7 +10446,7 @@ function veloPropio(){
   miVelo.__h=h;miVelo.style.zIndex=String(Math.max(0,z-1));
   if(h.parentElement&&miVelo.parentElement!==h.parentElement&&h.parentElement!==document.documentElement){try{h.parentElement.insertBefore(miVelo,h)}catch(e){}}
 }
-function pedir(){if(!pend){pend=1;const w=Math.max(30,200-(Date.now()-ult));setTimeout(()=>requestAnimationFrame(()=>{ult=Date.now();try{revisar()}catch(e){pend=0}}),w)}}
+function pedir(){if(pend)return;if(Date.now()-ult>160){pend=1;ult=Date.now();try{revisar()}catch(e){pend=0}return}pend=1;const w=Math.max(30,200-(Date.now()-ult));setTimeout(()=>requestAnimationFrame(()=>{ult=Date.now();try{revisar()}catch(e){pend=0}}),w)}
 new MutationObserver(pedir).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['class','style','hidden','open','aria-hidden']});
 addEventListener('resize',pedir);
 /* las ventanas que aparecen con animación se revisan otra vez al terminar */
@@ -11169,7 +11169,7 @@ html body #pidemasOrderFullModal .pidemas-order-modal-actions button.pdpeNc{widt
 })();
 </script>
 <style id="pd-moto-mejoras-css">
-html body #homeTab#homeTab#homeTab > #pdmmTools#pdmmTools{display:flex!important}
+html body #homeTab#homeTab#homeTab > #pdmmTools#pdmmTools{display:flex!important;margin-bottom:calc(120px + env(safe-area-inset-bottom))!important}
 #pdmmTools{display:flex;flex-direction:column;gap:10px;margin:0 0 14px}
 #pdmmTools button{all:unset;box-sizing:border-box;cursor:pointer;-webkit-tap-highlight-color:transparent}
 #pdmmTools .pdmmDes{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;background:#ECFDF3;border:1px solid #ABEFC6}
