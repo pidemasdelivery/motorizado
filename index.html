@@ -2362,7 +2362,7 @@ html body:has(#pdcfBg) #nav,html body:has(#pdcfBg) .nav,html body:has(#pdcfBg) #
 html body #pdcfBg section{margin-bottom:0px!important}
 </style>
 <meta name="pd-instalacion" content="1">
-<meta name="pd-version" content="202611161540">
+<meta name="pd-version" content="202611161632">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Pidemás | Panel Motorizado</title>
@@ -8389,7 +8389,8 @@ window.pdTxt=function(s){
     });
      
     const top=lista.filter(b=>b.parentElement===content);
-    if(!top.every((b,i)=>content.children[i]===b))for(let i=top.length-1;i>=0;i--)content.prepend(top[i]);
+    const pw=content.querySelector(':scope > .pdpaW');const off=pw&&content.firstElementChild===pw?1:0;
+    if(!top.every((b,i)=>content.children[i+off]===b))for(let i=top.length-1;i>=0;i--){if(pw&&pw.parentNode===content)pw.after(top[i]);else content.prepend(top[i])}
   }
   function todo(){
     const modal=document.getElementById('pidemasOrderFullModal');if(!modal||modal.hidden)return;
@@ -11542,6 +11543,109 @@ new MutationObserver(function(ms){for(var i=0;i<ms.length;i++){var m=ms[i];var t
 .pdYNEst.e-llego{background:#E9F6EE;border-color:#BBE5C8}.pdYNEst.e-no_llego{background:#FEF3F2;border-color:#FDA29B}
 @keyframes pdYNp{50%{transform:scale(.7);opacity:.6}}
 </style>
+<style id="pd-pasos-css">
+html:root body .pdpaW{display:flex!important;flex-direction:column!important;gap:8px!important;margin:0 0 12px!important;padding:0!important;background:none!important;border:0!important;box-shadow:none!important}
+html:root body .pdpa{display:block!important;background:#fff!important;border:1px solid #EFE3DA!important;border-radius:16px!important;overflow:hidden!important;flex:0 0 auto!important;box-shadow:none!important;margin:0!important;padding:0!important}
+html:root body .pdpa.cur{border:1.5px solid #C4410C!important}
+html:root body .pdpa.lock{background:#F6EFE9!important}
+html:root body .pdpaH{display:flex!important;align-items:center!important;gap:12px!important;width:100%!important;min-height:58px!important;height:auto!important;padding:12px 14px!important;margin:0!important;background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;text-align:left!important;font-family:Inter,system-ui,sans-serif!important;color:#1F1A17!important;cursor:pointer;justify-content:flex-start!important}
+html:root body .pdpa.lock .pdpaH{cursor:default}
+html:root body .pdpaN{flex:0 0 32px!important;width:32px!important;min-width:32px!important;max-width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;line-height:1!important;box-sizing:border-box!important;border:0!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;font:800 14px Inter,system-ui,sans-serif!important;background:#EADFD6!important;color:#6B5E55!important}
+html:root body .pdpa.cur .pdpaN{background:#C4410C!important;color:#fff!important}
+html:root body .pdpa.done .pdpaN{background:#15803D!important;color:#fff!important}
+html:root body .pdpaT{flex:1 1 auto!important;min-width:0!important;display:block!important}
+html:root body .pdpaT b{display:block!important;font:800 16px/1.25 Inter,system-ui,sans-serif!important;color:#1F1A17!important}
+html:root body .pdpaT small{display:block!important;margin-top:2px!important;font:500 13px/1.35 Inter,system-ui,sans-serif!important;color:#6B5E55!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+html:root body .pdpaC{flex:0 0 12px!important;width:10px!important;height:10px!important;border-right:2px solid #6B5E55!important;border-bottom:2px solid #6B5E55!important;transform:rotate(45deg)!important;margin:-6px 6px 0 0!important;transition:transform .2s}
+html:root body .pdpa.open .pdpaC{transform:rotate(-135deg)!important;margin-top:4px!important}
+html:root body .pdpaL{flex:0 0 18px!important;width:18px!important;height:18px!important;color:#6B5E55!important}
+html:root body .pdpaB{display:flex!important;flex-direction:column!important;gap:10px!important;padding:0 14px 14px!important;margin:0!important;background:none!important;border:0!important}
+html:root body .pdpaB > *{margin-left:0!important;margin-right:0!important;box-shadow:none!important}
+html:root body .pdpa:not(.open) .pdpaB{display:none!important}
+html:root body .pdpaI{display:flex!important;flex-direction:column!important;gap:3px!important;padding:12px!important;border-radius:12px!important;background:#FFF9F5!important;font:500 14px/1.45 Inter,system-ui,sans-serif!important;color:#1F1A17!important}
+html:root body .pdpaI small{font:800 12px Inter,system-ui,sans-serif!important;letter-spacing:.06em!important;text-transform:uppercase!important;color:#6B5E55!important}
+html:root body .pdpaI b{font:800 16px/1.3 Inter,system-ui,sans-serif!important;color:#1F1A17!important}
+html:root body .pdpaI .cod{font:900 30px Inter,system-ui,sans-serif!important;letter-spacing:.16em!important;color:#C4410C!important}
+html:root body .pdpaHide{display:none!important}
+html:root body #pidemasOrderFullModalContent > .pdpaF{margin:12px 0 0!important}
+html:root body #pidemasOrderFullModalContent > .pdpaW > .pdpa.cur .pdpaH{min-height:52px!important}
+html:root body #pidemasOrderFullModalContent .pdpa.done:not(.open) .pdpaH,html:root body #pidemasOrderFullModalContent .pdpa.lock .pdpaH{min-height:48px!important;padding:8px 14px!important}
+</style>
+
+<script id="pd-pasos-moto-js">
+/* Pedido por pasos: los pasos terminados se pliegan con ✓ y se pueden volver a abrir */
+(function(){
+  if(window.__pdPasosM)return;window.__pdPasosM=1;
+  const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money=n=>'S/ '+(Number(n)||0).toFixed(2);
+  const L=()=>{try{return Array.isArray(orders)?orders:[]}catch(e){return []}};
+  const svc=o=>{const t=String(o?.tipo_servicio||'').toLowerCase();return t.includes('encomienda')?'enc':t.includes('compra')?'compra':t.includes('recojo')?'recojo':'tienda'};
+  const aCobrar=o=>o.pago_acordado==='pagado'?0:o.pago_acordado==='solo_delivery'?Number(o.costo_delivery||0):Number(o.total||0);
+  const OPEN={};
+  function idx(o){
+    const s=String(o.estado||'').toLowerCase(),k=svc(o);
+    if(['asignado','aceptado','pedido_aceptado','camino_recojo','pendiente','confirmado'].includes(s)){
+      if(k==='compra')return Number(o.subtotal)>0?1:0;
+      return o.en_local_en?1:0;
+    }
+    if(['en_camino','camino_entrega'].includes(s))return 2;
+    if(['en_entrega','confirmando_pago'].includes(s))return (o.pago_confirmado!==true&&aCobrar(o)>0&&!(typeof window.pdCobraAlRecoger==='function'&&window.pdCobraAlRecoger(o)))?3:4;
+    if(s==='entregado')return 5;
+    return -1;
+  }
+  function titulos(o){
+    const k=svc(o);
+    if(k==='compra')return ['Ir a comprar','Comprar','Llevar al cliente','Cobrar','Confirmar entrega'];
+    if(k==='recojo')return ['Ir a recoger','Recoger','Llevar a quien recibe','Cobrar','Confirmar entrega'];
+    return ['Ir al local','Recoger con código','Llevar al cliente','Cobrar','Confirmar entrega'];
+  }
+  function info(o,i,modal){
+    const nb=modal.querySelector('.pdNegB');let neg='';if(nb){const cl=nb.cloneNode(true);const fe=cl.firstElementChild;if(fe&&fe.textContent.trim().length<=2)fe.remove();neg=cl.textContent.trim()}neg=neg||o.negocio_nombre||'';
+    const rec=[neg,o.direccion_recojo].filter(Boolean);
+    const pa=String(o.pago_acordado||'');
+    if(i===0)return {sum:rec.join(' · ')||'Recojo',body:'<div class="pdpaI"><small>'+(svc(o)==='compra'?'Compra en':'Recojo')+'</small><b>'+E(rec[0]||o.direccion_recojo||'Lugar de recojo')+'</b>'+(rec[1]&&rec[1]!==rec[0]?'<span>'+E(rec[1])+'</span>':'')+(o.referencia_recojo?'<span>Ref.: '+E(o.referencia_recojo)+'</span>':'')+'</div>'};
+    if(i===1){if(svc(o)==='compra')return {sum:Number(o.subtotal)>0?'Compra '+money(o.subtotal):'Compra registrada',body:'<div class="pdpaI"><small>Compra</small><b>'+(Number(o.subtotal)>0?money(o.subtotal):'Registrada')+'</b></div>'};
+      return {sum:o.codigo_recojo?'Código '+o.codigo_recojo+' · recogido':'Pedido recogido',body:'<div class="pdpaI"><small>Código de recojo</small><span class="cod">'+E(o.codigo_recojo||'—')+'</span><span>Ya recogiste el pedido.</span></div>'}}
+    if(i===2){const cli=[o.nombre_cliente,o.direccion_entrega].filter(Boolean);return {sum:cli.join(' · ')||'Entrega',body:'<div class="pdpaI"><small>Entrega</small><b>'+E(o.nombre_cliente||'Cliente')+'</b>'+(o.direccion_entrega?'<span>'+E(o.direccion_entrega)+'</span>':'')+(o.referencia_entrega?'<span>Ref.: '+E(o.referencia_entrega)+'</span>':'')+'</div>'}}
+    if(i===3){const m=aCobrar(o);const met=pa==='yape_negocio'?'Yape del negocio':String(o.metodo_pago||'').toLowerCase()==='yape'?'Yape':'efectivo';
+      return {sum:m>0?(o.pago_confirmado===true?'Cobrado '+money(o.monto_recibido>0&&met==='efectivo'?Math.min(o.monto_recibido,m):m)+' · '+met:'Cobrar '+money(m)):'No se cobra nada',body:'<div class="pdpaI"><small>Cobro</small><b>'+(m>0?money(m)+' · '+E(met):'No se cobra')+'</b>'+(o.pago_confirmado===true?'<span>Cobro registrado.</span>':'')+'</div>'}}
+    return {sum:'Entregado',body:''};
+  }
+  function fila(o,i,estado,t,inf){
+    const op=OPEN[o.id]||(OPEN[o.id]={}),abierto=estado==='done'&&!!op[i];
+    const d=document.createElement('div');d.className='pdpa '+estado+(abierto?' open':'');d.dataset.i=i;
+    const lock='<svg class="pdpaL" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+    d.innerHTML='<button type="button" class="pdpaH"'+(estado!=='done'?' disabled':' aria-expanded="'+abierto+'"')+'><span class="pdpaN">'+(estado==='done'?'✓':(i+1))+'</span><span class="pdpaT"><b>'+E(t)+'</b>'+(estado==='done'&&!abierto?'<small>'+E(inf.sum)+'</small>':estado==='lock'?'<small>Se muestra al terminar el paso anterior</small>':estado==='cur'?'<small>Paso actual · sigue abajo</small>':'')+'</span>'+(estado==='done'?'<span class="pdpaC"></span>':estado==='lock'?lock:'')+'</button>'+(estado==='done'?'<div class="pdpaB">'+inf.body+'</div>':'');
+    if(estado==='done')d.querySelector('.pdpaH').addEventListener('click',()=>{op[i]=!op[i];pintar(true)});
+    return d;
+  }
+  let firma='';
+  function pintar(forzar){
+    const m=document.getElementById('pidemasOrderFullModal');if(!m||!m.classList.contains('is-open')){firma='';return}
+    const c=m.querySelector('#pidemasOrderFullModalContent');if(!c)return;
+    const o=L().find(x=>String(x.id)===String(m.dataset.orderId||''));
+    const quitar=()=>{c.querySelectorAll(':scope > .pdpaW, :scope > .pdpaF').forEach(x=>x.remove())};
+    if(!o||svc(o)==='enc'){quitar();firma='';return}
+    const f=idx(o);if(f<0||f>4){quitar();firma='';return}
+    const op=OPEN[o.id]||{};
+    const key=[o.id,f,o.pago_confirmado,o.codigo_recojo,o.pago_acordado,JSON.stringify(op)].join('|');
+    const W=c.querySelector(':scope > .pdpaW'),F=c.querySelector(':scope > .pdpaF');
+    if(!forzar&&key===firma&&W&&c.firstElementChild===W)return;
+    firma=key;quitar();
+    const T=titulos(o);
+    const w=document.createElement('div');w.className='pdpaW';
+    for(let i=0;i<f;i++)w.appendChild(fila(o,i,'done',T[i],info(o,i,m)));
+    w.appendChild(fila(o,f,'cur',T[f],{}));
+    if(f<4)w.lastChild.querySelector('.pdpaT small').textContent='Paso '+(f+1)+' de 5 · sigue: '+T[f+1];
+    c.prepend(w);
+    const fk=o.id+'|'+f;if(ultimo!==fk){ultimo=fk;const cur=w.querySelector('.pdpa.cur');if(cur&&f>0)requestAnimationFrame(()=>{try{c.scrollTop=Math.max(0,cur.offsetTop-c.offsetTop-8)}catch(e){}})}
+  }
+  let ultimo='';
+  let q=false;const pronto=()=>{if(q)return;q=true;setTimeout(()=>{q=false;try{pintar()}catch(e){}},90)};
+  new MutationObserver(ms=>{if(ms.some(x=>!(x.target.closest&&x.target.closest('.pdpaW'))))pronto()}).observe(document.body,{childList:true,subtree:true});
+  setInterval(pronto,1500);
+})();
+</script>
 </body>
 
 
