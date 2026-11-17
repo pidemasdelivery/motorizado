@@ -9046,21 +9046,20 @@ if(window.__pdHomeCard)return;window.__pdHomeCard=true;
 var T=function(id){var e=document.getElementById(id);return e?(e.textContent||'').trim():''};
 function html(){return '<div class="pdh-stats">'
  +'<button type="button" data-go="wallet"><small>Sueldo acumulado</small><b data-k="amt">S/ 0.00</b></button>'
- +'<button type="button" data-go="cash"><small>Saldo en caja</small><b data-k="cash">S/ 0.00</b></button>'
- +'<button type="button" data-go="ped"><small>Pedidos entregados</small><b data-k="del">0</b></button>'
- +'<button type="button" data-go="ped"><small>Mejor tiempo</small><b data-k="best">—</b></button></div>'}
+ +'<button type="button" data-go="cash"><small>Saldo en caja</small><b data-k="cash">S/ 0.00</b></button></div>'}
 function ensure(){
  var h=document.getElementById('homeTab');if(!h)return null;
  var c=document.getElementById('pdHomeCard');
  if(!c){c=document.createElement('section');c.id='pdHomeCard';c.innerHTML=html();
   c.addEventListener('click',function(e){var b=e.target.closest('[data-go]');var amt=e.target.closest('[data-k="amt"]');var go=b?b.getAttribute('data-go'):(amt?'wallet':'');if(!go)return;
    var sel=go==='cash'?'#nav [data-tab="cash"]':go==='wallet'?'#nav [data-tab="wallet"]':'#nav [data-pd-pedidos]';var n=document.querySelector(sel);if(n)n.click()})}
- if(h.firstElementChild!==c)h.insertBefore(c,h.firstChild);
+ var dd=document.getElementById('pdmmDesTop');
+ if(dd&&dd.parentNode===h){if(dd.nextElementSibling!==c)dd.after(c)}else if(h.firstElementChild!==c)h.insertBefore(c,h.firstChild);
  return c}
 function set(c,k,v){var e=c.querySelector('[data-k="'+k+'"]');if(e&&e.textContent!==v)e.textContent=v}
 function paint(){var c=ensure();if(!c)return;
  var sal=T('homeSalaryBalance')||'S/ 0.00',cash=T('homeCashBalance')||'S/ 0.00';
- set(c,'amt',sal);set(c,'cash',cash);set(c,'del',String(parseInt(T('deliveredCount'))||0));set(c,'best',window.__pdBestTime||'—')}
+ set(c,'amt',sal);set(c,'cash',cash);}
 function start(){paint();setInterval(paint,1000)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
@@ -11066,9 +11065,13 @@ html body #pidemasOrderFullModal .pidemas-order-modal-actions button.pdpeNc{widt
     if(!c){c=document.createElement('section');c.id='pdmmTools';c.addEventListener('click',e=>{const b=e.target.closest('[data-mm]');if(!b)return;({descanso,ruta,rendimiento,calificaciones,historial})[b.dataset.mm]()})}
     if(c.previousElementSibling!==home)home.after(c);
     const des=!!m.en_descanso,act=OR().filter(o=>ACTIVOS.includes(est(o))).length;
-    const h='<button type="button" data-mm="descanso" class="pdmmDes '+(des?'on':'')+'"><i></i><span><b>'+(des?'Estás en descanso':'Disponible para pedidos')+'</b><small>'+(des?'Toca para volver a estar disponible':'Toca si vas a almorzar o descansar')+'</small></span></button>'
-      +'<div class="pdmmGrid"><button type="button" data-mm="ruta"><b>Ruta del día</b><small>'+(act?act+' pedido'+(act===1?'':'s')+' en curso':'Sin pedidos en curso')+'</small></button><button type="button" data-mm="rendimiento"><b>Mi rendimiento</b><small>Entregas, tiempos y meta</small></button><button type="button" data-mm="calificaciones"><b>Mis calificaciones</b><small>'+(calN?'★ '+calP.toFixed(1)+' · '+calN+' opinión'+(calN===1?'':'es'):'Lo que dicen los clientes')+'</small></button><button type="button" data-mm="historial"><b>Historial</b><small>Buscar entregas pasadas</small></button></div>';
+    const hd='<button type="button" data-mm="descanso" class="pdmmDes '+(des?'on':'')+'"><i></i><span><b>'+(des?'Estás en descanso':'Disponible para pedidos')+'</b><small>'+(des?'Toca para volver a estar disponible':'Toca si vas a almorzar o descansar')+'</small></span></button>';
+    const h='<div class="pdmmGrid"><button type="button" data-mm="ruta"><b>Ruta del día</b><small>'+(act?act+' pedido'+(act===1?'':'s')+' en curso':'Sin pedidos en curso')+'</small></button><button type="button" data-mm="rendimiento"><b>Mi rendimiento</b><small>Entregas, tiempos y meta</small></button><button type="button" data-mm="calificaciones"><b>Mis calificaciones</b><small>'+(calN?'★ '+calP.toFixed(1)+' · '+calN+' opinión'+(calN===1?'':'es'):'Lo que dicen los clientes')+'</small></button><button type="button" data-mm="historial"><b>Historial</b><small>Buscar entregas pasadas</small></button></div>';
     if(c.__h!==h){c.__h=h;c.innerHTML=h}
+    let d=$('pdmmDesTop');
+    if(!d){d=document.createElement('section');d.id='pdmmDesTop';d.addEventListener('click',e=>{const b=e.target.closest('[data-mm]');if(!b)return;descanso()})}
+    if(d.nextElementSibling!==home||d.parentNode!==home.parentNode)home.before(d);
+    if(d.__h!==hd){d.__h=hd;d.innerHTML=hd}
   }
 
   /* ---------- 4. Descanso ---------- */
@@ -11214,6 +11217,18 @@ html body #homeTab#homeTab#homeTab > #pdmmTools#pdmmTools{display:flex!important
 #pdmmTools small{font:500 12.5px/1.3 var(--font,Inter,sans-serif);color:#6E625A}
 #pdmmTools .pdmmGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 #pdmmTools .pdmmGrid button{display:flex;flex-direction:column;gap:3px;min-height:64px;padding:12px 14px;border-radius:16px;background:#fff;border:1px solid #F1E4DC}
+/* Disponible para pedidos: va justo debajo del encabezado, donde estaba el aviso de GPS */
+#pdmmDesTop{display:block;margin:0 0 12px}
+#pdmmDesTop button{all:unset;box-sizing:border-box;cursor:pointer;-webkit-tap-highlight-color:transparent;width:100%}
+#pdmmDesTop .pdmmDes{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;background:#ECFDF3;border:1px solid #ABEFC6}
+#pdmmDesTop .pdmmDes i{flex:0 0 12px;width:12px;height:12px;border-radius:50%;background:#16A34A;box-shadow:0 0 0 4px rgba(22,163,74,.18)}
+#pdmmDesTop .pdmmDes.on{background:#FFF7ED;border-color:#FED7AA}
+#pdmmDesTop .pdmmDes.on i{background:#EA580C;box-shadow:0 0 0 4px rgba(234,88,12,.18)}
+#pdmmDesTop .pdmmDes span{display:flex;flex-direction:column;gap:2px}
+#pdmmDesTop b{font:800 14.5px var(--font,Inter,sans-serif);color:#1F1A17}
+#pdmmDesTop small{font:500 12.5px/1.3 var(--font,Inter,sans-serif);color:#6E625A}
+/* El aviso "GPS activo" ya no se muestra (solo si hay un error); el GPS sigue funcionando igual */
+html body #appView#appView#appView#appView#appView#appView#appView#appView#appView#appView#appView#appView#appView#appView#appView#appView#appView#appView #gpsStatus#gpsStatus.ok{display:none!important}
 .pdmmB{display:flex;flex-direction:column;gap:10px}
 .pdmmMut,.pdmmTx{margin:0;font:500 13.5px/1.45 var(--font,Inter,sans-serif);color:#6E625A}
 .pdmmTx{font-size:15px;color:#1F1A17}
@@ -11647,6 +11662,41 @@ html:root body #pidemasOrderFullModalContent .pdpa.done:not(.open) .pdpaH,html:r
   let q=false;const pronto=()=>{if(q)return;q=true;setTimeout(()=>{q=false;try{pintar()}catch(e){}},90)};
   new MutationObserver(ms=>{if(ms.some(x=>!(x.target.closest&&x.target.closest('.pdpaW'))))pronto()}).observe(document.body,{childList:true,subtree:true});
   setInterval(pronto,1500);
+})();
+</script>
+<style id="pd-fix-hoja-codigo-css">
+html body #pdpeVelo,html body #pdmmVelo{z-index:2147483647!important;position:fixed!important;left:0!important;right:0!important;top:0;height:100dvh;bottom:auto!important;inset:auto;margin:0;border:0;padding:0;width:100%;max-width:none;max-height:none;overflow:hidden;background:rgba(31,26,23,.45);display:flex;align-items:flex-end;justify-content:center;overscroll-behavior:contain}
+html body #pdpeVelo::backdrop,html body #pdmmVelo::backdrop{background:transparent}
+html body #pdpeVelo .pdsmHoja,html body #pdmmVelo .pdsmHoja{overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box}
+html body #pdpeVelo .pdsmHoja>:not(.pdsmTop),html body #pdmmVelo .pdsmHoja>:not(.pdsmTop){box-sizing:border-box;margin-left:18px;margin-right:18px;max-width:calc(100% - 36px)}
+html body #pdpeVelo .pdsmHoja>input.pdpeCod{width:calc(100% - 36px)}
+</style>
+<script id="pd-fix-hoja-codigo-js">
+/* Hoja del código de entrega siempre al frente: capa superior (popover) o dentro del <dialog> modal abierto, y pegada al teclado */
+(function(){
+  if(window.__pdFixHoja)return;window.__pdFixHoja=1;
+  var vv=window.visualViewport,SEL='#pdpeVelo,#pdmmVelo',busy=false;
+  function host(){var d=null;try{d=document.querySelector('dialog:modal')}catch(e){}return d||document.body}
+  function fit(){
+    if(busy)return;var list=document.querySelectorAll(SEL);if(!list.length)return;busy=true;
+    try{
+      var h=vv?vv.height:window.innerHeight,top=vv?vv.offsetTop:0,H=host();
+      list.forEach(function(v){
+        if(v.parentElement!==H||(H===document.body&&v.nextElementSibling)){try{if(v.matches(':popover-open'))v.hidePopover()}catch(e){}H.appendChild(v)}
+        if(!v.hasAttribute('popover'))v.setAttribute('popover','manual');
+        try{if(!v.matches(':popover-open'))v.showPopover()}catch(e){}
+        v.style.top=top+'px';v.style.height=h+'px';
+        var c=v.querySelector('.pdsmHoja');if(c)c.style.maxHeight=Math.max(220,h-16)+'px';
+        var i=v.querySelector('input:focus');if(i){try{i.scrollIntoView({block:'center'})}catch(e){}}
+      });
+    }finally{busy=false}
+  }
+  window.__pdFitHoja=fit;
+  if(vv){vv.addEventListener('resize',fit);vv.addEventListener('scroll',fit)}
+  window.addEventListener('resize',fit);
+  new MutationObserver(function(){fit();setTimeout(fit,100);setTimeout(fit,350)}).observe(document.body,{childList:true,subtree:true});
+  document.addEventListener('focusin',function(e){if(e.target&&e.target.closest&&e.target.closest(SEL))setTimeout(fit,250)});
+  setInterval(fit,700);
 })();
 </script>
 </body>
