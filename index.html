@@ -12151,7 +12151,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .dsp .bt svg{color:#C4410C;width:18px;height:18px}
 .oc{display:block;width:100%;text-align:left;color:#1F1A17;background:#FFFFFF;border:1px solid #F1E4DA;border-radius:18px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:10px}
 .oc.a{border:1.5px solid #C4410C;box-shadow:0 6px 18px rgba(196,65,12,.10)}
-.oc .r1{display:flex;align-items:center;gap:8px}.oc .r1 b{font-size:17px}.oc .r1 small{font-size:12px;font-weight:700;color:#6B5E55;text-transform:uppercase;letter-spacing:.05em}.oc .r1 em{margin-left:auto;font-style:normal;font-size:18px;font-weight:800;color:#C4410C}
+.oc .r1{display:flex;align-items:center;gap:8px}.oc .r1 b{font-size:17px}.oc .r1 small{font-size:12px;font-weight:700;color:#6B5E55;text-transform:uppercase;letter-spacing:.05em}.oc .r1 em{margin-left:auto;font-style:normal;font-size:18px;font-weight:800;color:#1F1A17}
 .oc .pls{display:flex;gap:8px;flex-wrap:wrap}
 .pl{display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:999px;background:#FDEBDF;color:#9A330A;font-size:13px;font-weight:800}
 .pl.n{background:#FFFFFF;border:1px solid #F1E4DA;color:#1F1A17;font-weight:700}.pl.g{background:#E9F6EE;color:#0F5E2E}
@@ -12160,7 +12160,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .kick{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#C4410C}
 .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .mt{text-align:left;padding:14px;border-radius:18px;background:#FFFFFF;border:1px solid #F1E4DA;display:flex;flex-direction:column;gap:4px;color:#1F1A17;cursor:pointer}
-.mt span{font-size:13px;font-weight:600;color:#6B5E55}.mt b{font-size:24px;color:#C4410C}.mt small{font-size:12px;color:#6B5E55}
+.mt span{font-size:13px;font-weight:600;color:#6B5E55}.mt b{font-size:24px;color:#1F1A17}.mt small{font-size:12px;color:#6B5E55}
 .tl{display:flex;gap:12px;align-items:center;padding:14px;border-radius:18px;background:#FFFFFF;border:1px solid #F1E4DA;color:#1F1A17;cursor:pointer;width:100%;text-align:left}
 .tl .ic{flex:0 0 44px;width:44px;height:44px;border-radius:12px;background:#FDEBDF;color:#C4410C;display:flex;align-items:center;justify-content:center}
 .tl .tx{flex:1 1 0%;min-width:0;display:flex;flex-direction:column;gap:2px}.tl .tx b{font-size:16px}.tl .tx span{font-size:13px;color:#6B5E55}
@@ -12343,7 +12343,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     let h=`<div class="amt"><div class="k">${E(P.label||'Quincena actual')}</div><div class="n">${M(saldo)}</div><div class="pill">Por cobrar de esta quincena</div></div>`;
     if(!res.ok)h+=U.st('Tu sueldo empieza a contarse cuando administración registre: '+E((cfg.missing||[]).join(', '))+'.');
     else{const gas=res.hourly?P.gasTotal:P.gasDays*(S2.GAS||8);const desc=(P.descRows||[]).reduce((s,r)=>s+(Number(r.monto)||0),0);
-      h+=`<div class="cd"><div class="lbl">Cómo se calcula</div><div class="li"><span>Sueldo</span><b>${M(P.earned-gas)}</b></div><div class="li"><span>Gasolina</span><b>${M(gas)}</b></div><div class="li"><span>Ganado</span><b>${M(P.earned)}</b></div>${desc?`<div class="li"><span>Descuentos</span><b>− ${M(desc)}</b></div>`:''}<div class="li"><span>Ya pagado</span><b>− ${M(P.paid)}</b></div><div class="li" style="border-top:1px solid #F1E4DA;padding-top:8px"><span>Por cobrar</span><b style="color:#C4410C">${M(saldo)}</b></div></div>`;
+      h+=`<div class="cd"><div class="lbl">Cómo se calcula</div><div class="li"><span>Sueldo</span><b>${M(P.earned-gas)}</b></div><div class="li"><span>Gasolina</span><b>${M(gas)}</b></div><div class="li"><span>Ganado</span><b>${M(P.earned)}</b></div>${desc?`<div class="li"><span>Descuentos</span><b>− ${M(desc)}</b></div>`:''}<div class="li"><span>Ya pagado</span><b>− ${M(P.paid)}</b></div><div class="li" style="border-top:1px solid #F1E4DA;padding-top:8px"><span>Por cobrar</span><b style="font-size:18px">${M(saldo)}</b></div></div>`;
       if(typeof window.__pdHoyMsg==='function')try{h+=U.note(E(window.__pdHoyMsg(P,res)))}catch(_){}}
     const DS={lunes:'Lun',martes:'Mar',miercoles:'Mié',jueves:'Jue',viernes:'Vie',sabado:'Sáb',domingo:'Dom'},ORD=['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
     h+=`<div class="cd"><div class="lbl">Mi contrato</div><div class="li"><span>Ingreso</span><b>${cfg.hire?E(S2.parse(cfg.hire).toLocaleDateString('es-PE')):'Pendiente'}</b></div><div class="li"><span>Horario</span><b>${cfg.hourly?'Por horas':cfg.times?E(S2.fmtTime(cfg.times.start)+' – '+S2.fmtTime(cfg.times.end)):'Pendiente'}</b></div><div class="li"><span>Días</span><b>${(cfg.days||[]).length?E(ORD.filter(d=>cfg.days.includes(d)).map(d=>DS[d]).join(', ')):'Pendiente'}</b></div></div>`;
