@@ -11727,7 +11727,7 @@ html body #pdpeVelo .pdsmHoja>input.pdpeCod{width:calc(100% - 36px)}
     big:'<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
   };
   const CSS=`
-:host{all:initial;position:fixed;inset:0;z-index:2147480000;display:block;font-family:PdInter,Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#1F1A17;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+:host{all:initial;position:fixed;inset:0;z-index:2147483000;display:block;font-family:PdInter,Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#1F1A17;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
 *,*::before,*::after{box-sizing:border-box}
 button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .app{position:absolute;inset:0;display:flex;flex-direction:column;background:#FFF9F5;overflow:hidden;animation:entra .22s ease-out}
@@ -11884,8 +11884,21 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
   const propio=()=>!window.__pdAtras;
   function onPop(){if(!cur)return;if(history.state&&history.state.pdPasos)return;close(true)}
   function onKey(e){if(e.key==='Escape'&&cur){const d=[...document.querySelectorAll('[role="dialog"],dialog')].some(x=>x.getClientRects().length&&!x.closest('pd-pasos-pedido'));if(!d)close()}}
+  /* Barras de abajo de la app (menú inferior) que quedan por encima: se ocultan mientras la vista está abierta */
+  function taparBarras(c){
+    const H=innerHeight;
+    document.querySelectorAll('body > *').forEach(el=>{
+      if(el===c.host||c.ocultas.includes(el))return;
+      const cs=getComputedStyle(el);if(cs.position!=='fixed'||cs.visibility==='hidden'||cs.display==='none')return;
+      const z=parseInt(cs.zIndex,10);if(!(z>2147483000))return;
+      const r=el.getBoundingClientRect();if(!(r.height>0&&r.height<220&&r.top>H*0.55))return;
+      if(el.matches('[role="dialog"],[aria-modal="true"],dialog'))return;
+      c.ocultas.push(el);el.style.setProperty('visibility','hidden','important');
+    });
+  }
   function close(fromPop){
-    if(!cur)return;const c=cur;cur=null;clearInterval(c.t);window.removeEventListener('popstate',onPop);document.removeEventListener('keydown',onKey);
+    if(!cur)return;const c=cur;cur=null;clearInterval(c.t);
+    c.ocultas.forEach(el=>el.style.removeProperty('visibility'));window.removeEventListener('popstate',onPop);document.removeEventListener('keydown',onKey);
     c.host.remove();document.documentElement.style.overflow=c.ov||'';
     if(c.propio&&!fromPop&&history.state&&history.state.pdPasos)try{history.back()}catch(e){}
     if(c.onClose)try{c.onClose()}catch(e){}
@@ -11896,13 +11909,13 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     host.setAttribute('data-pd-aislado','1');
     const root=host.attachShadow({mode:'open'});
     document.body.appendChild(host);
-    cur={host,root,model,open:{},key:null,lastActive:-2,onClose:opts&&opts.onClose,ov:document.documentElement.style.overflow};
+    cur={host,root,model,ocultas:[],open:{},key:null,lastActive:-2,onClose:opts&&opts.onClose,ov:document.documentElement.style.overflow};
     document.documentElement.style.overflow='hidden';
     cur.propio=propio();
     if(cur.propio){try{history.pushState({pdPasos:1},'')}catch(e){}window.addEventListener('popstate',onPop)}
     document.addEventListener('keydown',onKey);
-    render();
-    cur.t=setInterval(()=>{if(cur)render()},800);
+    taparBarras(cur);render();
+    cur.t=setInterval(()=>{if(cur){taparBarras(cur);render()}},800);
   }
   const util={
     E,I,
