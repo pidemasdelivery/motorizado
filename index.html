@@ -12211,6 +12211,8 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .av2 .ic{flex:0 0 40px;width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#FDEBDF;color:#C4410C}
 .av2 .tx{flex:1 1 0%;min-width:0}.av2 .tx b{display:block;font-size:15px}.av2 .tx span{display:block;font-size:14px;color:#6B5E55;margin-top:2px;line-height:1.4}.av2 .tx small{display:block;font-size:12px;color:#6B5E55;margin-top:6px;font-weight:600}
 .av2 .pt{flex:0 0 10px;width:10px;height:10px;border-radius:50%;background:#C4410C;margin-top:6px}
+.list{scrollbar-width:none}.list::-webkit-scrollbar{display:none}
+.opt span{font-size:13px;color:#6B5E55}
 .msgok{padding:10px 12px;border-radius:12px;background:#E9F6EE;color:#0F5E2E;font-size:14px;font-weight:700}
 .load{padding:24px;text-align:center;color:#6B5E55;font-size:15px}
 `;
@@ -12293,15 +12295,8 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     const k=diaLima(Date.now()),hoyM=sp.current.filter(m=>diaLima(m.creado_en)===k),sh=P.summary(hoyM);
     h+=`<div class="amt"><div class="k">Saldo en caja</div><div class="n">${M(s.balance)}</div><div class="pill">Por entregar a administración</div></div>`;
     h+=`<div class="g2"><div class="kp"><span>Entró hoy</span><b>+ ${M(sh.ingresos)}</b><small>Cobros ${M(sh.cobros)} · admin ${M(sh.fondos)}</small></div><div class="kp"><span>Salió hoy</span><b>− ${M(sh.retiros)}</b><small>Pagos, gastos y entregas</small></div></div>`;
-    /* formulario */
-    const f=F.caja,ing=f.modo==='ingreso';
-    const ops=[...(($(ing?'cashInSource':'expenseReason')||{}).options||[])].filter(o=>o.value).map(o=>[o.value,o.textContent.trim()]);
-    h+=`<div class="cd"><div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button type="button" data-cm="ingreso" class="${ing?'on':''}">Registrar ingreso</button><button type="button" data-cm="salida" class="${!ing?'on':''}">Registrar salida</button></div>
-      ${f.msg?`<div class="err">${E(f.msg)}</div>`:''}${f.ok?`<div class="msgok">${E(f.ok)}</div>`:''}
-      <div class="fld"><label for="cjM">${ing?'Monto recibido (S/)':'Monto pagado (S/)'}</label><input id="cjM" inputmode="decimal" placeholder="0.00" value="${E(f.monto)}" data-in="monto"></div>
-      <div class="fld"><label>${ing?'¿De quién recibiste el efectivo?':'¿Para qué usaste el efectivo?'}</label><div class="opts">${ops.map(o=>`<button type="button" class="opt${f.origen===o[0]?' on':''}" data-og="${E(o[0])}"><b>${E(o[1])}</b></button>`).join('')}</div></div>
-      ${f.origen==='Otros'?`<div class="fld"><label for="cjO">Detalle</label><input id="cjO" value="${E(f.otro)}" data-in="otro" placeholder="Escribe el detalle"></div>`:''}
-      <button type="button" class="b o" style="height:54px" data-a="caja:guardar">${ing?XI.plus+'Guardar ingreso':XI.minus+'Guardar salida'}</button></div>`;
+    h+=`<div class="btns b2"><button type="button" class="b o" style="height:50px" data-a="reg:ingreso">${XI.plus}Registrar ingreso</button><button type="button" class="b" style="height:50px" data-a="reg:salida">${XI.minus}Registrar salida</button></div>`;
+    if(F.caja.ok)h+=`<div class="msgok">${E(F.caja.ok)}</div>`;
     /* movimientos */
     const ico=m=>{const k2=P.kind(m);return k2==='cobro_pedido'?IC.box:k2==='fondo'?IC.user:k2==='entrega'||k2==='liquidacion'?IC.cash:m.tipo==='ingreso'?XI.plus:XI.minus};
     const mv=sp.current.slice(0,40).map(m=>`<div class="mv"><span class="ic" style="background:${m.tipo==='ingreso'?'#FDEBDF':'#F6EFE9'};color:${m.tipo==='ingreso'?'#C4410C':'#6B5E55'}">${ico(m)}</span><span class="tx"><b>${E(P.LABEL[P.kind(m)]||'Movimiento')}</b><span>${E(P.clean(m))} · ${E(fecha(m.creado_en))}</span></span><span class="am">${m.tipo==='ingreso'?'+':'−'} ${M(P.amount(m))}</span></div>`).join('');
@@ -12310,6 +12305,21 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     if(sp.closed.length)h+=`<div class="cd"><div class="lbl">Cajas entregadas</div>${sp.closed.slice(0,8).map(x=>`<div class="mv"><span class="ic" style="background:#E9F6EE;color:#15803D">${XI.check}</span><span class="tx"><b>Entregada ${E(fecha(x.closer.creado_en))}</b><span>${x.summary.count} movimientos · cobros ${M(x.summary.cobros)}</span></span><span class="am">${M(P.amount(x.closer))}</span></div>`).join('')}</div>`;
     window.__pdCajaResumen={s,sh};
     return {head:top('Mi caja','Caja',`<button type="button" class="ib" data-a="caja:act" aria-label="Actualizar">${IC.refresh}</button>`),body:h};
+  }
+  function registrar(){
+    const f=F.caja,ing=f.modo==='ingreso';
+    const SUB={'De Administrador':'Para vueltos o gastos','Otros':'Escribe el detalle','Entregue al administrador':'Le entregaste efectivo a administración','Gaste en gasolina':'Combustible de la moto','Gaste en encomienda':'Pagaste una encomienda','Gasté en compra':'Pagaste una compra de un cliente'};
+    const ops=[...(($(ing?'cashInSource':'expenseReason')||{}).options||[])].filter(o=>o.value).map(o=>[o.value,o.textContent.trim()]);
+    const monto=Number(String(f.monto).replace(',','.'))||0;
+    let h=`<div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button type="button" data-cm="ingreso" class="${ing?'on':''}">Ingreso</button><button type="button" data-cm="salida" class="${!ing?'on':''}">Salida</button></div>`;
+    h+=`<div class="amt"><label for="cjM" class="k" style="display:block">Monto</label><div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px"><span class="n">S/</span><input id="cjM" inputmode="decimal" placeholder="0.00" value="${E(f.monto)}" data-in="monto" style="width:${Math.max(4,String(f.monto||'0.00').length)+0.6}ch;min-width:0;border:0;background:transparent;font:800 44px PdInter,Inter,system-ui,sans-serif;color:#1F1A17;outline:none;text-align:left;padding:0"></div></div>`;
+    h+=`<div class="fld"><label>${ing?'¿De quién recibiste el efectivo?':'¿Para qué usaste el efectivo?'}</label><div class="opts">${ops.map(o=>`<button type="button" class="opt${f.origen===o[0]?' on':''}" data-og="${E(o[0])}"><b>${E(o[1])}</b>${SUB[o[0]]?`<span>${E(SUB[o[0]])}</span>`:''}</button>`).join('')}</div></div>`;
+    if(f.origen==='Otros')h+=`<div class="fld"><label for="cjO">Detalle</label><input id="cjO" value="${E(f.otro)}" data-in="otro" placeholder="Escribe el detalle"></div>`;
+    if(f.msg)h+=`<div class="err">${E(f.msg)}</div>`;
+    const lista=monto>0&&f.origen&&(f.origen!=='Otros'||f.otro.trim());
+    const lbl=(ing?'Guardar ingreso':'Guardar salida')+(monto>0?' de '+M(monto):'');
+    return {head:top('Caja',ing?'Registrar ingreso':'Registrar salida',null,true),body:h,
+      foot:`<button type="button" class="sl${lista?'':' off'}" data-slide="caja:guardar" aria-label="${E(lbl)}"${lista?'':' aria-disabled="true"'}><span class="fill"></span><span class="lb">${E(lbl)}</span><span class="kn">${U.I.arrow}</span></button><div class="hint">${lista?'Desliza para confirmar':'Escribe el monto y elige una opción'}</div>`};
   }
   async function cajaGuardar(){
     const f=F.caja,ing=f.modo==='ingreso';f.msg='';f.ok='';
@@ -12320,7 +12330,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     a.value=String(f.monto).replace(',','.');o.value=f.origen;o.dispatchEvent(new Event('change',{bubbles:true}));if(ot)ot.value=f.otro;
     try{await (ing?window.addCashIn||addCashIn:window.addExpense||addExpense)()}catch(e){f.msg=String(e.message||e);return}
     const t=String(ms&&ms.textContent||'').trim();
-    if(a.value===''||/registrad|guardad|correct/i.test(t)){f.ok=(ing?'Ingreso':'Salida')+' de '+M(f.monto)+' guardado.';f.monto='';f.origen='';f.otro='';C.caja=null}else f.msg=t||'No se pudo guardar.';
+    if(a.value===''||/registrad|guardad|correct/i.test(t)){f.ok=(ing?'Ingreso':'Salida')+' de '+M(f.monto)+' guardado.';f.monto='';f.origen='';f.otro='';C.caja=null;sub=null;if(history.state?.pdApp){ignorarPop=true;history.back()}}else f.msg=t||'No se pudo guardar.';
   }
   /* =============== BILLETERA =============== */
   function billetera(){
@@ -12458,7 +12468,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 
   /* =============== MENÚ Y PINTADO =============== */
   function nav(){
-    const n=nuevos().length;const act=sub?({avisos:'inicio',ruta:'inicio',rendimiento:'inicio',calificaciones:'inicio',historial:'inicio'})[sub]:tab;
+    const n=nuevos().length;const act=sub?({avisos:'inicio',ruta:'inicio',rendimiento:'inicio',calificaciones:'inicio',historial:'inicio',registrar:'caja'})[sub]:tab;
     const it=[['inicio','Inicio',IC.home],['pedidos','Pedidos',IC.box],['caja','Caja',IC.cash],['billetera','Billetera',IC.wallet],['perfil','Perfil',IC.user]];
     return `<nav class="nv" aria-label="Menú principal">${it.map(x=>`<button type="button" data-t="${x[0]}" class="${act===x[0]?'on':''}"${act===x[0]?' aria-current="page"':''}><span class="i">${x[2]}</span>${x[1]}${x[0]==='pedidos'&&n?`<span class="bd">${n}</span>`:''}</button>`).join('')}</nav>`;
   }
@@ -12483,7 +12493,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     return true;
   }
   function vista(){
-    if(sub)return ({avisos,ruta,rendimiento,calificaciones,historial})[sub]();
+    if(sub)return ({avisos,ruta,rendimiento,calificaciones,historial,registrar})[sub]();
     return ({inicio,pedidos,caja,billetera,perfil})[tab]();
   }
   function pintar(){
@@ -12505,12 +12515,30 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     root.innerHTML=`<style>${ESTILO}${ESTILO2}</style><div class="app">${v.head}<div class="list">${v.body}</div>${v.foot?`<div class="foot">${v.foot}</div>`:''}${nav()}</div>`;
     const nl=root.querySelector('.list');if(nl)nl.scrollTop=root.__pag===pag?(scrollMem[pag]||0):(scrollMem[pag]=0,0);root.__pag=pag;
     document.documentElement.style.overflow='hidden';
+    armarSlide();
+  }
+  function actSlide(){const sl=root&&root.querySelector('[data-slide]');if(!sl)return;const f=F.caja,ing=f.modo==='ingreso',monto=Number(String(f.monto).replace(',','.'))||0;
+    const ok=monto>0&&f.origen&&(f.origen!=='Otros'||f.otro.trim());sl.classList.toggle('off',!ok);
+    const lb=(ing?'Guardar ingreso':'Guardar salida')+(monto>0?' de '+M(monto):'');sl.querySelector('.lb').textContent=lb;const hn=sl.nextElementSibling;if(hn)hn.textContent=ok?'Desliza para confirmar':'Escribe el monto y elige una opción'}
+  function armarSlide(){
+    const sl=root.querySelector('[data-slide]');if(!sl)return;
+    const kn=sl.querySelector('.kn'),fill=sl.querySelector('.fill'),lb=sl.querySelector('.lb');let x0=null,dx=0,busy=false;
+    const max=()=>sl.clientWidth-kn.offsetWidth-12;const set=v=>{kn.style.transform=`translateX(${v}px)`;fill.style.width=v>0?(v+57)+'px':'0';lb.style.opacity=Math.max(0,1-v/180)};
+    const reset=()=>{kn.style.transition=fill.style.transition='transform .25s,width .25s';set(0);setTimeout(()=>{kn.style.transition=fill.style.transition=''},260)};
+    const go=async()=>{if(busy||sl.classList.contains('off'))return reset();busy=true;set(max());lb.style.opacity=1;lb.textContent='Guardando…';
+      if(sl.dataset.slide==='caja:guardar'){await cajaGuardar();try{window.loadCash&&window.loadCash()}catch(_){}}
+      busy=false;key='';pintar()};
+    sl.addEventListener('pointerdown',e=>{if(busy||sl.classList.contains('off'))return;x0=e.clientX;dx=0;try{sl.setPointerCapture(e.pointerId)}catch(_){}});
+    sl.addEventListener('pointermove',e=>{if(x0===null)return;dx=Math.max(0,Math.min(max(),e.clientX-x0));set(dx)});
+    const up=()=>{if(x0===null)return;x0=null;tocando=false;if(dx>=max()*0.8)go();else reset()};
+    sl.addEventListener('pointerup',up);sl.addEventListener('pointercancel',up);
+    sl.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}});
   }
   function ir(t,s){
     const antes=sub||tab;tab=t||tab;sub=s||null;key='';
     if(sub&&!history.state?.pdApp)try{history.pushState({pdApp:1},'')}catch(_){}
     if(antes!==(sub||tab)){scrollMem[sub||tab]=0;if(sub)C[{ruta:'ruta',rendimiento:'rend',calificaciones:'cal',historial:'hist',avisos:'avisos'}[sub]]&&(C[{ruta:'ruta',rendimiento:'rend',calificaciones:'cal',historial:'hist',avisos:'avisos'}[sub]].t=0)}
-    if(tab==='caja'&&!sub&&C.caja)C.caja.t=0;if(tab==='billetera'&&!sub&&C.sueldo)C.sueldo.t=0;
+    if(tab==='caja'&&!sub&&C.caja)C.caja.t=0;if(tab==='caja'&&!sub&&antes!=='registrar')F.caja.ok='';if(tab==='billetera'&&!sub&&C.sueldo)C.sueldo.t=0;
     if(tab==='perfil'&&!sub)F.perfil=null;
     pintar();
   }
@@ -12524,8 +12552,8 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
   }
   function entrada(e){
     const el=e.target;const k=el.dataset&&el.dataset.in;if(!k)return;
-    if(k==='monto')F.caja.monto=el.value.replace(/[^\d.,]/g,'');
-    else if(k==='otro')F.caja.otro=el.value;
+    if(k==='monto'){el.value=el.value.replace(/[^\d.,]/g,'');F.caja.monto=el.value;el.style.width=(Math.max(4,(el.value||'0.00').length)+0.6)+'ch';actSlide()}
+    else if(k==='otro'){F.caja.otro=el.value;actSlide()}
     else if(k==='hq'){F.hist.q=el.value;const c=C.hist;const box=root.getElementById('hLista');if(c&&c.data&&box){const q=el.value.trim().toLowerCase();box.innerHTML=histLista(c.data.filter(p=>(!F.hist.d||diaLima(p.entregado_en||p.creado_en)===F.hist.d)&&(!q||[ref(p.id),p.nombre_cliente,p.telefono_cliente,p.direccion_entrega].join(' ').toLowerCase().includes(q))))}}
     else if(k.startsWith('pf:'))F.perfil[k.slice(3)]=el.value;
     else if(k==='foto'&&e.type==='change'){const fl=el.files&&el.files[0];if(fl){F.perfil.file=fl;F.perfil.prev=URL.createObjectURL(fl);key='';el.blur();pintar()}}
@@ -12551,7 +12579,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
         if(/^https:\/\/chat\.whatsapp\.com\//i.test(u))wa(u);else{aviso('Aún no tienes el enlace de tu grupo de WhatsApp. Pégalo en Perfil › Enlace del grupo de WhatsApp.');ir('perfil',null)}break}
       case 'ayuda':wa('https://wa.me/'+adminTel()+'?text='+encodeURIComponent('Hola, soy motorizado de Pidemás y necesito ayuda.'));break;
       case 'caja:act':C.caja&&(C.caja.t=0);try{window.loadCash&&window.loadCash()}catch(_){}key='';pintar();break;
-      case 'caja:guardar':await ocupado(cajaGuardar);try{window.loadCash&&window.loadCash()}catch(_){}break;
+      case 'reg:ingreso':case 'reg:salida':F.caja={modo:A==='reg:ingreso'?'ingreso':'salida',monto:'',origen:'',otro:'',msg:'',ok:''};ir('caja','registrar');break;
       case 'caja:wa':{const r=window.__pdCajaResumen;if(!r)break;const m=ME()||{};
         const txt=['*PIDEMÁS · RESUMEN DE CAJA*','Motorizado: '+(m.nombre_completo||''),'Fecha: '+new Date().toLocaleDateString('es-PE'),'','Saldo en caja: '+M(r.s.balance),'Cobros de hoy: '+M(r.sh.cobros),'Recibido de administración hoy: '+M(r.sh.fondos),'Pagos y gastos de hoy: '+M(r.sh.pagos+r.sh.gastos),'Entregado hoy: '+M(r.sh.entregas)].join('\n');
         wa('https://wa.me/'+adminTel()+'?text='+encodeURIComponent(txt));break}
