@@ -2366,7 +2366,7 @@ html body:has(#pdcfBg) #nav,html body:has(#pdcfBg) .nav,html body:has(#pdcfBg) #
 html body #pdcfBg section{margin-bottom:0px!important}
 </style>
 <meta name="pd-instalacion" content="1">
-<meta name="pd-version" content="202611182010">
+<meta name="pd-version" content="202611182045">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Pidemás | Panel Motorizado</title>
@@ -11791,6 +11791,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .qr .a{font-size:16px;font-weight:800}.qr .b2{font-size:15px;font-weight:600}.qr .c{font-size:12px;color:#6B5E55}
 .inp{width:100%;height:54px;border-radius:14px;border:1.5px solid #F1E4DA;background:#FFFFFF;padding:0 16px;font:700 20px PdInter,Inter,system-ui,sans-serif;color:#1F1A17;outline:none}
 .inp:focus{border-color:#C4410C}
+.rap{display:flex;flex-direction:column;gap:8px}.rap .rt{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6B5E55}.rap .rl{display:flex;flex-direction:column;gap:6px}.rap a{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:14px;border:1px solid #F1E4DA;background:#FFFFFF;color:#1F1A17;text-decoration:none;font-size:14.5px;font-weight:600;line-height:1.3}.rap a svg{flex:0 0 18px;width:18px;height:18px;color:#15803D}.rap a:active{background:#FFF4EC}
 .quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .quick button{height:42px;border-radius:12px;border:1px solid #F1E4DA;background:#FFFFFF;font-size:14px;font-weight:700;color:#1F1A17;cursor:pointer}
 .quick button.on{border:0;background:#C4410C;color:#FFFFFF}
@@ -11946,6 +11947,8 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
       b.push(`<a class="b" ${t?`href="${util.usuario(phone)?'https://wa.me/'+t:'tel:+'+t}"${util.usuario(phone)?' target="_blank" rel="noopener"':''}`:'aria-disabled="true" style="opacity:.45;pointer-events:none"'}>${I.phone}Llamar</a>`);
       b.push(`<a class="b g" ${t?`href="https://wa.me/${t}${waText?'?text='+encodeURIComponent(waText):''}" target="_blank" rel="noopener"`:'aria-disabled="true" style="opacity:.45;pointer-events:none"'}>${I.wa}WhatsApp</a>`);
       return `<div class="btns${b.length===2?' b2':''}">${b.join('')}</div>`},
+    rapidos:(phone,lista,titulo)=>{const t=util.tel(phone);if(!t||!lista||!lista.length)return '';
+      return `<div class="rap"><div class="rt">${E(titulo||'Mensajes rápidos al cliente')}</div><div class="rl">${lista.filter(Boolean).map(m=>`<a href="https://wa.me/${t}?text=${encodeURIComponent(m[1])}" target="_blank" rel="noopener">${I.wa}<span>${E(m[0])}</span></a>`).join('')}</div></div>`},
     st:(txt,tipo)=>`<div class="st ${tipo||''}">${tipo==='ok'?I.ok:tipo==='mal'?'':'<span class="pt"></span>'}<span>${txt}</span></div>`,
     note:t=>`<div class="note">${I.info}<span>${t}</span></div>`,
     items:(titulo,det,precios)=>{const L=(det||[]).map(d=>`<div class="li"><span>${E(d.cantidad||1)} × ${E(d.nombre_producto||'Producto')}</span>${precios?`<b>${util.money(d.subtotal!=null?d.subtotal:(Number(d.precio_unitario)||0)*(Number(d.cantidad)||1))}</b>`:''}</div>`).join('');return L?`<div class="box"><div class="k">${E(titulo)}</div>${L}</div>`:''},
@@ -12024,6 +12027,15 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     const ahora=box&&!box.classList.contains('hidden')?String(box.textContent||'').trim():'';
     if(!error&&ahora&&ahora!==antes&&!/^✓|correctamente|devuelto/i.test(ahora))error=ahora;
   }
+  function rapidosCliente(o,etapaN){
+    const m=ME(),yo=String(m&&m.nombre_completo||'tu motorizado').split(' ')[0],cli=o.nombre_cliente?' '+String(o.nombre_cliente).split(' ')[0]:'',ref=U.ref(o.id),neg=(neg_(o)||'el negocio');
+    const cob=hayCobro(o)?(efectivo(o)?' Ten listo '+M(aCobrar(o))+' en efectivo, por favor.':' Ten listo tu Yape para pagar '+M(aCobrar(o))+', por favor.'):'';
+    const h='Hola'+cli+', soy '+yo+' de *Pidemás Delivery* 🛵. ';
+    const L=etapaN<2?[['Voy al local por tu pedido',h+'Ya voy a '+neg+' a recoger tu pedido '+ref+'. Te aviso cuando salga.'],['El local aún lo prepara',h+'Ya estoy en '+neg+'; están terminando de preparar tu pedido '+ref+'. En breve salgo.']]
+      :[['Ya recogí tu pedido, voy en camino',h+'Ya tengo tu pedido '+ref+' y voy en camino.'+cob],['Llego en unos 5 minutos',h+'Llego en unos 5 minutos con tu pedido '+ref+'.'+cob],['Ya llegué, estoy afuera',h+'Ya llegué, estoy afuera de tu domicilio con tu pedido '+ref+'. ¿Puedes salir a recibirlo?'+cob],['No encuentro la dirección',h+'Estoy cerca pero no encuentro tu dirección. ¿Me envías tu ubicación o una referencia, por favor?'],['Te estoy llamando',h+'Te estoy llamando para entregarte tu pedido '+ref+'. Por favor contesta o escríbeme.'],['Hay tráfico, me demoro un poco',h+'Hay bastante tráfico, me demoro unos minutos más con tu pedido '+ref+'. ¡Gracias por tu paciencia!']];
+    return U.rapidos(o.telefono_cliente,L);
+  }
+  const neg_=o=>{const n=neg(o);return n.nombre||o.nombre_negocio||''};
   function llegada(o){
     const m=ME();const nom=o.nombre_cliente?' '+String(o.nombre_cliente).split(' ')[0]:'';
     return 'Hola'+nom+', soy '+String(m&&m.nombre_completo||'tu motorizado').split(' ')[0]+' de *Pidemás Delivery*. 🛵 Estoy llegando con tu pedido '+U.ref(o.id)+'. Por favor ten listo'+(efectivo(o)&&hayCobro(o)?' el pago y':'')+' tu teléfono a la mano.';
@@ -12059,7 +12071,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
       const estado=listo?U.st('El pedido está listo para recoger','ok'):prep?U.st('El negocio está preparando · listo aprox. '+E(prep)):o.negocio_aceptado_en?U.st('El negocio está preparando el pedido'):U.st('Esperando que el negocio confirme el pedido');
       s.body=U.who(negNom,'Recoges aquí · pedido '+E(U.ref(o.id)),n.logo_url||n.imagen_url||'')+estado+U.addr(negDir,'')+
         U.contact(U.maps(o.latitud_recojo??n.latitud,o.longitud_recojo??n.longitud,negDir,n.google_maps_url||o.negocio_maps_url),n.telefono||o.telefono_negocio,'Hola, soy el motorizado de Pidemás por el pedido '+U.ref(o.id)+'.')+
-        (e===0?U.note('Al aceptar verás el código de recojo y los datos del cliente.'):'');}
+        (e===0?U.note('Al aceptar verás el código de recojo y los datos del cliente.'):rapidosCliente(o,0));}
     /* 2 · Recoger con código */
     {const s=S(1);s.locked='Se muestra al llegar al local';const c=o.codigo_recojo||'';
       s.sum=(c?'Código '+c+' · ':'')+'pedido recogido';
@@ -12070,7 +12082,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     {const s=S(2);s.locked='Se muestra cuando recojas el pedido';s.sum=cli+(o.direccion_entrega?' · '+o.direccion_entrega:'');
       s.body=U.who(cli,'Cliente · entregas aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+
         U.contact(U.maps(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,o.ubicacion_entrega),o.telefono_cliente,'')+
-        (U.tel(o.telefono_cliente)?`<a class="b soft" href="https://wa.me/${U.tel(o.telefono_cliente)}?text=${encodeURIComponent(llegada(o))}" target="_blank" rel="noopener">Avisar «Estoy llegando»</a>`:'')+
+        rapidosCliente(o,2)+
         (o.observaciones&&typeof window.pdDetalleTxt!=='function'?'':'');}
     /* 4 · Cobrar */
     if(cobro){const s=S(3);s.locked='Se muestra al llegar donde el cliente';
@@ -12094,7 +12106,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     /* 5 · Confirmar entrega */
     {const s=S(4);s.locked=cobro?'Se muestra después de cobrar':'Se muestra al llegar donde el cliente';s.sum='Código verificado';
       s.body=U.note('Pide al cliente su <b>código de entrega</b> de 4 dígitos (lo ve en su app). Si no lo tiene, podrás tomarle una foto a la entrega.')+
-        (cobro?U.st('Cobrado '+M(aCobrar(o))+' · '+(yape(o)?'Yape':'Efectivo'),'ok'):U.st(prepago(o)?'El pedido ya está pagado: no cobres nada.':'No hay nada que cobrar.','ok'));}
+        (cobro?U.st('Cobrado '+M(aCobrar(o))+' · '+(yape(o)?'Yape':'Efectivo'),'ok'):U.st(prepago(o)?'El pedido ya está pagado: no cobres nada.':'No hay nada que cobrar.','ok'))+rapidosCliente(o,3);}
 
     const T=['Pedido nuevo','Ve al local','Recoge el pedido','Lleva el pedido','Cobra al cliente','Confirma la entrega'];
     const m={kicker:'Pedido '+U.ref(o.id),steps,err:error,acts:{}};
@@ -12292,6 +12304,19 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
   }
 
   /* ---------- el modelo de la vista ---------- */
+  function rapidos(o,quien,etapaN){
+    const yo=String(ME()?.nombre_completo||'tu motorizado').split(' ')[0],ref=U.ref(o.id);
+    const nom=quien==='rem'?(o.nombre_remitente||o.nombre_cliente):(tipo(o)==='compra'?o.nombre_cliente:(o.nombre_receptor||o.nombre_cliente));
+    const tel=quien==='rem'?(o.telefono_remitente||o.telefono_cliente):(tipo(o)==='compra'?o.telefono_cliente:(o.telefono_receptor||o.telefono_cliente));
+    const h='Hola'+(nom?' '+String(nom).split(' ')[0]:'')+', soy '+yo+' de *Pidemás Delivery* 🛵. ';
+    const cob=quien!=='rem'&&cobroEntrega(o)?(efectivo(o)?' Ten listo '+M(aCobrar(o))+' en efectivo, por favor.':' Ten listo tu Yape para pagar '+M(aCobrar(o))+', por favor.'):'';
+    const cobR=quien==='rem'&&cobroRecPend(o)?' Ten listo '+M(o.total)+' para el pago del servicio, por favor.':'';
+    let L;
+    if(quien==='rem')L=tipo(o)==='compra'?[['Estoy haciendo tu compra',h+'Ya estoy haciendo tu compra del pedido '+ref+'. Te aviso cualquier cosa.'],['No hay un producto, ¿lo cambio?',h+'No encuentro uno de los productos de tu compra '+ref+'. ¿Lo cambio por otro o lo quito?']]
+      :[['Voy a recoger el paquete',h+'Ya voy a recoger tu envío '+ref+'.'+cobR],['Llego en 5 minutos a recoger',h+'Llego en unos 5 minutos a recoger tu envío '+ref+'.'+cobR],['Ya llegué, estoy afuera',h+'Ya llegué para recoger tu envío '+ref+'. Estoy afuera, ¿puedes salir?'+cobR],['No encuentro la dirección',h+'No encuentro la dirección de recojo. ¿Me envías tu ubicación o una referencia, por favor?']];
+    else L=[[tipo(o)==='compra'?'Ya tengo tu compra, voy en camino':'Ya recogí el pedido, voy en camino',h+(tipo(o)==='compra'?'Ya hice tu compra ':'Ya tengo tu pedido ')+ref+' y voy en camino.'+cob],['Llego en unos 5 minutos',h+'Llego en unos 5 minutos con tu pedido '+ref+'.'+cob],['Ya llegué, estoy afuera',h+'Ya llegué, estoy afuera de tu domicilio con tu pedido '+ref+'. ¿Puedes salir a recibirlo?'+cob],['No encuentro la dirección',h+'Estoy cerca pero no encuentro tu dirección. ¿Me envías tu ubicación o una referencia, por favor?'],['Te estoy llamando',h+'Te estoy llamando para entregarte tu pedido '+ref+'. Por favor contesta o escríbeme.'],['Hay tráfico, me demoro un poco',h+'Hay bastante tráfico, me demoro unos minutos más con tu pedido '+ref+'. ¡Gracias por tu paciencia!']];
+    return U.rapidos(tel,L,quien==='rem'?(tipo(o)==='compra'?'Mensajes rápidos al cliente':'Mensajes rápidos a quien envía'):'Mensajes rápidos a quien recibe');
+  }
   function etapa(o){
     const s=st(o),t=tipo(o);
     if(s==='entregado')return 9;if(s==='cancelado')return -1;if(s==='asignado')return 0;
@@ -12339,7 +12364,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
       else if(alRecoger(o)&&o.pago_confirmado===true)s.body+=U.st('Cobro registrado · '+M(o.total)+' · '+(yape(o)?'Yape':'Efectivo'),'ok');
       else if(t==='enc'&&momento(o)==='pagado')s.body+=U.st('Ya pagado · no cobres nada','ok');
       else if(t==='enc'&&momento(o)==='al_final')s.body+=U.note('No cobres ahora: el cliente paga después de recibir la guía y la clave.');
-      if(e===0)s.body+=U.note('Acepta el pedido para empezar.');}
+      if(e===0)s.body+=U.note('Acepta el pedido para empezar.');else if(e===1)s.body+=rapidos(o,'rem',1);}
 
     if(t==='enc'){
       /* 2 · Llevar a la agencia */
@@ -12370,7 +12395,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
       {const s=S(2);s.locked=t==='compra'?'Se muestra al terminar la compra':'Se muestra al recoger';s.sum=recN+(o.direccion_entrega?' · '+o.direccion_entrega:'');
         const mapa=U.maps(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,link(x.ubicacionEntrega)||(cp&&cp.ubi));
         s.body=msg+U.who(recN,(t==='compra'?'Cliente':'Quien recibe')+' · entregas aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+U.contact(mapa,recT,'')+
-          (U.tel(recT)?`<a class="b soft" href="https://wa.me/${U.tel(recT)}?text=${encodeURIComponent('Hola, soy '+String(ME()?.nombre_completo||'tu motorizado').split(' ')[0]+' de *Pidemás Delivery*. 🛵 Estoy llegando con tu pedido '+U.ref(id)+'.')}" target="_blank" rel="noopener">Avisar «Estoy llegando»</a>`:'');}
+          rapidos(o,'rec',2);}
       /* 3 · Cobrar */
       if(cobro){const s=S(3);s.locked='Se muestra al llegar donde el cliente';const monto=aCobrar(o);
         s.sum='Cobrado '+M(monto)+' · '+(yape(o)?'Yape':'Efectivo');
@@ -12382,7 +12407,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
         s.body=h;}
       /* 4 · Confirmar entrega */
       {const s=S(4);s.locked=cobro?'Se muestra después de cobrar':'Se muestra al llegar donde el cliente';s.sum='Entregado';
-        s.body=msg+(cobro?U.st('Cobrado '+M(aCobrar(o))+' · '+(yape(o)?'Yape':'Efectivo'),'ok'):U.st(alRecoger(o)||prepago(o)?'Ya está pagado: no cobres nada.':'No hay nada que cobrar.','ok'))+U.note('Entrega el pedido a '+E(recN)+' y confirma.');}
+        s.body=msg+(cobro?U.st('Cobrado '+M(aCobrar(o))+' · '+(yape(o)?'Yape':'Efectivo'),'ok'):U.st(alRecoger(o)||prepago(o)?'Ya está pagado: no cobres nada.':'No hay nada que cobrar.','ok'))+U.note('Entrega el pedido a '+E(recN)+' y confirma.')+rapidos(o,'rec',3);}
     }
 
     const m={kicker:NOM+' · '+U.ref(id),steps,err:error,acts:{}};
