@@ -2366,7 +2366,7 @@ html body:has(#pdcfBg) #nav,html body:has(#pdcfBg) .nav,html body:has(#pdcfBg) #
 html body #pdcfBg section{margin-bottom:0px!important}
 </style>
 <meta name="pd-instalacion" content="1">
-<meta name="pd-version" content="202611191340">
+<meta name="pd-version" content="202611191440">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Pidemás | Panel Motorizado</title>
@@ -12870,7 +12870,7 @@ input.cod{text-align:center;font-size:30px;letter-spacing:.4em;height:64px}
     const fl=(id,l,k,t,ph)=>`<div class="fld"><label for="${id}">${l}</label><input id="${id}" type="${t||'text'}" value="${E(f[k])}" data-in="pf:${k}"${ph?` placeholder="${E(ph)}"`:''}></div>`;
     h+=`<div class="cd"><div class="lbl">Mis datos</div>${fl('pfN','Nombres completos','nombre')}${fl('pfT','Teléfono','tel','tel')}${fl('pfD','DNI / documento','doc')}${fl('pfP','Placa de la moto','placa')}${fl('pfG','Enlace del grupo de WhatsApp','grupo','url','https://chat.whatsapp.com/…')}<div class="fld"><label>Correo</label><input value="${E(SES()?.user?.email||'')}" disabled></div></div>`;
     if(f.msg)h+=`<div class="err">${E(f.msg)}</div>`;if(f.ok)h+=`<div class="msgok">${E(f.ok)}</div>`;
-    h+=`<button type="button" class="b o" style="height:54px;font-size:16px" data-a="pf:guardar">Guardar cambios</button><button type="button" class="b" style="height:50px;color:#B42318;border-color:#F4C7C3" data-a="salir">${XI.logout}Cerrar sesión</button>`;
+    h+=`<button type="button" class="b o" style="height:54px;font-size:16px" data-a="pf:guardar">Guardar cambios</button><button type="button" class="b" style="height:54px;font-size:16px;color:#B42318;border-color:#F4C7C3;background:#FFFFFF" data-a="salir">${XI.logout}Cerrar sesión</button>`;
     return {head:top('Mi cuenta','Mi perfil'),body:h};
   }
   async function perfilGuardar(){
