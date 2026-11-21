@@ -2,6 +2,15 @@
 
 <html lang="es">
 <head>
+<script id="pd-sin-cajones">/* Sin cajones de conteo arriba de las páginas: quitan espacio al contenido.
+   Se ocultan en la página y dentro de cada ventana aislada (Shadow DOM). */
+(function(){var C=".pdh-stats,.moto-dashboard-stats{display:none!important}";
+try{var s=document.createElement("style");s.id="pd-sin-cajones-css";s.textContent=C;document.head.appendChild(s)}catch(e){}
+var hoja=null;try{hoja=new CSSStyleSheet();hoja.replaceSync(C)}catch(e){hoja=null}
+function poner(r){try{if(hoja){r.adoptedStyleSheets=[].concat(Array.from(r.adoptedStyleSheets||[]),[hoja])}else{var t=document.createElement("style");t.textContent=C;r.appendChild(t)}}catch(e){}}
+var orig=Element.prototype.attachShadow;if(orig&&!orig.__pdSinCaj){var f=function(o){var r=orig.call(this,o);poner(r);return r};f.__pdSinCaj=1;Element.prototype.attachShadow=f}
+})();</script>
+
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
 <link rel="preload" as="font" type="font/woff2" href="https://cdn.jsdelivr.net/fontsource/fonts/inter@5/latin-500-normal.woff2" crossorigin>
