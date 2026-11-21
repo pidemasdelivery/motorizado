@@ -11795,7 +11795,8 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .note{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:#FFF9F5;font-size:14px;line-height:1.45}.note svg{flex:0 0 20px}
 .box{padding:12px;border-radius:14px;border:1px dashed #E3CFC2;font-size:14px;line-height:1.5}
 .box .k,.lbl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6B5E55;margin-bottom:4px}
-.li{display:flex;justify-content:space-between;gap:10px}.li b{white-space:nowrap}
+.li{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;min-width:0}.li>span{flex:0 1 auto;min-width:0}.li>b{flex:0 1 auto;min-width:0;text-align:right;white-space:normal;overflow-wrap:anywhere}.li.col{flex-direction:column;gap:2px}.li.col>b{text-align:left;white-space:pre-line}
+.wn,.ws,.at,.ar{overflow-wrap:anywhere;min-width:0}.who>div{min-width:0;flex:1 1 auto}
 .amt{padding:18px 14px;border-radius:16px;background:#FDEBDF;text-align:center}
 .amt .k{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9A330A}
 .amt .n{font-size:44px;font-weight:800;margin-top:4px;letter-spacing:-.02em;line-height:1.1}
@@ -12430,7 +12431,7 @@ input.cod{text-align:center;font-size:30px;letter-spacing:.4em;height:64px}
     const raw=String(o.observaciones||'').replace(/__PIDEMAS_[A-Z_]+__\s*\{[^{}]*\}/g,'').replace(/\[COMPROBANTE_YAPE:[^\]]*\]/gi,'').replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+){2,}\b/g,'');
     const get=(...ls)=>{for(const l of ls){const x=l.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const m=raw.match(new RegExp('(?:^|[|]\\s*)'+x+'\\s*:\\s*([^|]*)','i'));if(m&&m[1].trim())return m[1].trim()}return ''};
     const ubi=get('Ubicación','Ubicación del cliente');
-    return {lugar:String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').trim(),detalle:get('Compra solicitada','¿Qué desea que compremos?'),
+    return {url:(String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').match(/https?:\/\/\S+/)||[''])[0],lugar:String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').replace(/https?:\/\/\S+/g,'').replace(/[\s·,|-]+$/,'').trim(),detalle:get('Compra solicitada','¿Qué desea que compremos?'),
       comp:get('Comprobante'),doc:get('DNI/RUC'),ubi:link(ubi),
       obs:raw.split('|').flatMap(x=>x.split('·')).map(x=>x.trim()).filter(x=>x&&!/^(Ubicación(?: del cliente)?|Compra solicitada|Comprobante|DNI\/RUC|Lugar de compra|¿De dónde desea la compra\?|¿Qué desea que compremos\?)\s*:/i.test(x)).join(' · ')};
   }
@@ -12586,7 +12587,7 @@ input.cod{text-align:center;font-size:30px;letter-spacing:.4em;height:64px}
         s.sum=(cp.lugar||'Compra')+(Number(o.subtotal)>0?' · gasto '+M(o.subtotal):'');
         let h=U.who(cp.lugar||'Lugar no indicado','Compra aquí · pedido '+E(U.ref(id)),'')+
           `<div class="sum"><div class="lbl">Qué comprar</div><div style="font-size:15px;line-height:1.45;white-space:pre-line">${E(cp.detalle||'—')}</div>${cp.comp?`<div class="li"><span>Comprobante</span><b>${E(cp.comp)}</b></div>`:''}${cp.doc?`<div class="li"><span>DNI/RUC</span><b>${E(cp.doc)}</b></div>`:''}</div>`+
-          (cp.obs?U.note(E(cp.obs)):'')+U.contact(cp.lugar?U.maps(o.latitud_recojo,o.longitud_recojo,cp.lugar,''):'',remT,'');
+          (cp.obs?U.note(E(cp.obs)):'')+U.contact(cp.lugar||cp.url?U.maps(o.latitud_recojo,o.longitud_recojo,cp.lugar,cp.url||''):'',remT,'');
         if(e>=1&&e<9){const sv=servicio(o);
           if(Number(o.subtotal)>0)h+=`<div class="sum"><div class="li"><span>Gasto de la compra</span><b>${M(o.subtotal)}</b></div><div class="li"><span>Servicio</span><b>${M(sv)}</b></div><div class="li"><span>${o.pago_confirmado===true?'Ya pagado':'Cobrarás al cliente'}</span><b>${M(o.pago_confirmado===true?0:Number(o.subtotal)+sv)}</b></div></div>`;
           else h+=`<div><div class="lbl">¿Cuánto gastaste en la compra?</div><input class="inp" data-act="gasto" inputmode="decimal" placeholder="S/ 0.00" value="${E(d.gasto)}"></div><div class="note" data-gt>${U.I.info}<span>Sale de tu caja y se suma al cobro: cobrarás <b>${M((Number(d.gasto)||0)+sv)}</b> (servicio ${M(sv)}).</span></div>`}
