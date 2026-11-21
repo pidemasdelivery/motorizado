@@ -11795,7 +11795,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .note{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:#FFF9F5;font-size:14px;line-height:1.45}.note svg{flex:0 0 20px}
 .box{padding:12px;border-radius:14px;border:1px dashed #E3CFC2;font-size:14px;line-height:1.5}
 .box .k,.lbl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6B5E55;margin-bottom:4px}
-.li{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;min-width:0}.li>span{flex:0 1 auto;min-width:0}.li>b{flex:0 1 auto;min-width:0;text-align:right;white-space:normal;overflow-wrap:anywhere}.li.col{flex-direction:column;gap:2px}.li.col>b{text-align:left;white-space:pre-line}
+.li{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;min-width:0}.li>span{flex:0 1 auto;min-width:0}.li>b{flex:0 1 auto;min-width:0;text-align:right;white-space:normal;overflow-wrap:anywhere}.li.col{flex-direction:column;gap:2px}.li.col>b{text-align:left;white-space:pre-line}.li>span{color:#6B5E55;font-weight:600}.li>b{font-weight:800;color:#1F1A17}.box .k,.sum .lbl{font-weight:800;color:#1F1A17}.box+.box,.sum+.sum{margin-top:0}.box .tx{font-size:15px;line-height:1.5;font-weight:600;color:#1F1A17;white-space:pre-line;overflow-wrap:anywhere}
 .wn,.ws,.at,.ar{overflow-wrap:anywhere;min-width:0}.who>div{min-width:0;flex:1 1 auto}
 .amt{padding:18px 14px;border-radius:16px;background:#FDEBDF;text-align:center}
 .amt .k{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9A330A}
@@ -12046,6 +12046,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     if(!error&&ahora&&ahora!==antes&&!/^✓|correctamente|devuelto/i.test(ahora))error=ahora;
   }
   function rapidosCliente(o,etapaN){
+    if(/^(entregado|cancelado|rechazado)$/.test(String(o.estado||'').toLowerCase()))return '';/* pedido terminado: sin mensajes rápidos */
     const m=ME(),yo=String(m&&m.nombre_completo||'tu motorizado').split(' ')[0],cli=o.nombre_cliente?' '+String(o.nombre_cliente).split(' ')[0]:'',ref=U.ref(o.id),neg=(neg_(o)||'el negocio');
     const cob=hayCobro(o)?(efectivo(o)?' Ten listo '+M(aCobrar(o))+' en efectivo, por favor.':' Ten listo tu Yape para pagar '+M(aCobrar(o))+', por favor.'):'';
     const h='Hola'+cli+', soy '+yo+' de *Pidemás Delivery* 🛵. ';
@@ -12433,7 +12434,7 @@ input.cod{text-align:center;font-size:30px;letter-spacing:.4em;height:64px}
     const ubi=get('Ubicación','Ubicación del cliente');
     return {url:(String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').match(/https?:\/\/\S+/)||[''])[0],lugar:String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').replace(/https?:\/\/\S+/g,'').replace(/[\s·,|-]+$/,'').trim(),detalle:get('Compra solicitada','¿Qué desea que compremos?'),
       comp:get('Comprobante'),doc:get('DNI/RUC'),ubi:link(ubi),
-      obs:raw.split('|').flatMap(x=>x.split('·')).map(x=>x.trim()).filter(x=>x&&!/^(Ubicación(?: del cliente)?|Compra solicitada|Comprobante|DNI\/RUC|Lugar de compra|¿De dónde desea la compra\?|¿Qué desea que compremos\?)\s*:/i.test(x)).join(' · ')};
+      obs:raw.split('|').flatMap(x=>x.split('·')).map(x=>x.trim()).filter(x=>x&&!/^(Ubicación(?: del cliente)?|Compra solicitada|Comprobante|DNI\/RUC|Lugar de compra|¿De dónde desea la compra\?|¿Qué desea que compremos\?)\s*:/i.test(x)&&!/^(Servicio marcado como PAGADO|Pago en efectivo|Pago por Yape|Paga quien|Pedido a nombre de)/i.test(x)).join(' · ')};
   }
   function notas(o){const x=extra(o);let n=String(x.clean||'');try{if(typeof cleanDeliveryTariffFromObservaciones==='function')n=cleanDeliveryTariffFromObservaciones(n)}catch(_){}
     try{if(typeof window.pdLimpiarNotas==='function')n=window.pdLimpiarNotas(n)}catch(_){}
@@ -12545,6 +12546,7 @@ input.cod{text-align:center;font-size:30px;letter-spacing:.4em;height:64px}
 
   /* ---------- el modelo de la vista ---------- */
   function rapidos(o,quien,etapaN){
+    {const eN=etapa(o);if(eN>=9||eN<0)return '';if(etapaN!=null&&!(eN===etapaN||(etapaN===3&&eN>=3)))return ''}/* mensajes rápidos solo en el paso que estás haciendo */
     const yo=String(ME()?.nombre_completo||'tu motorizado').split(' ')[0],ref=U.ref(o.id);
     const nom=quien==='rem'?(o.nombre_remitente||o.nombre_cliente):(tipo(o)==='compra'?o.nombre_cliente:(o.nombre_receptor||o.nombre_cliente));
     const tel=quien==='rem'?(o.telefono_remitente||o.telefono_cliente):(tipo(o)==='compra'?o.telefono_cliente:(o.telefono_receptor||o.telefono_cliente));
