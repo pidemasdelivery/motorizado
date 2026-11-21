@@ -2651,8 +2651,8 @@ html:root body:not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#pdZ):not(#
         const [vu,to,pa]=texto,M=n=>'S/ '+(Number(n)||0).toFixed(2);
         let d=document.getElementById('pdDlg');
         if(!d){d=document.createElement('div');d.id='pdDlg';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');document.body.appendChild(d)}
-        d.innerHTML=`<div class="pdDlgCard"><div class="pdDlgIco">${ICO.pregunta}</div><h3 class="pdDlgT">¿De dónde sacaste el vuelto de ${E(M(vu))}?</h3><p class="pdDlgP">El cliente pagó con ${E(M(pa))} un pedido de ${E(M(to))}. Así administración sabe si usaste el efectivo de tu caja.</p>
-          <div class="pdVuOps"><button type="button" class="pdVuOp" data-v="caja"><b>De mi caja</b><small>Usé el efectivo de cobros anteriores</small></button><button type="button" class="pdVuOp" data-v="propio"><b>No usé la caja</b><small>Lo di con mi propio dinero</small></button></div>
+        d.innerHTML=`<div class="pdDlgCard"><div class="pdDlgIco">${ICO.pregunta}</div><h3 class="pdDlgT">Vuelto de ${E(M(vu))}</h3><p class="pdDlgP">El cliente paga con ${E(M(pa))} un pedido de ${E(M(to))}. ¿Recibiste el vuelto o lo das de tu caja?</p>
+          <div class="pdVuOps"><button type="button" class="pdVuOp" data-v="propio"><b>Recibí el vuelto</b><small>No uso el efectivo de mi caja</small></button><button type="button" class="pdVuOp" data-v="caja"><b>Lo doy de mi caja</b><small>Uso el efectivo de mis cobros</small></button></div>
           <div class="pdDlgBtns uno"><button type="button" class="pdDlgNo">Cancelar</button></div></div>`;
         d.hidden=false;document.documentElement.classList.add('pdDlgOn');
         const fin=v=>{d.hidden=true;d.innerHTML='';document.documentElement.classList.remove('pdDlgOn');document.removeEventListener('keydown',tecla,true);res(v)};
@@ -6075,7 +6075,7 @@ window.PdCaja=window.PdCaja||(function(){
 })();
 try{(function(){const C=window.PdCaja;if(!C||C.vueltoTag)return;const RX=/\s*·\s*VUELTO (DE CAJA|CON DINERO PROPIO)/i;const c0=C.clean;
 C.clean=function(m){return String(c0.call(this,m)||'').replace(RX,'')};
-C.vueltoTag=function(m){const x=String((m&&m.descripcion)||'').match(RX);if(!x)return '';return /CAJA/i.test(x[1])?'<span class="pdcjVu caja">Vuelto de su caja</span>':'<span class="pdcjVu">Vuelto con su dinero</span>'};})()}catch(e){}
+C.vueltoTag=function(m){const x=String((m&&m.descripcion)||'').match(RX);if(!x)return '';return /CAJA/i.test(x[1])?'<span class="pdcjVu caja">Vuelto de su caja</span>':'<span class="pdcjVu">Vuelto recibido</span>'};})()}catch(e){}
 try{(function(){const C=window.PdCaja;if(!C||C.extra)return;
 const a0=C.amount;C.amount=function(m){if(m&&m.tipo==='retiro'&&m.revision==='rechazado')return 0;return a0.call(this,m)};
 const s0=C.summary;C.summary=function(movs){return s0.call(this,(movs||[]).map(m=>m&&m.tipo==='retiro'&&m.revision==='rechazado'?Object.assign({},m,{monto:0}):m))};C.balance=function(movs){return C.summary(C.split(movs).current).balance};C.cycleWithAmounts=function(movs){return C.split(movs).current.map(m=>Object.assign({},m,{monto:C.amount(m)}))};
@@ -6834,7 +6834,7 @@ C.extra=function(m,modo,editado){let h='';
       const m=String(o.metodo_pago||'').toLowerCase(),tot=money(o.total);
       if(prepaid(o))cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Ya pagado · no cobres nada</b><br>${o.pago_acordado==='pagado'?'El cliente pagó productos y delivery al negocio.':'El cliente ya pagó.'}</span></div>`);
       else if(o.pago_acordado==='solo_delivery'&&o.pago_confirmado!==true)cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra solo el delivery: ${E(money(o.costo_delivery))}</b><br>Los productos ya están pagados al negocio. Efectivo o Yape (QR).</span></div>`);
-      else if(o.pago_confirmado===true)cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Cobro registrado · ${E(money(o.total))}</b>${Number(o.monto_recibido)>Number(o.total)?'<br>Pagó con '+E(money(o.monto_recibido))+' · vuelto '+E(money(Number(o.monto_recibido)-Number(o.total))):''}${(typeof window.pdCobraAlRecoger==='function'&&window.pdCobraAlRecoger(o))?'<br>Cobrado al recoger: no cobres al entregar.':''}</span></div>`);
+      else if(o.pago_confirmado===true)cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Cobro registrado · ${E(money(o.total))}</b>${(typeof window.pdCobraAlRecoger==='function'&&window.pdCobraAlRecoger(o))?'<br>Cobrado al recoger: no cobres al entregar.':''}</span></div>`);
       else if(o.pago_acordado==='yape_negocio')cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra ${E(tot)} con el Yape del negocio</b><br>Muestra el QR del negocio al llegar (no el de Pidemás).</span></div>`);
       else if(m==='yape')cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra ${E(tot)} con Yape</b><br>Muestra el QR al llegar.</span></div>`);
       else{const pc=(svcKey(o)!=='compra'||Number(o.subtotal)>0)&&typeof extractCashPayment==='function'?extractCashPayment(o.observaciones,o.total):{};cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra ${E(tot)} en efectivo</b><br>${pc.paid!=null?`Paga con S/ ${Number(pc.paid).toFixed(2)} · lleva <b>S/ ${Number(pc.change||0).toFixed(2)}</b> de vuelto`:'Al llegar, escribe el monto que te dan.'}</span></div>`)}
@@ -7018,7 +7018,7 @@ C.extra=function(m,modo,editado){let h='';
     }
     if(!asig&&idx<=2){
       const m=momento(o),tot=money(o.total);
-      if((m==='recojo_efectivo'||m==='recojo_yape')&&o.pago_confirmado===true){cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Cobro registrado · ${E(money(o.total))}</b><br>${String(o.metodo_pago||'').toLowerCase()==='yape'?'Pagó con Yape.':'En efectivo'+(Number(o.monto_recibido)>Number(o.total)?' · pagó con '+E(money(o.monto_recibido))+', vuelto '+E(money(Number(o.monto_recibido)-Number(o.total))):'')+'.'}</span></div>`)}else
+      if((m==='recojo_efectivo'||m==='recojo_yape')&&o.pago_confirmado===true){cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Cobro registrado · ${E(money(o.total))}</b><br>${String(o.metodo_pago||'').toLowerCase()==='yape'?'Pagó con Yape.':'En efectivo.'}</span></div>`)}else
       if(m==='pagado')cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Ya pagado · no cobres nada</b><br>El cliente pagó a Administración.</span></div>`);
       else if(m==='al_final')cards.push(`<div class="pfCard"><span class="pfDot"></span><span><b>No cobres ahora</b><br>El cliente paga después de recibir la guía y la clave.</span></div>`);
       else if(m==='recojo_yape')cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra ${E(tot)} con Yape al recoger</b><br><button type="button" class="peQr" onclick="showYapeQr('${E(id)}')">Mostrar QR</button></span></div>`);
@@ -7466,7 +7466,7 @@ function pasar(){
     const total=Number(o.total)||0;let paga=total;
     if(st.modo==='efectivo'){if(!vuelto(box,o))return;const raw=String(box.querySelector('.peCobroMonto').value||'').trim();paga=raw===''?total:Number(raw.replace(',','.'))}
     let vueltoDe='';if(st.modo==='efectivo'&&paga-total>0.004&&typeof window.pdElegirVuelto==='function'){vueltoDe=await window.pdElegirVuelto(Math.round((paga-total)*100)/100,total,paga);if(!vueltoDe)return}
-    if(!(await pdConfirmar(st.modo==='efectivo'?`¿Registrar cobro de ${money(total)} en efectivo?${paga>total?`\nPagó con ${money(paga)} · vuelto ${money(paga-total)}`:''}`:`¿Confirmas que el cliente ya pagó ${money(total)} por Yape al QR de Pidemás? Revisa la constancia en su celular.`)))return;
+    if(!(await pdConfirmar(st.modo==='efectivo'?`¿Registrar cobro de ${money(total)} en efectivo?`:`¿Confirmas que el cliente ya pagó ${money(total)} por Yape al QR de Pidemás? Revisa la constancia en su celular.`)))return;
     btn.disabled=true;btn.textContent='Registrando…';
     try{
       const upd={pago_confirmado:true,metodo_pago:st.modo,monto_recibido:Math.round(paga*100)/100};
@@ -8257,7 +8257,6 @@ window.pdTxt=function(s){
       C.push(pc?{t:'Delivery cobrado · '+E(m),c:'ok'}:{t:(fin?'Delivery por confirmar ':'Cobrar solo delivery ')+'<b>'+money(del)+'</b> · '+E(m),c:fin?'warn':''});
     }else if(pc){
       C.push({t:'Pagado · '+E(m)+' · <b>'+money(tot)+'</b>',c:'ok'});
-      if(Number(o.monto_recibido)>tot+0.004)C.push({t:'Pagó con <b>'+money(o.monto_recibido)+'</b> · vuelto <b>'+money(Number(o.monto_recibido)-tot)+'</b>'});
     }else if(!cancel){
       C.push(fin?{t:'Pago por confirmar · '+E(m)+' · <b>'+money(tot)+'</b>',c:'warn'}:{t:(m?E(m)+' · ':'')+'cobrar <b>'+money(tot)+'</b> al entregar',c:'dk'});
       const d=efectivoMarca(o);if(!fin&&d&&Number(d.monto)>0&&m==='Efectivo')C.push({t:'Paga con <b>'+money(d.monto)+'</b> · vuelto <b>'+money(Math.max(0,Number(d.monto)-tot))+'</b>'});
@@ -12484,7 +12483,7 @@ input.cod{text-align:center;font-size:30px;letter-spacing:.4em;height:64px}
     const d=dr(o.id),modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo'),total=Number(o.total)||0;let paga=total;
     if(modo==='efectivo'){const raw=String(d.monto||'').trim();paga=raw===''?total:Number(raw.replace(',','.'));if(!(paga>=total-0.0001)){error='El cliente debe pagar al menos '+M(total)+'.';return}}
     let vueltoDe='';if(modo==='efectivo'&&paga-total>0.004&&typeof window.pdElegirVuelto==='function'){vueltoDe=await window.pdElegirVuelto(Math.round((paga-total)*100)/100,total,paga);if(!vueltoDe)return}
-    if(!(await pdConfirmar(modo==='efectivo'?`¿Registrar cobro de ${M(total)} en efectivo?${paga>total?`\nPagó con ${M(paga)} · vuelto ${M(paga-total)}`:''}`:`¿Confirmas que el cliente ya pagó ${M(total)} por Yape al QR de Pidemás? Revisa la constancia en su celular.`)))return;
+    if(!(await pdConfirmar(modo==='efectivo'?`¿Registrar cobro de ${M(total)} en efectivo?`:`¿Confirmas que el cliente ya pagó ${M(total)} por Yape al QR de Pidemás? Revisa la constancia en su celular.`)))return;
     try{
       const upd={pago_confirmado:true,metodo_pago:modo,monto_recibido:Math.round(paga*100)/100};
       const {error:ue}=await D().from('pedidos').update(upd).eq('id',o.id).eq('motorizado_id',ME().id);if(ue)throw ue;
