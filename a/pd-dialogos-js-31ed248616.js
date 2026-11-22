@@ -19,8 +19,8 @@
         const [vu,to,pa]=texto,M=n=>'S/ '+(Number(n)||0).toFixed(2);
         let d=document.getElementById('pdDlg');
         if(!d){d=document.createElement('div');d.id='pdDlg';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');document.body.appendChild(d)}
-        d.innerHTML=`<div class="pdDlgCard"><div class="pdDlgIco">${ICO.pregunta}</div><h3 class="pdDlgT">Vuelto de ${E(M(vu))}</h3><p class="pdDlgP">El cliente paga con ${E(M(pa))} un pedido de ${E(M(to))}. ¿Recibiste el vuelto o lo das de tu caja?</p>
-          <div class="pdVuOps"><button type="button" class="pdVuOp" data-v="propio"><b>Recibí el vuelto</b><small>No uso el efectivo de mi caja</small></button><button type="button" class="pdVuOp" data-v="caja"><b>Lo doy de mi caja</b><small>Uso el efectivo de mis cobros</small></button></div>
+        d.innerHTML=`<div class="pdDlgCard"><div class="pdDlgIco">${ICO.pregunta}</div><h3 class="pdDlgT">Vuelto de ${E(M(vu))}</h3><p class="pdDlgP">El cliente paga con ${E(M(pa))} un pedido de ${E(M(to))}. ¿De dónde sacas el vuelto?</p>
+          <div class="pdVuOps"><button type="button" class="pdVuOp" data-v="propio"><b>De mi bolsillo</b><small>La caja no se toca: entra ${E(M(pa))} completo</small></button><button type="button" class="pdVuOp" data-v="caja"><b>De la caja</b><small>Se descuentan ${E(M(vu))} de la caja</small></button></div>
           <div class="pdDlgBtns uno"><button type="button" class="pdDlgNo">Cancelar</button></div></div>`;
         d.hidden=false;document.documentElement.classList.add('pdDlgOn');
         const fin=v=>{d.hidden=true;d.innerHTML='';document.documentElement.classList.remove('pdDlgOn');document.removeEventListener('keydown',tecla,true);res(v)};

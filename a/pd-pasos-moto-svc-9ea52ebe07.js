@@ -96,7 +96,7 @@
       try{await D().from('cobros').upsert({pedido_id:o.id,motorizado_id:ME().id,monto:total,metodo_pago:modo,confirmado:true,confirmado_en:new Date().toISOString()},{onConflict:'pedido_id'})}catch(_){}
       if(modo==='efectivo'){
         const {data:prev}=await D().from('movimientos_caja').select('id').eq('motorizado_id',ME().id).eq('pedido_id',o.id).eq('tipo','ingreso').not('descripcion','ilike','INGRESO MANUAL%').limit(1);
-        if(!(prev&&prev.length)){const {error:me}=await D().from('movimientos_caja').insert({motorizado_id:ME().id,pedido_id:o.id,tipo:'ingreso',monto:Math.round(total*100)/100,
+        if(!(prev&&prev.length)){const {error:me}=await D().from('movimientos_caja').insert({motorizado_id:ME().id,pedido_id:o.id,tipo:'ingreso',monto:Math.round((vueltoDe==='propio'?paga:total)*100)/100,
           descripcion:(tipo(o)==='enc'?'Cobro de encomienda':'Cobro de recojo')+' · total S/ '+total.toFixed(2)+' · cliente pagó con S/ '+paga.toFixed(2)+' · vuelto entregado S/ '+Math.max(0,paga-total).toFixed(2)+(vueltoDe?(vueltoDe==='caja'?' · VUELTO DE CAJA':' · VUELTO CON DINERO PROPIO'):'')});if(me)throw me}
       }
       Object.assign(o,upd);d.monto='';

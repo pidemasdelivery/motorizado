@@ -1327,7 +1327,7 @@ window.confirmPayment=async id=>{
 
     const pagoCliente=Number(amount.toFixed(2));
     const compraSinMonto=String(o.tipo_servicio||"").toLowerCase().includes("compra")&&!(Number(o.subtotal)>0);
-    const efectivoRecibido=totalPedido>0&&!compraSinMonto?Number(Math.min(pagoCliente,totalPedido).toFixed(2)):pagoCliente;
+    const efectivoRecibido=totalPedido>0&&!compraSinMonto&&vueltoDe!=="propio"?Number(Math.min(pagoCliente,totalPedido).toFixed(2)):pagoCliente;
     const descripcionCaja=compraSinMonto
       ? "Cobro de compra · servicio S/ "+totalPedido.toFixed(2)+" · cliente pagó S/ "+pagoCliente.toFixed(2)+" (incluye la compra)"
       : "Cobro de pedido · total S/ "+totalPedido.toFixed(2)+" · cliente pagó con S/ "+pagoCliente.toFixed(2)+" · vuelto entregado S/ "+vuelto.toFixed(2)+(vuelto>0.004&&vueltoDe?(vueltoDe==="caja"?" · VUELTO DE CAJA":" · VUELTO CON DINERO PROPIO"):"");
