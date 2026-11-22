@@ -497,7 +497,7 @@
     pintar();
   }
   let ignorarPop=false;
-  addEventListener('popstate',()=>{if(ignorarPop){ignorarPop=false;return}if(sub){sub=null;if(regreso){tab=regreso;regreso=null}key='';pintar()}});
+  addEventListener('popstate',()=>{if(window.__pdPopPropio)return;if(ignorarPop){ignorarPop=false;return}if(sub){sub=null;if(regreso){tab=regreso;regreso=null}key='';pintar()}});
   function abrirPedido(id){
     const o=L().find(x=>String(x.id)===String(id));const t=String(o?.tipo_servicio||'').toLowerCase();
     if(typeof window.pdAbrirPasosMoto==='function'&&o&&o.negocio_id&&!/encomienda|compra|recojo/.test(t))return window.pdAbrirPasosMoto(id);
