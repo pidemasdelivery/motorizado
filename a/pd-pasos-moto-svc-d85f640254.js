@@ -188,9 +188,13 @@
     {const s=S(1);
       if(t==='compra'){
         s.sum=(cp.lugar||'Compra')+(Number(o.subtotal)>0?' · gasto '+M(o.subtotal):'');
+        const mapaLugar=cp.lugar||cp.url?U.maps(o.latitud_recojo,o.longitud_recojo,cp.lugar,cp.url||''):'';
+        /* lugar de compra junto con su ubicación; el cliente (llamar / WhatsApp) va aparte */
         let h=U.who(cp.lugar||'Lugar no indicado','Compra aquí · pedido '+E(U.ref(id)),'')+
+          `<a class="b o" style="display:flex;width:100%;box-sizing:border-box;justify-content:center${mapaLugar?'':';opacity:.45;pointer-events:none'}"${mapaLugar?` href="${E(mapaLugar)}" target="_blank" rel="noopener"`:' aria-disabled="true"'}>${U.I.nav||''}Ir al lugar de compra</a>`+
           `<div class="sum"><div class="lbl">Qué comprar</div><div style="font-size:15px;line-height:1.5;white-space:pre-line;color:#1F1A17;overflow-wrap:anywhere">${E(cp.detalle||'—')}</div></div>`+(cp.comp||cp.doc?`<div class="sum"><div class="lbl">Comprobante</div>${cp.comp?`<div class="li"><span>Tipo</span><b>${E(cp.comp)}</b></div>`:''}${cp.doc?`<div class="li"><span>DNI/RUC</span><b>${E(cp.doc)}</b></div>`:''}</div>`:'')+
-          (cp.obs?U.note(E(cp.obs)):'')+U.contact(cp.lugar||cp.url?U.maps(o.latitud_recojo,o.longitud_recojo,cp.lugar,cp.url||''):'',remT,'');
+          (cp.obs?U.note(E(cp.obs)):'')+
+          `<div class="sum"><div class="lbl">Cliente</div>`+U.who(remN,'Quien pide la compra'+(remT?' · '+E(remT):''),'',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`;
         if(e>=1&&e<9){const sv=servicio(o);
           if(Number(o.subtotal)>0)h+=`<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Gasto de la compra</span><b>${M(o.subtotal)}</b></div><div class="li"><span>Servicio</span><b>${M(sv)}</b></div><div class="li t"><span>${o.pago_confirmado===true?'Ya pagado':'Cobrarás al cliente'}</span><b>${M(o.pago_confirmado===true?0:Number(o.subtotal)+sv)}</b></div></div>`;
           else h+=`<div><div class="lbl">¿Cuánto gastaste en la compra?</div><input class="inp" data-act="gasto" inputmode="decimal" placeholder="S/ 0.00" value="${E(d.gasto)}"></div><div class="note" data-gt>${U.I.info}<span>Sale de tu caja y se suma al cobro: cobrarás <b>${M((Number(d.gasto)||0)+sv)}</b> (servicio ${M(sv)}).</span></div>`}
