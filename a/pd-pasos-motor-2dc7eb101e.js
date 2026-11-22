@@ -138,7 +138,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     const act=cur.root.activeElement;
     if(act&&act.tagName==='INPUT'&&cur.lastActive===ai)return;
     cur.key=key;
-    if(cur.lastActive!==ai){cur.open={};if(ai>=0)cur.open[ai]=true;cur.lastActive=ai}
+    if(cur.lastActive!==ai){cur.open={};if(ai>=0){cur.open[ai]=true;cur.irA=ai}cur.lastActive=ai}
     const list=cur.root.querySelector('.list');const sc=list?list.scrollTop:0;
     const n=m.steps.length;
     const bars=m.steps.map(s=>`<i class="${s.state==='done'?'d':s.state==='active'?'a':''}"></i>`).join('');
@@ -153,6 +153,8 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
       ${cta||alt?`<div class="foot">${cta}${alt}</div>`:''}</div>`;
     cur.pintada=true;
     const nl=cur.root.querySelector('.list');if(nl)nl.scrollTop=sc;
+    /* al abrir un paso, la vista empieza justo donde empieza ese paso; después se puede desplazar */
+    if(nl&&cur.irA!=null){const c=nl.querySelector('.card[data-i="'+cur.irA+'"]');if(c){const pt=parseFloat(getComputedStyle(nl).paddingTop)||0;nl.scrollTop+=c.getBoundingClientRect().top-nl.getBoundingClientRect().top-pt}cur.irA=null}
     if(m.mounted)try{m.mounted(cur.root)}catch(e){}
     wire();
   }
@@ -160,7 +162,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
   function wire(){
     const r=cur.root,m=cur.m;
     r.querySelector('.back').onclick=()=>close();
-    r.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>{const i=+b.dataset.toggle;const s=m.steps[i];if(!s||s.state==='locked')return;cur.open[i]=!cur.open[i];cur.key=null;render()});
+    r.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>{const i=+b.dataset.toggle;const s=m.steps[i];if(!s||s.state==='locked')return;cur.open[i]=!cur.open[i];if(cur.open[i])cur.irA=i;cur.key=null;render()});
     r.querySelectorAll('[data-alt]').forEach(b=>b.onclick=()=>{const a=m.alt[+b.dataset.alt];if(a&&a.run)a.run()});
     r.querySelectorAll('[data-act]').forEach(b=>{const f=m.acts&&m.acts[b.dataset.act];if(!f)return;const ev=b.tagName==='INPUT'?'input':'click';b.addEventListener(ev,e=>f(b,e))});
     const sl=r.querySelector('.sl');if(!sl||!m.cta)return;
@@ -209,8 +211,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     host.setAttribute('data-pd-aislado','1');
     const root=host.attachShadow({mode:'open'});try{flechas(root)}catch(_){}
     document.body.appendChild(host);
-    /* en el motorizado el menú de abajo queda visible también en el detalle */
-    try{const nh=(()=>{const A=window.pdAppMoto||window.pdAppNeg||window.pdAppAdm;return A&&A.navH?A.navH():0})();if(nh>0)host.style.bottom=nh+'px'}catch(_){}
+    /* en el motorizado el detalle ocupa toda la pantalla: el menú de abajo queda tapado para ver todo el pedido */
     cur={host,root,model,ocultas:[],open:{},key:null,lastActive:-2,onClose:opts&&opts.onClose,ov:document.documentElement.style.overflow};
     document.documentElement.style.overflow='hidden';
     cur.propio=propio();
