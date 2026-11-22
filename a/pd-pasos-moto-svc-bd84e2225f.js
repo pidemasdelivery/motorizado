@@ -129,10 +129,16 @@
     const ahora=box&&!box.classList.contains('hidden')?String(box.textContent||'').trim():'';
     if(!error&&ahora&&ahora!==antes&&!/^✓|correctamente|devuelto|Encomienda marcada/i.test(ahora))error=ahora;
   }
+  /* Con cuánto paga el cliente (lo anota el admin o la tienda): al iniciar el pedido avisa cuánto vuelto llevar */
+  const pagaCon=o=>{try{if(typeof extractCashPayment!=='function')return 0;const p=extractCashPayment(o.observaciones,o.total);return Number(p&&p.paid)>0?Number(p.paid):0}catch(_){return 0}};
+  function avisoVuelto(o,cobra,sinTotal){const pc=pagaCon(o);if(!(pc>0)||!efectivo(o)||o.pago_confirmado===true)return '';
+    if(sinTotal)return `<div class="note" style="background:#FFF4EC;border:1px solid #F6CDB3">${PdPasos.util.I.info}<span>El cliente pagará con <b>${M(pc)}</b>. Cuando registres la compra verás cuánto vuelto llevar.</span></div>`;
+    const vu=Math.round((pc-cobra)*100)/100;
+    return `<div class="note" style="background:#FFF4EC;border:1px solid #F6CDB3">${PdPasos.util.I.info}<span>El cliente paga con <b>${M(pc)}</b>${vu>0.004?' · lleva <b>'+M(vu)+'</b> de vuelto':' · paga exacto, no necesitas vuelto'}</span></div>`}
   function I_v(v,tot){const n=Number(String(v||'').replace(',','.'));
     if(!(n>0))return U.I.info+'<span>Escribe con cuánto te paga para calcular el vuelto.</span>';
     if(n+0.004<tot)return U.I.info+'<span>Es menos que el total ('+M(tot)+').</span>';
-    const vu=Math.round((n-tot)*100)/100;return U.I.info+'<span>Paga con <b>'+M(n)+'</b>'+(vu>0.004?' · lleva <b>'+M(vu)+'</b> de vuelto':' · sin vuelto')+'</span>'}
+    const vu=Math.round((n-tot)*100)/100;return U.I.info+'<span>Paga con <b>'+M(n)+'</b>'+(vu>0.004?' · entrega <b>'+M(vu)+'</b> de vuelto':' · sin vuelto')+'</span>'}
   const qrBtn=o=>{const qn=typeof window.pdQrDePedido==='function'?window.pdQrDePedido(o.id):null;
     return `<button type="button" class="qr" data-act="qr"><span class="im"${qn&&qn.url?` style="background-image:url('${E(qn.url)}')"`:''}>${qn&&qn.url?'':'QR'}</span><span class="t"><span class="k">${qn&&qn.negocio?'Yape del negocio':'Yape de Pidemás'}</span><span class="a">${E(qn&&qn.titular||qn&&qn.nombre||'')}</span><span class="b2">${E(qn&&qn.numero||'')}</span><span class="c">Toca para agrandar</span></span></button>`};
   function bloqueCobroRec(o){
@@ -182,6 +188,7 @@
     const pos=e>=9?99:e===-1?-1:e===0?1:e;
     const steps=titulos.map((tt,i)=>({title:tt,state:pos===99||etapaDe[i]<pos?'done':etapaDe[i]===pos?'active':'locked'}));
     const S=k=>steps[etapaDe.indexOf(k)];
+    if(efectivo(o)&&!draft(o.id)&&pagaCon(o)>0&&!sinMonto(o))setDraft(o.id,String(pagaCon(o)));
     const msg=(info?U.st(E(info),'ok'):'');
 
     /* 1 · Recoger / comprar */
@@ -198,14 +205,14 @@
         if(e>=1&&e<9){const sv=servicio(o);
           if(Number(o.subtotal)>0)h+=`<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Gasto de la compra</span><b>${M(o.subtotal)}</b></div><div class="li"><span>Servicio</span><b>${M(sv)}</b></div><div class="li t"><span>${o.pago_confirmado===true?'Ya pagado':'Cobrarás al cliente'}</span><b>${M(o.pago_confirmado===true?0:Number(o.subtotal)+sv)}</b></div></div>`;
           else h+=`<div><div class="lbl">¿Cuánto gastaste en la compra?</div><input class="inp" data-act="gasto" inputmode="decimal" placeholder="S/ 0.00" value="${E(d.gasto)}"></div><div class="note" data-gt>${U.I.info}<span>Sale de tu caja y se suma al cobro: cobrarás <b>${M((Number(d.gasto)||0)+sv)}</b> (servicio ${M(sv)}).</span></div>`}
-        s.body=msg+h;
+        s.body=msg+avisoVuelto(o,aCobrar(o),sinMonto(o))+h;
       }else{
         s.sum=remN+(o.direccion_recojo?' · '+o.direccion_recojo:'');
         let h=U.who(remN,(t==='enc'?'Quien envía':'Recoges aquí')+' · pedido '+E(U.ref(id))+(o.recojo_a_nombre?`<div style="margin-top:2px">A nombre de <b style="color:#1F1A17">${E(o.recojo_a_nombre)}</b></div>`:''),'',true)+U.addr(o.direccion_recojo,o.referencia_recojo)+
           U.contact(U.maps(o.latitud_recojo,o.longitud_recojo,o.direccion_recojo,link(x.ubicacionRecojo||o.ubicacion_recojo||o.link_recojo)),remT,'Hola, soy el motorizado de Pidemás por el pedido '+U.ref(id)+'.');
         if(t==='recojo'){const n=String(notas(o)||'').split(/\s*·\s*/).filter(z=>z&&!/^(Pago en efectivo|Pago por Yape|Paga quien|Servicio marcado como PAGADO|Pedido a nombre de)/i.test(z)).join(' · ');if(n)h+=`<div class="sum"><div class="lbl">Notas del servicio</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(n)}</div></div>`}
         if(t==='enc')h+=`<div class="sum"><div class="lbl">Paquetes</div>${paquetes(o).map(p=>`<div class="li"><span>${p.numero} · ${E([p.agencia,p.destino].filter(Boolean).join(' → ')||'—')}</span><b>${p.tipoPago==='pago_en_agencia'?'Pago en agencia':'Pago a destino'}</b></div>`).join('')}</div>`;
-        s.body=msg+h;
+        s.body=msg+avisoVuelto(o,aCobrar(o),false)+h;
       }
       if(e>=1&&cobroRecPend(o))s.body+=bloqueCobroRec(o);
       else if(alRecoger(o)&&o.pago_confirmado===true)s.body+=U.st('Cobro registrado · '+M(o.total)+' · '+(yape(o)?'Yape':'Efectivo'),'ok');

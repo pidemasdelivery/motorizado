@@ -84,11 +84,12 @@
     const pos=e>=9?99:e===-1?-1:Math.floor(e===0.5?0:e);
     const steps=titulos.map((t,i)=>({title:t,state:pos===99||etapaDe[i]<pos?'done':etapaDe[i]===pos?'active':'locked'}));
     const S=k=>steps[etapaDe.indexOf(k)];
+    if(efectivo(o)&&!draft(o.id)&&pagaCon(o)>0)setDraft(o.id,String(pagaCon(o)));
 
     /* 1 · Ir al local */
     {const s=S(0);s.sum=negNom+(negDir?' · '+negDir:'');
       const estado=listo?U.st('El pedido está listo para recoger','ok'):prep?U.st('El negocio está preparando · listo aprox. '+E(prep)):o.negocio_aceptado_en?U.st('El negocio está preparando el pedido'):U.st('Esperando que el negocio confirme el pedido');
-      s.body=U.who(negNom,'Recoges aquí · pedido '+E(U.ref(o.id)),n.logo_url||n.imagen_url||'')+estado+U.addr(negDir,'')+
+      s.body=U.who(negNom,'Recoges aquí · pedido '+E(U.ref(o.id)),n.logo_url||n.imagen_url||'')+estado+avisoVuelto(o,aCobrar(o),false)+U.addr(negDir,'')+
         U.contact(U.maps(o.latitud_recojo??n.latitud,o.longitud_recojo??n.longitud,negDir,n.google_maps_url||o.negocio_maps_url),n.telefono||o.telefono_negocio,'Hola, soy el motorizado de Pidemás por el pedido '+U.ref(o.id)+'.')+
         (e===0?U.note('Al aceptar verás el código de recojo y los datos del cliente.'):rapidosCliente(o,0));}
     /* 2 · Recoger con código */
@@ -156,11 +157,17 @@
     memo.__ultimo=m;memo.__t=Date.now();
     return m;
   }
+  /* Con cuánto paga el cliente (lo anota el admin o la tienda): al iniciar el pedido avisa cuánto vuelto llevar */
+  const pagaCon=o=>{try{if(typeof extractCashPayment!=='function')return 0;const p=extractCashPayment(o.observaciones,o.total);return Number(p&&p.paid)>0?Number(p.paid):0}catch(_){return 0}};
+  function avisoVuelto(o,cobra,sinTotal){const pc=pagaCon(o);if(!(pc>0)||!efectivo(o)||o.pago_confirmado===true)return '';
+    if(sinTotal)return `<div class="note" style="background:#FFF4EC;border:1px solid #F6CDB3">${PdPasos.util.I.info}<span>El cliente pagará con <b>${M(pc)}</b>. Cuando registres la compra verás cuánto vuelto llevar.</span></div>`;
+    const vu=Math.round((pc-cobra)*100)/100;
+    return `<div class="note" style="background:#FFF4EC;border:1px solid #F6CDB3">${PdPasos.util.I.info}<span>El cliente paga con <b>${M(pc)}</b>${vu>0.004?' · lleva <b>'+M(vu)+'</b> de vuelto':' · paga exacto, no necesitas vuelto'}</span></div>`}
   function I_v(v,tot){const n=Number(String(v||'').replace(',','.'));
     if(!(n>0))return PdPasos.util.I.info+'<span>Escribe con cuánto te paga para calcular el vuelto.</span>';
     if(n+0.004<tot)return PdPasos.util.I.info+'<span>Es menos que el total ('+M(tot)+').</span>';
     const vu=Math.round((n-tot)*100)/100;
-    return PdPasos.util.I.info+'<span>Paga con <b>'+M(n)+'</b>'+(vu>0.004?' · lleva <b>'+M(vu)+'</b> de vuelto':' · sin vuelto')+'</span>';}
+    return PdPasos.util.I.info+'<span>Paga con <b>'+M(n)+'</b>'+(vu>0.004?' · entrega <b>'+M(vu)+'</b> de vuelto':' · sin vuelto')+'</span>';}
 
   function abrir(id){abierto=String(id);error='';PdPasos.open(modelo,{onClose:()=>{abierto=null}})}
   window.pdAbrirPasosMoto=abrir;
