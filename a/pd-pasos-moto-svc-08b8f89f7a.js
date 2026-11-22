@@ -203,7 +203,7 @@
           (cp.obs?U.note(E(cp.obs)):'')+
           `<div class="sum"><div class="lbl">Cliente</div>`+U.who(remN,'Quien pide la compra','',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`;
         if(e>=1&&e<9){const sv=servicio(o);
-          if(Number(o.subtotal)>0)h+=`<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Gasto de la compra</span><b>${M(o.subtotal)}</b></div><div class="li"><span>Servicio</span><b>${M(sv)}</b></div><div class="li t"><span>${o.pago_confirmado===true?'Ya pagado':'Cobrarás al cliente'}</span><b>${M(o.pago_confirmado===true?0:Number(o.subtotal)+sv)}</b></div></div>`;
+          if(Number(o.subtotal)>0)h+=U.st('Compra registrada · gastaste '+M(o.subtotal),'ok');/* los montos y el cobro se ven en el paso Cobrar */
           else h+=`<div><div class="lbl">¿Cuánto gastaste en la compra?</div><input class="inp" data-act="gasto" inputmode="decimal" placeholder="S/ 0.00" value="${E(d.gasto)}"></div><div class="note" data-gt>${U.I.info}<span>Sale de tu caja y se suma al cobro: cobrarás <b>${M((Number(d.gasto)||0)+sv)}</b> (servicio ${M(sv)}).</span></div>`}
         s.body=msg+avisoVuelto(o,aCobrar(o),sinMonto(o))+h;
       }else{
