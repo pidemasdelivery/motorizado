@@ -341,7 +341,7 @@
     const leido=n=>n.leida||(typeof pdReadLocal==='function'&&pdReadLocal().has(String(n.id)));
     const L2=c.data.filter(n=>F.av==='todos'||cat(n)===F.av);
     let h=`<div class="chips">${[['todos','Todos'],['pedidos','Pedidos'],['caja','Caja'],['sistema','Sistema']].map(x=>`<button type="button" data-av="${x[0]}" class="${F.av===x[0]?'on':''}">${x[1]}</button>`).join('')}</div>`;
-    h+=L2.length?L2.map(n=>`<button type="button" class="av2"${n.pedido_id?` data-o="${E(n.pedido_id)}"`:''}><span class="ic">${cat(n)==='caja'?IC.cash:cat(n)==='pedidos'?IC.box:IC.bell}</span><span class="tx"><b>${E(n.titulo||'Aviso de Pidemás')}</b><span>${E(n.mensaje||'')}</span><small>${E(fecha(n.creado_en))}${n.pedido_id?' · Ver pedido '+E(ref(n.pedido_id)):''}</small></span>${leido(n)?'':'<span class="pt"></span>'}</button>`).join(''):'<div class="vac">No hay avisos en esta categoría.</div>';
+    h+=L2.length?L2.map(n=>`<button type="button" class="av2"${n.pedido_id?` data-o="${E(n.pedido_id)}"`:''}><span class="ic">${cat(n)==='caja'?IC.cash:cat(n)==='pedidos'?IC.box:/sueldo|billetera|adelanto|pago a motorizado/i.test(String(n.titulo||'')+' '+String(n.mensaje||''))?IC.wallet:/cuenta|perfil|contraseñ|suspend|reactiv/i.test(String(n.titulo||''))?IC.user:IC.home}</span><span class="tx"><b>${E(n.titulo||'Aviso de Pidemás')}</b><span>${E(n.mensaje||'')}</span><small>${E(fecha(n.creado_en))}${n.pedido_id?' · Ver pedido '+E(ref(n.pedido_id)):''}</small></span>${leido(n)?'':'<span class="pt"></span>'}</button>`).join(''):'<div class="vac">No hay avisos en esta categoría.</div>';
     if(c.data.some(n=>!leido(n)))h+=`<button type="button" class="b" style="height:46px" data-a="av:leer">${XI.check}Marcar todo como leído</button>`;
     return {head,body:h};
   }
