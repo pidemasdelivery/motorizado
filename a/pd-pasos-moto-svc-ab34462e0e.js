@@ -104,7 +104,7 @@
     }catch(err){error='No se pudo registrar el cobro: '+(err?.message||err)}
   }
   async function registrarCompra(o){
-    const v=Number(String(dr(o.id).gasto||'').replace(',','.'));if(!(v>0)){error='Escribe cuánto gastaste en la compra.';return}
+    error='';const v=Number(String(dr(o.id).gasto||'').replace(',','.'));if(!(v>0)){error='Escribe cuánto gastaste en la compra.';return}
     const sv=servicio(o),pre=o.pago_confirmado===true;
     if(!(await pdConfirmar(`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja y ${pre?'el pedido ya está pagado.':'cobrarás al cliente '+M(v+sv)+'.'}`)))return;
     try{
@@ -194,7 +194,7 @@
           `<a class="b o" style="display:flex;width:100%;box-sizing:border-box;justify-content:center${mapaLugar?'':';opacity:.45;pointer-events:none'}"${mapaLugar?` href="${E(mapaLugar)}" target="_blank" rel="noopener"`:' aria-disabled="true"'}>${U.I.nav||''}Ir al lugar de compra</a>`+
           `<div class="sum"><div class="lbl">Qué comprar</div><div style="font-size:15px;line-height:1.5;white-space:pre-line;color:#1F1A17;overflow-wrap:anywhere">${E(cp.detalle||'—')}</div></div>`+(cp.comp||cp.doc?`<div class="sum"><div class="lbl">Comprobante</div>${cp.comp?`<div class="li"><span>Tipo</span><b>${E(cp.comp)}</b></div>`:''}${cp.doc?`<div class="li"><span>DNI/RUC</span><b>${E(cp.doc)}</b></div>`:''}</div>`:'')+
           (cp.obs?U.note(E(cp.obs)):'')+
-          `<div class="sum"><div class="lbl">Cliente</div>`+U.who(remN,'Quien pide la compra'+(remT?' · '+E(remT):''),'',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`;
+          `<div class="sum"><div class="lbl">Cliente</div>`+U.who(remN,'Quien pide la compra','',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`;
         if(e>=1&&e<9){const sv=servicio(o);
           if(Number(o.subtotal)>0)h+=`<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Gasto de la compra</span><b>${M(o.subtotal)}</b></div><div class="li"><span>Servicio</span><b>${M(sv)}</b></div><div class="li t"><span>${o.pago_confirmado===true?'Ya pagado':'Cobrarás al cliente'}</span><b>${M(o.pago_confirmado===true?0:Number(o.subtotal)+sv)}</b></div></div>`;
           else h+=`<div><div class="lbl">¿Cuánto gastaste en la compra?</div><input class="inp" data-act="gasto" inputmode="decimal" placeholder="S/ 0.00" value="${E(d.gasto)}"></div><div class="note" data-gt>${U.I.info}<span>Sale de tu caja y se suma al cobro: cobrarás <b>${M((Number(d.gasto)||0)+sv)}</b> (servicio ${M(sv)}).</span></div>`}
@@ -280,11 +280,11 @@
     m.acts={
       qr:()=>{if(typeof window.showYapeQr==='function')window.showYapeQr(id)},
       modo:(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b)return;d.modo=b.dataset.m;error='';PdPasos.render()},
-      rmonto:inp=>{inp.value=inp.value.replace(/[^\d.,]/g,'');d.monto=inp.value;const n=inp.getRootNode().querySelector('[data-vr]');if(n)n.innerHTML=I_v(inp.value||o.total,Number(o.total))},
-      gasto:inp=>{inp.value=inp.value.replace(/[^\d.,]/g,'');d.gasto=inp.value;const n=inp.getRootNode().querySelector('[data-gt] b');if(n)n.textContent=M((Number(inp.value.replace(',','.'))||0)+servicio(o))},
-      caja:inp=>{inp.value=inp.value.replace(/[^\d.,]/g,'');d.caja=inp.value;const n=inp.getRootNode().querySelector('.amt .n');if(n)n.textContent=M(Number(inp.value.replace(',','.'))||0)},
-      cash:inp=>{inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick[data-act="quick"] button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
-      quick:(box,ev)=>{const b=ev.target.closest('[data-v]');if(!b)return;setDraft(id,b.dataset.v);const inp=box.getRootNode().querySelector('[data-act="cash"]');if(inp){inp.value=b.dataset.v;inp.dispatchEvent(new Event('input'))}}
+      rmonto:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.monto=inp.value;const n=inp.getRootNode().querySelector('[data-vr]');if(n)n.innerHTML=I_v(inp.value||o.total,Number(o.total))},
+      gasto:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.gasto=inp.value;const n=inp.getRootNode().querySelector('[data-gt] b');if(n)n.textContent=M((Number(inp.value.replace(',','.'))||0)+servicio(o))},
+      caja:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.caja=inp.value;const n=inp.getRootNode().querySelector('.amt .n');if(n)n.textContent=M(Number(inp.value.replace(',','.'))||0)},
+      cash:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick[data-act="quick"] button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
+      quick:(box,ev)=>{const b=ev.target.closest('[data-v]');if(!b)return;error='';setDraft(id,b.dataset.v);const inp=box.getRootNode().querySelector('[data-act="cash"]');if(inp){inp.value=b.dataset.v;inp.dispatchEvent(new Event('input'))}}
     };
     if(t==='enc')paquetes(o).forEach(p=>{const n=p.numero,k=()=>d.pk[n]||(d.pk[n]={});
       m.acts['shot'+n]=b=>{const f=b.getRootNode().querySelector('[data-act="file'+n+'"]');if(f)f.click()};

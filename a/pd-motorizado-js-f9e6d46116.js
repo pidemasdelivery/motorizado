@@ -599,6 +599,8 @@ function rememberCashDraft(id,value){
 }
 
 function captureCashDrafts(){
+  /* con la app nueva los montos se escriben en el pedido por pasos; las casillas viejas (ocultas) no deben pisarlos */
+  if(window.__pdAppMoto)return;
   document.querySelectorAll('input[id^="cash_"]').forEach(input=>{
     const id=input.id.slice(5);
     if(id) rememberCashDraft(id,input.value);
@@ -1251,7 +1253,7 @@ window.confirmPayment=async id=>{
     
 
     const cashFields=[...document.querySelectorAll(`[id="cash_${id}"]`)];
-    const visibleCashField=cashFields.find(el=>el.getClientRects().length>0 && getComputedStyle(el).visibility!=="hidden" && getComputedStyle(el).display!=="none");
+    const visibleCashField=window.__pdAppMoto?null:cashFields.find(el=>el.getClientRects().length>0 && getComputedStyle(el).visibility!=="hidden" && getComputedStyle(el).display!=="none");
     const draftMap=window.__pidemasCashDrafts||{};
     const typedValue=visibleCashField ? visibleCashField.value : (Object.prototype.hasOwnProperty.call(draftMap,String(id)) ? draftMap[String(id)] : "");
     amount=Number(String(typedValue).trim().replace(",","."));
@@ -1278,7 +1280,7 @@ window.confirmPayment=async id=>{
   
 
   const cashInput=[...document.querySelectorAll(`[id="cash_${id}"]`)].find(el=>el.getClientRects().length>0) || document.getElementById("cash_"+id);
-  if(cashInput){
+  if(cashInput&&!window.__pdAppMoto){
     window.__pidemasCashDrafts=window.__pidemasCashDrafts||{};
     window.__pidemasCashDrafts[id]=cashInput.value;
     cashInput.blur();
