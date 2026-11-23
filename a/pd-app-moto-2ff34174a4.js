@@ -321,7 +321,7 @@
     {const ti=f.kVer?'text':'password',key=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
       h+=`<div class="cd"><div class="lbl">Seguridad</div>${f.kAb?`<div class="fld"><label for="pfK1">Nueva contraseña</label><input id="pfK1" type="${ti}" autocomplete="new-password" maxlength="72" value="${E(f.k1||'')}" data-in="pf:k1"></div><div class="fld"><label for="pfK2">Repite la nueva contraseña</label><input id="pfK2" type="${ti}" autocomplete="new-password" maxlength="72" value="${E(f.k2||'')}" data-in="pf:k2"></div><span style="font-size:13px;color:#6B5E55">Usa al menos 6 caracteres. Al cambiarla, entrarás con la nueva clave en todos tus teléfonos.</span>${f.kMsg?`<div class="err">${E(f.kMsg)}</div>`:''}<div class="row"><button type="button" class="b" style="flex:1;height:46px" data-a="pf:kver">${f.kVer?'Ocultar':'Mostrar'}</button><button type="button" class="b" style="flex:1;height:46px" data-a="pf:kx">Cancelar</button></div><button type="button" class="b o" style="height:50px" data-a="pf:kok">Guardar contraseña</button>`:`<button type="button" class="b" style="height:50px;display:flex;align-items:center;justify-content:center;gap:8px" data-a="pf:kab">${key}Cambiar contraseña</button>`}</div>`}
     if(f.msg)h+=`<div class="err">${E(f.msg)}</div>`;if(f.ok)h+=`<div class="msgok">${E(f.ok)}</div>`;
-    h+=`<button type="button" class="b o" style="height:54px;font-size:16px" data-a="pf:guardar">Guardar cambios</button><button type="button" class="b" style="height:54px;font-size:16px;color:#B42318;border-color:#F4C7C3;background:#FFFFFF" data-a="salir">${XI.logout}Cerrar sesión</button>`;
+    h+=`<button type="button" class="b o" style="height:54px;font-size:16px" data-a="pf:guardar">Guardar cambios</button>`+(window.PdAvisos?window.PdAvisos.card('data-a','Suena cuando te asignan un pedido nuevo.'):'')+`<button type="button" class="b" style="height:54px;font-size:16px;color:#B42318;border-color:#F4C7C3;background:#FFFFFF" data-a="salir">${XI.logout}Cerrar sesión</button>`;
     return {head:top('Mi cuenta','Mi perfil'),body:h};
   }
   async function perfilGuardar(){
@@ -527,6 +527,7 @@
     const o=e.target.closest('[data-o]');if(o){abrirPedido(o.dataset.o);return}
     const a=e.target.closest('[data-a]');if(!a)return;const A=a.dataset.a;const mm=window.pdMotoMej||{};
     if(A.startsWith('p:')){ir(tab,A.slice(2));return}
+    if(A.startsWith('avs:')){if(a.disabled)return;a.disabled=true;try{if(window.PdAvisos)await window.PdAvisos.accion(A.slice(4))}finally{a.disabled=false;key='';pintar()}return}
     if(A.startsWith('acep:')||A.startsWith('rech:')){if(a.disabled)return;a.disabled=true;try{const id=A.slice(5);if(A[0]==='a'){if(typeof window.acceptOrder==='function')await window.acceptOrder(id)}else if(typeof window.rejectOrder==='function')await window.rejectOrder(id)}finally{a.disabled=false;key='';pintar()}return}
     const ocupado=async fn=>{if(a.disabled)return;a.disabled=true;const tx=a.innerHTML;a.textContent='Un momento…';try{await fn()}finally{key='';pintar()}};
     switch(A){
