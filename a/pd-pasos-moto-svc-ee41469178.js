@@ -71,6 +71,45 @@
     Object.assign(o,patch);return completo(o);
   }
   const abrirWa=url=>{if(typeof window.pdOpenWhatsApp==='function')window.pdOpenWhatsApp(url);else window.open(url,'_blank')};
+  /* Guía de encomienda: la foto se sube a Supabase y la clave queda guardada en el pedido */
+  function achicar(file){return new Promise(res=>{try{const u=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{try{const max=1600,r=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>res(b&&b.size?b:file),'image/jpeg',0.82)}catch(_){res(file)}};
+    img.onerror=()=>{URL.revokeObjectURL(u);res(file)};img.src=u}catch(_){res(file)}})}
+  async function guardarGuia(o,n,dato){
+    const lista=guardados(o).filter(x=>Number(x.numero)!==n);
+    lista.push(Object.assign({numero:n},dato));lista.sort((a,b)=>a.numero-b.numero);
+    const patch={paquetes_envio:lista};
+    if(completo({...o,paquetes_envio:lista})){const ok=lista.filter(x=>x.guia_url&&x.guia_url!=='whatsapp');
+      patch.guia_url=(ok[0]&&ok[0].guia_url)||'whatsapp';
+      patch.clave_guia=lista.every(x=>x.sin_clave)?'SIN_CLAVE':lista.map(x=>x.sin_clave?'P'+x.numero+': sin clave':(lista.length>1?'P'+x.numero+': ':'')+String(x.clave||'')).join(' | ')}
+    const {data,error:e}=await D().from('pedidos').update(patch).eq('id',o.id).eq('motorizado_id',ME().id).select('id').maybeSingle();
+    if(e)throw new Error(e.message);if(!data)throw new Error('Supabase no confirmó el registro de la guía.');
+    Object.assign(o,patch);return completo(o);
+  }
+  async function subirGuia(o,n){
+    error='';info='';const d=dr(o.id).pk[n]||(dr(o.id).pk[n]={});
+    if(!d.file){error='Toma la foto de la guía o voucher del paquete '+n+'.';return}
+    const clave=String(d.clave||'').trim();
+    if(!d.sin&&!clave){error='Escribe la clave del paquete '+n+' o marca que la agencia no dio clave.';return}
+    if(d.subiendo)return;d.subiendo=true;PdPasos.render();
+    try{
+      const {data:au}=await D().auth.getUser();const uid=au&&au.user&&au.user.id;if(!uid)throw new Error('Vuelve a iniciar sesión.');
+      const blob=await achicar(d.file),path=uid+'/guias/'+o.id+'_p'+n+'_'+Date.now()+'.jpg',b=D().storage.from('fotos-motorizados');
+      const up=await b.upload(path,blob,{cacheControl:'3600',upsert:false,contentType:'image/jpeg'});if(up.error)throw new Error('No se pudo subir la foto: '+up.error.message);
+      const url=b.getPublicUrl(path)?.data?.publicUrl;if(!url)throw new Error('No se obtuvo el enlace de la foto.');
+      const all=await guardarGuia(o,n,{guia_url:url,clave:d.sin?'':clave,sin_clave:!!d.sin,subido_en:new Date().toISOString()});
+      try{if(d.url)URL.revokeObjectURL(d.url)}catch(_){}delete dr(o.id).pk[n];
+      info=all?'Listo: guardaste todas las guías. Ya puedes terminar la encomienda.':'Guía del paquete '+n+' guardada. Administración ya la ve.';
+      try{await loadOrders()}catch(_){}
+    }catch(e){d.subiendo=false;error=String(e&&e.message||e)}
+  }
+  function compartirGuia(o,n){
+    const sv=guardados(o).find(x=>Number(x.numero)===n);if(!sv)return;
+    const p=paquetes(o).find(x=>x.numero===n)||{numero:n};
+    const txt=textoGuia(o,p,String(sv.clave||''),!!sv.sin_clave).replace('(Foto de la guía adjunta)','Foto de la guía: '+(sv.guia_url||''));
+    abrirWa('https://wa.me/'+waAdmin()+'?text='+encodeURIComponent(txt));
+  }
   async function enviarGuia(o,n,chat){
     error='';info='';const d=dr(o.id).pk[n]||{};
     if(!d.file&&!chat){error='Toma la foto de la guía o voucher del paquete '+n+'.';return}
@@ -252,7 +291,11 @@
         else{if(pagoAg(o)&&cajaPago(o))h+=U.st('Pago en agencia registrado en tu caja','ok');
           const g=guardados(o);
           h+=paquetes(o).map(p=>{const sv=g.find(y=>Number(y.numero)===p.numero),ruta=E([p.agencia,p.destino].filter(Boolean).join(' → ')||'Paquete');
-            if(pkgOk(sv))return `<div class="sum"><div class="li"><span>Paquete ${p.numero} · ${ruta}</span><b style="color:#15803D">${sv.enviado_whatsapp?'Enviado':'Completo'}</b></div></div>`;
+            if(pkgOk(sv)){const foto=sv.guia_url&&sv.guia_url!=='whatsapp'?sv.guia_url:'';
+              return `<div class="sum"><div class="li"><span>Paquete ${p.numero} · ${ruta}</span><b style="color:#15803D">${foto?'Guardado ✓':'Enviado por WhatsApp'}</b></div>`+
+                (foto?`<a href="${E(foto)}" target="_blank" rel="noopener"><img src="${E(foto)}" alt="Guía del paquete ${p.numero}" style="width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:block"></a>`:'')+
+                `<div class="li"><span>Clave de recojo</span><b>${sv.sin_clave?'La agencia no dio clave':E(sv.clave||'—')}</b></div>`+
+                (foto&&!fin?`<button type="button" class="b" data-act="wa${p.numero}">Compartir también por WhatsApp (opcional)</button>`:'')+`</div>`}
             if(fin)return `<div class="sum"><div class="li"><span>Paquete ${p.numero} · ${ruta}</span><b>Sin guía</b></div></div>`;
             const k=d.pk[p.numero]||(d.pk[p.numero]={});
             return `<div class="sum"><div class="lbl">Paquete ${p.numero} · ${ruta}</div>
@@ -260,7 +303,8 @@
               ${k.url?`<img src="${E(k.url)}" alt="Guía del paquete ${p.numero}" style="width:100%;max-height:180px;object-fit:cover;border-radius:12px">`:''}
               <input class="inp" data-act="clave${p.numero}" placeholder="Clave de recojo" value="${E(k.clave||'')}"${k.sin?' disabled':''}>
               <button type="button" class="b" data-act="sin${p.numero}">${k.sin?'✓ ':''}La agencia no dio clave</button>
-              <div class="btns b2"><button type="button" class="b o" data-act="wa${p.numero}">Enviar por WhatsApp</button><button type="button" class="b g" data-act="chat${p.numero}">Chat del admin</button></div></div>`}).join('');}
+              <button type="button" class="b o" data-act="up${p.numero}"${k.subiendo?' disabled':''}>${k.subiendo?'Subiendo guía…':'Subir guía y clave'}</button></div>`}).join('');
+          if(!fin&&!completo(o))h+=U.note('La foto y la clave se guardan en el pedido y Administración las ve al instante.');}
         s.body=h;}
       /* 4 · Terminar */
       {const s=S(4);s.locked='Se muestra al enviar las guías';s.sum='Encomienda terminada';s.body=msg+U.st('Guías y claves enviadas a Administración. Administración se las manda al cliente.','ok');}
@@ -298,7 +342,7 @@
     }
     else if(e===2)m.cta=t==='enc'?{label:'Llegué a la agencia',run:()=>correr('confirmEncomiendaAgency',id)}:{label:'Llegué donde el cliente',run:()=>correr('markInDelivery',id)};
     else if(e===3){
-      if(t==='enc'){if(pagoAg(o)&&!cajaPago(o))m.cta={label:'Pagar envío con mi caja',busy:'Registrando pago…',run:()=>pagarAgencia(o)};else m.cta={label:'Envía las guías al admin',off:true,hint:'Toma la foto y la clave de cada paquete y envíalas por WhatsApp'}}
+      if(t==='enc'){if(pagoAg(o)&&!cajaPago(o))m.cta={label:'Pagar envío con mi caja',busy:'Registrando pago…',run:()=>pagarAgencia(o)};else m.cta={label:'Sube las guías',off:true,hint:'Toma la foto y escribe la clave de cada paquete, luego toca «Subir guía y clave»'}}
       else m.cta={label:'Ya cobré '+M(aCobrar(o)),busy:'Registrando cobro…',run:async()=>{if(efectivo(o)){const v=Number(String(draft(id)).replace(',','.'));if(!(v>0)){error='Escribe con cuánto te paga el cliente.';return}}await correr('confirmPayment',id)}};
     }
     else if(e===4)m.cta={label:t==='enc'?'Terminar encomienda':'Finalizar entrega',green:true,busy:'Finalizando…',run:()=>correr('deliverOrder',id)};
@@ -318,8 +362,8 @@
       m.acts['file'+n]=inp=>{const f=inp.files&&inp.files[0];if(!f)return;const z=k();z.file=f;try{z.url=URL.createObjectURL(f)}catch(_){}PdPasos.render()};
       m.acts['clave'+n]=inp=>{k().clave=inp.value};
       m.acts['sin'+n]=()=>{const z=k();z.sin=!z.sin;if(z.sin)z.clave='';PdPasos.render()};
-      m.acts['wa'+n]=async()=>{await enviarGuia(o,n,false);PdPasos.render()};
-      m.acts['chat'+n]=async()=>{await enviarGuia(o,n,true);PdPasos.render()};
+      m.acts['up'+n]=async()=>{await subirGuia(o,n);PdPasos.render()};
+      m.acts['wa'+n]=()=>compartirGuia(o,n);
     });
     return m;
   }
