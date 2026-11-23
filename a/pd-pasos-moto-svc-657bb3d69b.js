@@ -175,6 +175,25 @@
     if(['en_entrega','confirmando_pago'].includes(s))return cobroEntrega(o)&&o.pago_confirmado!==true?3:4;
     return 1;
   }
+  /* Ubicación de las agencias (la que se marca en Más › Agencias o en el formulario de encomienda) */
+  const AGU={d:null,p:null};
+  const agClaveU=n=>String(n||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+  function agUbi(nom){
+    if(!AGU.d&&!AGU.p)AGU.p=fetch('https://escxesvzndmyfuteawey.supabase.co/storage/v1/object/public/restaurantes/config/agencias.json?t='+Date.now(),{cache:'no-store'})
+      .then(r=>r.ok?r.json():{}).then(j=>{AGU.d=(j&&j.agencias)||j||{};try{if(PdPasos.isOpen())PdPasos.render()}catch(_){}}).catch(()=>{AGU.d={}});
+    const u=(AGU.d||{})[agClaveU(nom)];return u&&Number.isFinite(+u.lat)&&Number.isFinite(+u.lng)&&+u.lat!==0?{lat:+u.lat,lng:+u.lng}:null;
+  }
+  /* punto de cada agencia: el paquete 1 usa el punto de entrega del pedido si lo tiene */
+  function agPunto(o,nom,primero){const la=Number(o.latitud_entrega),lo=Number(o.longitud_entrega);if(primero&&la&&lo)return {lat:la,lng:lo};return agUbi(nom)}
+  function agBotones(o,lista){
+    const vistos=new Set();let h='';
+    lista.forEach((nom,i)=>{nom=String(nom||'').trim();if(!nom||vistos.has(agClaveU(nom)))return;vistos.add(agClaveU(nom));
+      const pt=agPunto(o,nom,i===0);
+      h+=pt?`<a class="b o" style="display:flex;width:100%;box-sizing:border-box;justify-content:center" href="https://www.google.com/maps/dir/?api=1&destination=${pt.lat},${pt.lng}" target="_blank" rel="noopener">${(U.I&&U.I.nav)||''}Ir a la agencia ${E(nom)}</a>`
+        :(AGU.d?U.note('La agencia '+E(nom)+' no tiene ubicación guardada. Márcala en Más › Agencias.'):'');
+    });
+    return h;
+  }
   function modelo(){
     const o=L().find(x=>String(x.id)===String(abierto));if(!o)return null;
     const t=tipo(o),e=etapa(o),id=o.id,d=dr(id),x=extra(o),cp=t==='compra'?compra(o):null;
@@ -224,6 +243,7 @@
       /* 2 · Llevar a la agencia */
       {const s=S(2);s.locked='Se muestra al recoger los paquetes';const ps=paquetes(o);s.sum=ps.map(p=>p.agencia).filter(Boolean).join(' · ')||'En agencia';
         s.body=msg+`<div class="sum"><div class="lbl">Lleva a</div>${ps.map(p=>`<div class="li"><span>Paquete ${p.numero}</span><b style="text-align:right">${E([p.agencia,p.destino].filter(Boolean).join(' → ')||'—')}</b></div>`).join('')}</div>`+
+           agBotones(o,ps.map(p=>p.agencia))+
           U.who(o.nombre_receptor||'—','Quien recibe en destino'+(o.telefono_receptor?' · '+E(o.telefono_receptor):''),'',true);}
       /* 3 · Guía y clave */
       {const s=S(3);s.locked='Se muestra al llegar a la agencia';s.sum='Guías enviadas a Administración';const fin=['entregado','cancelado'].includes(st(o));
