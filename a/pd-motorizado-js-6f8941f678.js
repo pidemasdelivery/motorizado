@@ -1162,10 +1162,8 @@ window.rejectOrder=async id=>{
   const btns=[...document.querySelectorAll(`button[onclick*="rejectOrder('${id}')"]`)];
   btns.forEach(b=>{b.disabled=true;b.textContent="Rechazando...";});
   localPedidoUpdates.add(id);
-  const {data,error}=await db.from("pedidos")
-    .update({estado:"pendiente",motorizado_id:null})
-    .eq("id",id).eq("motorizado_id",moto.id).eq("estado","asignado")
-    .select("id,estado").maybeSingle();
+  const {data:__rz,error}=await db.rpc("rechazar_pedido",{p_pedido:id});
+  const data=Array.isArray(__rz)?__rz[0]:__rz;
   if(error || !data){
     localPedidoUpdates.delete(id);
     show($("appMsg"),"No se pudo rechazar el pedido. Puede que Administración lo haya actualizado. "+(error?.message||""));
