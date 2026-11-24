@@ -306,10 +306,24 @@
     const DS={lunes:'Lun',martes:'Mar',miercoles:'Mié',jueves:'Jue',viernes:'Vie',sabado:'Sáb',domingo:'Dom'},ORD=['lunes','martes','miercoles','jueves','viernes','sabado','domingo'];
     h+=`<div class="cd"><div class="lbl">Mi contrato</div><div class="li"><span>Ingreso</span><b>${cfg.hire?E(S2.parse(cfg.hire).toLocaleDateString('es-PE')):'Pendiente'}</b></div><div class="li"><span>Horario</span><b>${cfg.hourly?'Por horas':cfg.times?E(S2.fmtTime(cfg.times.start)+' – '+S2.fmtTime(cfg.times.end)):'Pendiente'}</b></div><div class="li"><span>Días</span><b>${(cfg.days||[]).length?E(ORD.filter(d=>cfg.days.includes(d)).map(d=>DS[d]).join(', ')):'Pendiente'}</b></div></div>`;
     if(res.ok&&!res.hourly){const cal=U.calSueldo(P,c.data.rows);if(cal)h+=`<div class="cd"><div class="lbl">Mi calendario de la quincena</div>${cal}</div>`}
-    const pays=c.data.rows.filter(r=>String(r.tipo||'').toLowerCase()==='pago').sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha))).slice(0,10);
-    h+=`<div class="cd"><div class="lbl">Pagos recibidos</div>${pays.length?pays.map(r=>`<div class="mv"><span class="ic" style="background:#E9F6EE;color:#15803D">${XI.check}</span><span class="tx"><b>${M(r.monto)}</b><span>${E(new Date(String(r.fecha).slice(0,10)+'T12:00:00').toLocaleDateString('es-PE',{day:'2-digit',month:'short'}))}${r.descripcion?' · '+E(r.descripcion):''}</span></span><span class="pl${/^adelanto/i.test(String(r.descripcion||''))?'':' g'}">${/^adelanto/i.test(String(r.descripcion||''))?'Adelanto':'Recibido'}</span></div>`).join(''):'<div style="color:#6B5E55;font-size:15px">Aún no tienes pagos registrados.</div>'}</div>`;
-    const prev=(res.periods||[]).filter(p=>p.key!==P.key).slice(-6).reverse();
-    if(prev.length)h+=`<div class="cd"><div class="lbl">Quincenas anteriores</div>${prev.map(p=>`<div class="li"><span>${E(p.label)}</span><b>${M(p.earned)}</b></div>`).join('')}</div>`;
+    /* quincenas (la actual primero): al tocar una se despliega su detalle: días, faltas, gasolina, descuentos, adelantos y pagos */
+    {const ab=window.__pdQuinAb||null,fd=v=>new Date(String(v).slice(0,10)+'T12:00:00').toLocaleDateString('es-PE',{weekday:'short',day:'2-digit',month:'short'}).replace('.','');
+      const Q=(res.periods||[]).slice().sort((a,b)=>String(b.start).localeCompare(String(a.start)));
+      const pays=c.data.rows.filter(r=>String(r.tipo||'').toLowerCase()==='pago');
+      const det=p=>{const li=(k,v,c2)=>`<div class="li"><span>${k}</span><b${c2?` style="color:${c2}"`:''}>${v}</b></div>`;
+        const gas=res.hourly?p.gasTotal:(p.gasDays||0)*(S2.GAS||8);
+        const fal=(p.days||[]).filter(d=>d.status==='falta'&&d.falta),dsc=p.descRows||[],pg=(p.payments&&p.payments.length?p.payments:pays.filter(r=>String(r.periodo||'')===p.key)).slice().sort((a,b)=>String(a.fecha).localeCompare(String(b.fecha)));
+        const dsT=dsc.reduce((a,r)=>a+(Number(r.monto)||0),0),bal=Math.max(0,Number(p.balance!=null?p.balance:(p.earned-dsT-p.paid))||0);
+        let x=`<div style="margin:0 0 8px;padding:10px 12px;border-radius:14px;background:#FBF6F2;display:flex;flex-direction:column;gap:6px">`;
+        x+=res.hourly?li('Turnos trabajados',String(p.worked||0))+li('Horas',String(Math.round((p.hours||0)*10)/10)):li('Días trabajados',String(p.worked||0))+li('Descansos pagados',String((p.rest||0)+(p.adj||0)))+li('Faltas',String(p.faltas||0),p.faltas?'#B42318':'');
+        if(fal.length)x+=`<div style="font-size:13.5px;color:#B42318">${fal.map(d=>E(fd(d.date))+(d.falta.descripcion?' · '+E(d.falta.descripcion):'')).join('<br>')}</div>`;
+        x+=`<div style="height:1px;background:#F1E4DA;margin:2px 0"></div>`+li('Sueldo',M(p.earned-gas))+li('Gasolina',M(gas))+li('Ganado',M(p.earned));
+        if(dsc.length)x+=dsc.map(r=>li('Descuento'+(r.descripcion?' · '+E(r.descripcion):''),'− '+M(r.monto),'#B42318')).join('');
+        if(pg.length)x+=pg.map(r=>{const ad=/^adelanto/i.test(String(r.descripcion||''));return li((ad?'Adelanto':'Pago')+' · '+E(fd(r.fecha))+(r.descripcion&&!ad?' · '+E(r.descripcion):''),'− '+M(r.monto),'#15803D')}).join('');
+        else x+=li('Pagos y adelantos','Ninguno');
+        x+=`<div class="li" style="border-top:1px solid #F1E4DA;padding-top:8px"><span>${bal>0.004?'Por cobrar':'Saldo'}</span><b style="font-size:17px">${M(bal)}</b></div></div>`;return x};
+      h+=`<div class="cd"><div class="lbl">Mis quincenas</div>${Q.length?Q.map(p=>{const on=ab===p.key,dsT=(p.descRows||[]).reduce((a,r)=>a+(Number(r.monto)||0),0),bal=Math.max(0,Number(p.balance!=null?p.balance:(p.earned-dsT-p.paid))||0),act=P&&p.key===P.key;
+        return `<button type="button" class="mv" data-a="quin:${E(p.key)}" aria-expanded="${on}" style="width:100%;border:0;background:transparent;text-align:left;font:inherit;color:inherit;cursor:pointer;padding-left:0;padding-right:0"><span class="ic" style="background:${act?'#FDEBDF':bal>0.004?'#FFF4E5':'#E9F6EE'};color:${act?'#C4410C':bal>0.004?'#9A5B00':'#15803D'}">${bal>0.004||act?XI.doc:XI.check}</span><span class="tx"><b>${E(p.label)}${act?' · actual':''}</b><span>Ganado ${M(p.earned)} · pagado ${M(p.paid)} · ${on?'ocultar':'ver detalle'}</span></span><span class="am">${bal>0.004?M(bal):'Pagada'}</span></button>`+(on?det(p):'')}).join(''):'<div style="color:#6B5E55;font-size:15px">Aún no hay quincenas.</div>'}</div>`}
     return {head,body:h};
   }
   /* =============== PERFIL =============== */
@@ -536,6 +550,7 @@
     if(A.startsWith('p:')){ir(tab,A.slice(2));return}
     if(A.startsWith('avs:')){if(a.disabled)return;a.disabled=true;try{if(window.PdAvisos)await window.PdAvisos.accion(A.slice(4))}finally{a.disabled=false;key='';pintar()}return}
     if(A.startsWith('acep:')||A.startsWith('rech:')){if(a.disabled)return;a.disabled=true;try{const id=A.slice(5);if(A[0]==='a'){if(typeof window.acceptOrder==='function')await window.acceptOrder(id)}else if(typeof window.rejectOrder==='function')await window.rejectOrder(id)}finally{a.disabled=false;key='';pintar()}return}
+    if(A.startsWith('quin:')){const k=A.slice(5),cur=window.__pdQuinAb;window.__pdQuinAb=cur===k?null:k;key='';pintar();return}
     if(A.startsWith('cajac:')){const i=+A.slice(6);window.__pdCajaAb=window.__pdCajaAb===i?-1:i;key='';pintar();return}
     const ocupado=async fn=>{if(a.disabled)return;a.disabled=true;const tx=a.innerHTML;a.textContent='Un momento…';try{await fn()}finally{key='';pintar()}};
     switch(A){
