@@ -261,7 +261,7 @@
   function bloqueCobroRec(o){
     const d=dr(o.id),modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo'),monto=Number(o.total)||0;
     let h=`<div class="amt"><div class="k">Cobro al cliente</div><div class="n">${M(monto)}</div><div class="pill">${modo==='yape'?'Yape':'Efectivo'}</div></div>`+
-      U.note(tipo(o)==='enc'?'Cóbrale a quien envía antes de llevar los paquetes a la agencia.':'Paga quien envía'+(o.nombre_remitente?' ('+E(o.nombre_remitente)+')':'')+': cóbrale al recoger, antes de salir a entregar.')+
+      U.note(tipo(o)==='enc'?'Cóbrale a quien envía antes de llevar los paquetes a la agencia.':(()=>{const PRx=Array.isArray(o.puntos_recojo)?o.puntos_recojo.filter(Boolean):[],q=PRx.find(x=>x.paga_aqui),n=q?q.n:1,nm=q?q.nombre:o.nombre_remitente;return PRx.length?'Cobra en el <b>punto '+E(n)+'</b>'+(nm?' ('+E(nm)+')':'')+': ahí pagan el total del servicio, de todos los puntos.':'Paga quien envía'+(nm?' ('+E(nm)+')':'')+': cóbrale al recoger, antes de salir a entregar.'})())+
       `<div><div class="lbl">¿Cómo paga el cliente?</div><div class="quick" data-act="modo"><button type="button" data-m="efectivo" class="${modo==='efectivo'?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${modo==='yape'?'on':''}">Yape</button></div></div>`;
     if(modo==='efectivo'){const v=d.monto||'',vals=[];[10,20,50,100,200].forEach(z=>{const r=Math.ceil(monto/z)*z;if(r>monto+0.004&&!vals.includes(r))vals.push(r)});
       h+=`<div><div class="lbl">¿Con cuánto paga?</div><input class="inp" data-act="rmonto" inputmode="decimal" placeholder="${M(monto)}" value="${E(v)}"></div><div class="quick" data-act="rquick">${[monto].concat(vals.slice(0,3)).map((z,i)=>`<button type="button" data-v="${z.toFixed(2)}" class="${v!==''&&Number(v)===z?'on':''}">${i?'S/ '+z:'Exacto'}</button>`).join('')}</div><div data-vr>${I_v(v||monto,monto)}</div>`}
@@ -366,6 +366,7 @@
               (q.a_nombre?`<div class="li"><span>Pedido a nombre de</span><b>${E(q.a_nombre)}</b></div>`:'')+
               (q.costo_delivery!=null&&q.costo_delivery!==''?`<div class="li"><span>Delivery de este punto</span><b>${E(U.money(q.costo_delivery))}</b></div>`:'')+
               U.contact(q.mapa,q.telefono,msgW)+
+              (alRecoger(o)&&o.pago_confirmado!==true&&(q.n===1?!PR.some(z=>z.paga_aqui):q.paga_aqui)?U.st('Aquí cobras el servicio · '+M(o.total)+' (todos los puntos)'):'')+
               (ok?U.st('Recogido aquí','ok'):e!==1?'':aqui?`<button type="button" class="b o" data-act="pt${q.n}">Ya recogí en el punto ${q.n}</button>`:`<button type="button" class="b o" data-act="pl${q.n}">Llegué a ${E(nom)}</button>`)+`</div>`});
         }
         if(t==='recojo'){const n=String(notas(o)||'').split(/\s*·\s*/).filter(z=>z&&!/^(Pago en efectivo|Pago por Yape|Paga quien|Servicio marcado como PAGADO|Pedido a nombre de)/i.test(z)).join(' · ');if(n)h+=`<div class="sum"><div class="lbl">Notas del servicio</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(n)}</div></div>`}
