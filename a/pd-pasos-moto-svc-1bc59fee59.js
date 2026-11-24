@@ -42,7 +42,7 @@
   }
   function notas(o){const x=extra(o);let n=String(x.clean||'');try{if(typeof cleanDeliveryTariffFromObservaciones==='function')n=cleanDeliveryTariffFromObservaciones(n)}catch(_){}
     try{if(typeof window.pdLimpiarNotas==='function')n=window.pdLimpiarNotas(n)}catch(_){}
-    return String(n||'').replace(/servicio marcado como PAGADO[^|·]*/ig,'').replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+){2,}\b/g,'').replace(/__PIDEMAS_[A-Z_]+__\s*\{[^{}]*\}/g,'').replace(/^[\s|·]+|[\s|·]+$/g,'').trim()}
+    return String(n||'').replace(/(?:^|[|·])\s*Ubicaci[oó]n[^:|·]*:\s*[^|·]*/gi,'').replace(/https?:\/\/\S+/g,'').replace(/servicio marcado como PAGADO[^|·]*/ig,'').replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+){2,}\b/g,'').replace(/__PIDEMAS_[A-Z_]+__\s*\{[^{}]*\}/g,'').replace(/^[\s|·]+|[\s|·]+$/g,'').trim()}
 
   /* ---------- encomienda: paquetes y guías ---------- */
   function paquetes(o){
