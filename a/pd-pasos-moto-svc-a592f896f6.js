@@ -82,7 +82,7 @@
   /* paquete con el mismo diseño del Admin: filas Ruta, Pago del envío, Recibe · nombre, DNI y Número */
   function pkgRows(p){const li=(k,v)=>`<div class="li"><span>${k}</span><b style="text-align:right;overflow-wrap:anywhere">${v}</b></div>`,tel=String(p.recibeTel||'').replace(/\D/g,'');
     return `<div class="lbl">Paquete ${p.numero}</div>`+li('Ruta',E([p.agencia,p.destino].filter(Boolean).join(' → ')||'—'))+li('Pago del envío',E(pagoTx(p.tipoPago)))+
-      li('Recibe',E(p.recibe||'—')+([p.recibeDni?'DNI '+E(p.recibeDni):'',tel?`<a href="tel:${E(tel)}" style="color:inherit;text-decoration:none">${E(p.recibeTel)}</a>`:''].filter(Boolean).length?`<div style="font-weight:500;font-size:13.5px;color:#6B5E55">${[p.recibeDni?'DNI '+E(p.recibeDni):'',tel?`<a href="tel:${E(tel)}" style="color:inherit;text-decoration:none">${E(p.recibeTel)}</a>`:''].filter(Boolean).join(' · ')}</div>`:''))}
+      li('Recibe',E(p.recibe||'—')+([p.recibeDni?'DNI '+E(p.recibeDni):'',tel?`<a href="tel:${E(tel)}" style="color:inherit;text-decoration:none">${E(p.recibeTel)}</a>`:''].filter(Boolean).length?`<div style="font-weight:500;font-size:13.5px;color:#6B5E55">${[p.recibeDni?'DNI: '+E(p.recibeDni):'',tel?`Número: <a href="tel:${E(tel)}" style="color:inherit;text-decoration:none">${E(p.recibeTel)}</a>`:''].filter(Boolean).join('<br>')}</div>`:''))}
   const cap1=v=>String(v||'').charAt(0).toUpperCase()+String(v||'').slice(1);
   function pkgHtml(p){return `<div class="sum">${pkgRows(p)}</div>`}
 
