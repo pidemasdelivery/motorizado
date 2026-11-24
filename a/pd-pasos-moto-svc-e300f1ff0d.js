@@ -13,7 +13,9 @@
   const yape=o=>String(o.metodo_pago||'').toLowerCase()==='yape';
   const efectivo=o=>!yape(o)&&String(o.metodo_pago||'').toLowerCase()!=='plim';
   const aCobrar=o=>o.pago_acordado==='solo_delivery'?Number(o.costo_delivery||0):Number(o.total||0);
-  const prepago=o=>o.pago_acordado==='pagado'||(o.pago_confirmado===true&&!(Number(o.monto_recibido)>0));
+  const prepago=o=>tipo(o)==='compra'?false:(o.pago_acordado==='pagado'||(o.pago_confirmado===true&&!(Number(o.monto_recibido)>0)));
+  /* compra: solo efectivo o Yape, y siempre se cobra (compra + servicio) al entregar */
+  const compraCobrada=o=>tipo(o)==='compra'&&o.pago_confirmado===true&&Number(o.monto_recibido)>0;
   const momento=o=>{const m=String(o.pago_servicio_momento||'').toLowerCase();if(m)return m;if(o.pago_confirmado===true)return 'pagado';return yape(o)?'recojo_yape':'recojo_efectivo'};
   const alRecoger=o=>typeof window.pdCobraAlRecoger==='function'?!!window.pdCobraAlRecoger(o):false;
   const cobroRecPend=o=>alRecoger(o)&&o.pago_confirmado!==true&&Number(o.total)>0&&!['asignado','entregado','cancelado'].includes(st(o));
@@ -219,12 +221,12 @@
   }
   async function registrarCompra(o){
     error='';const v=Number(String(dr(o.id).gasto||'').replace(',','.'));if(!(v>0)){error='Escribe cuánto gastaste en la compra.';return}
-    const sv=servicio(o),pre=o.pago_confirmado===true;
-    if(!(await pdConfirmar(`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja y ${pre?'el pedido ya está pagado.':'cobrarás al cliente '+M(v+sv)+'.'}`)))return;
+    const sv=servicio(o);
+    if(!(await pdConfirmar(`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja y al entregar cobrarás al cliente ${M(v+sv)} (efectivo o Yape).`)))return;
     try{
       const {data:prev}=await D().from('movimientos_caja').select('id').eq('motorizado_id',ME().id).eq('pedido_id',o.id).eq('tipo','retiro').ilike('descripcion','PAGO DE COMPRA%').limit(1);
       if(!(prev&&prev.length)){const {error:me}=await D().from('movimientos_caja').insert({motorizado_id:ME().id,pedido_id:o.id,tipo:'retiro',monto:Math.round(v*100)/100,descripcion:'PAGO DE COMPRA · Pedido #'+String(o.id).slice(0,8).toUpperCase()});if(me)throw me}
-      const upd={subtotal:Math.round(v*100)/100,costo_delivery:Math.round(sv*100)/100};if(!pre)upd.total=Math.round((v+sv)*100)/100;
+      const upd={subtotal:Math.round(v*100)/100,costo_delivery:Math.round(sv*100)/100,total:Math.round((v+sv)*100)/100};if(o.pago_confirmado===true&&!(Number(o.monto_recibido)>0))upd.pago_confirmado=false;
       const {error:ue}=await D().from('pedidos').update(upd).eq('id',o.id).eq('motorizado_id',ME().id);if(ue)throw ue;
       Object.assign(o,upd);dr(o.id).gasto='';
       try{await loadOrders()}catch(_){}try{if(typeof window.loadCash==='function')await window.loadCash()}catch(_){}
@@ -285,7 +287,7 @@
     if(t==='enc'){if(completo(o)&&enAgencia(o)&&grupos(o).every((g,gi)=>grupoListo(o,g,gi)))return 4;if(enAgencia(o))return 3;if(['en_camino','camino_entrega','en_entrega','confirmando_pago'].includes(s))return 2;return 1}
     if(['aceptado','pedido_aceptado','camino_recojo'].includes(s))return 1;
     if(['en_camino','camino_entrega'].includes(s))return 2;
-    if(['en_entrega','confirmando_pago'].includes(s))return cobroEntrega(o)&&o.pago_confirmado!==true?3:4;
+    if(['en_entrega','confirmando_pago'].includes(s))return cobroEntrega(o)&&(t==='compra'?!compraCobrada(o):o.pago_confirmado!==true)?3:4;
     return 1;
   }
   /* Ubicación de las agencias (la que se marca en Más › Agencias o en el formulario de encomienda) */
