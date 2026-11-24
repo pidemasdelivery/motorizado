@@ -478,7 +478,7 @@
       m.acts['file'+n]=inp=>{const f=inp.files&&inp.files[0];if(!f)return;const z=k();z.file=f;try{z.url=URL.createObjectURL(f)}catch(_){}PdPasos.render()};
       m.acts['clave'+n]=inp=>{k().clave=inp.value};
       m.acts['sin'+n]=async()=>{const z=k();
-        if(!z.sin){const ok=typeof window.pdConfirmar==='function'?await window.pdConfirmar('¿La agencia no te dio clave de recojo?\nRevisa bien la guía o el voucher: muchas veces la clave viene impresa. Si de verdad no hay clave, el cliente recogerá solo con su DNI.'):true;if(!ok)return}
+        if(!z.sin){const ok=typeof window.pdConfirmar==='function'?await window.pdConfirmar('¿La agencia no te dio clave de recojo?\nRevisa bien la guía o el voucher: muchas veces la clave viene impresa. Márcalo solo si de verdad no hay clave.'):true;if(!ok)return}
         z.sin=!z.sin;if(z.sin)z.clave='';PdPasos.render()};
       m.acts['up'+n]=async()=>{await subirGuia(o,n);PdPasos.render()};
       m.acts['wa'+n]=()=>compartirGuia(o,n);
