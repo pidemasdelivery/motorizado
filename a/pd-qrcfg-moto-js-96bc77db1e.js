@@ -23,6 +23,8 @@
   window.showYapeQr=function(id){
     if(typeof base==='function')base(id);
     const ov=document.getElementById('yapeQrOverlay');if(!ov)return;
+    /* nunca mostrar el QR antiguo: la imagen queda oculta hasta que cargue el QR recortado configurado */
+    {const im=ov.querySelector('img');if(im){im.removeAttribute('src');im.style.visibility='hidden';im.onload=()=>{im.style.visibility=''}}}
     const qn=window.pdQrDePedido(id);if(qn.negocio){aplicarNeg(ov,qn,id);return}
     if(!cfg){load().then(()=>{if(cfg&&document.getElementById('yapeQrOverlay')===ov)apply(ov)});return}
     apply(ov);load();
@@ -35,7 +37,7 @@
   }
   function apply(ov){
     const img=ov.querySelector('img');
-    if(img&&cfg.url){const fallback=img.src;img.onerror=()=>{img.onerror=null;img.src=fallback};img.src=cfg.url}
+    if(img&&cfg.url){img.onload=()=>{img.style.visibility=''};img.src=cfg.url}
     if(cfg.numero||cfg.titular){const m=ov.querySelector('.muted');if(m&&!ov.querySelector('.pdQrDatos')){const d=document.createElement('div');d.className='pdQrDatos';d.style.cssText='margin-top:8px;font:700 15px Inter,Arial,sans-serif;color:var(--fr-ink)';d.textContent=[cfg.numero?'Yape '+cfg.numero:'',cfg.titular||''].filter(Boolean).join(' · ');m.after(d)}if(img&&cfg.titular)img.alt='QR de Yape de '+cfg.titular}
   }
   const boot=()=>{let n=0;const t=setInterval(()=>{if(DB()){clearInterval(t);load();setInterval(load,10*60*1000)}else if(++n>40)clearInterval(t)},300)};

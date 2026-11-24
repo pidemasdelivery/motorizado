@@ -608,7 +608,7 @@ function captureCashDrafts(){
 }
 
 
-const PIDEMAS_YAPE_QR="a/yape-qr-d656e70b4f.png";
+const PIDEMAS_YAPE_QR="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 window.showYapeQr=function(id){
   const o=orders.find(x=>x.id===id); if(!o)return;
   const old=document.getElementById("yapeQrOverlay"); if(old)old.remove();
