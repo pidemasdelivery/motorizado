@@ -89,7 +89,7 @@
     /* 1 · Ir al local */
     {const s=S(0);s.sum=negNom+(negDir?' · '+negDir:'');
       const estado=listo?U.st('El pedido está listo para recoger','ok'):prep?U.st('El negocio está preparando · listo aprox. '+E(prep)):o.negocio_aceptado_en?U.st('El negocio está preparando el pedido'):U.st('Esperando que el negocio confirme el pedido');
-      s.body=U.who(negNom,'Recoges aquí · pedido '+E(U.ref(o.id)),n.logo_url||n.imagen_url||'')+estado+avisoVuelto(o,aCobrar(o),false)+U.addr(negDir,'')+
+      s.body=U.who(negNom,'Recojo aquí · pedido '+E(U.ref(o.id)),n.logo_url||n.imagen_url||'')+estado+avisoVuelto(o,aCobrar(o),false)+U.addr(negDir,'')+
         U.contact(U.maps(o.latitud_recojo??n.latitud,o.longitud_recojo??n.longitud,negDir,n.google_maps_url||o.negocio_maps_url),n.telefono||o.telefono_negocio,'Hola, soy el motorizado de Pidemás por el pedido '+U.ref(o.id)+'.')+
         (e===0?U.note('Al aceptar verás el código de recojo y los datos del cliente.'):rapidosCliente(o,0));}
     /* 2 · Recoger con código */
@@ -100,7 +100,7 @@
         U.note(E(negNom)+' ya sabe que llegaste'+(c?' y comparará este código.':'.'))+U.items('Qué recoges',o.detalle_pedidos,false);}
     /* 3 · Llevar al cliente */
     {const s=S(2);s.locked='Se muestra cuando recojas el pedido';s.sum=cli+(o.direccion_entrega?' · '+o.direccion_entrega:'');
-      s.body=U.who(cli,'Cliente · entregas aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+
+      s.body=U.who(cli,'Cliente · entrega aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+
         U.contact(U.maps(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,o.ubicacion_entrega),o.telefono_cliente,'')+
         rapidosCliente(o,2)+
         (o.observaciones&&typeof window.pdDetalleTxt!=='function'?'':'');}
@@ -109,7 +109,7 @@
       const monto=aCobrar(o),sd=o.pago_acordado==='solo_delivery';
       const qn=yape(o)&&typeof window.pdQrDePedido==='function'?window.pdQrDePedido(o.id):null;
       s.sum='Cobrado '+M(o.monto_recibido>0&&efectivo(o)?Math.min(o.monto_recibido,monto):monto)+' · '+(yape(o)?(qn&&qn.negocio?'Yape del negocio':'Yape'):'Efectivo');
-      let h=`<div class="amt"><div class="k">${sd?'Cobra solo el delivery':'Cobra al cliente'}</div><div class="n">${M(monto)}</div><div class="pill">${yape(o)?'Yape':'Efectivo'}</div></div>`+
+      let h=`<div class="amt"><div class="k">${sd?'Cobro solo del delivery':'Cobro al cliente'}</div><div class="n">${M(monto)}</div><div class="pill">${yape(o)?'Yape':'Efectivo'}</div></div>`+
         `<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Productos</span><b>${sd?'Pagado':M(o.subtotal)}</b></div><div class="li"><span>Delivery</span><b>${M(o.costo_delivery)}</b></div></div>`+(o.pago_confirmado!==true&&typeof window.pdCambiarPago==='function'?`<div><div class="lbl">¿Cómo paga el cliente?</div><div class="quick" data-act="cpago"><button type="button" data-m="efectivo" class="${efectivo(o)?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${yape(o)?'on':''}">Yape</button></div></div>`:'');
       if(yape(o)){
         h+=`<button type="button" class="qr" data-act="qr"><span class="im"${qn&&qn.url?` style="background-image:url('${E(qn.url)}')"`:''}>${qn&&qn.url?'':'QR'}</span><span class="t"><span class="k">${qn&&qn.negocio?'Yape del negocio':'Yape de Pidemás'}</span><span class="a">${E(qn&&qn.titular||qn&&qn.nombre||'')}</span><span class="b2">${E(qn&&qn.numero||'')}</span><span class="c">Toca para agrandar</span></span></button>`;
