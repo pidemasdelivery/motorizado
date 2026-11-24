@@ -112,6 +112,28 @@
     try{await guardarProceso(o,lista,enAgencia(o)?{}:{pedido_en_agencia:true});info='Llegaste a '+(g.agencia||'la agencia')+'. '+(g.paquetes.some(p=>p.tipoPago==='pago_en_agencia')?'Registra el pago y luego sube las guías.':'Sube las guías de sus paquetes.');try{await loadOrders()}catch(_){}}
     catch(e){error='No se pudo registrar la llegada: '+(e.message||e)}
   }
+  /* corregir el pago en una agencia mientras sigues en ella (antes de terminar sus guías) */
+  async function corregirPagoAgencia(o,gi){
+    error='';info='';const g=grupos(o)[gi];if(!g)return;const d=dr(o.id),pr=procDe(o,g)||{};
+    const pp=g.paquetes.filter(p=>p.tipoPago==='pago_en_agencia'),porPaq=pp.length>1,montos={};
+    let v;if(porPaq){for(const p of pp){const x=Number(String(d['cp'+gi+'_'+p.numero]||'').trim().replace(',','.'));if(!(x>0)){error='Escribe cuánto pagaste por el paquete '+p.numero+'.';return}montos[p.numero]=Math.round(x*100)/100}
+      v=Object.values(montos).reduce((a,b)=>a+b,0)}
+    else v=Number(String(d['cj'+gi]||'').trim().replace(',','.'));
+    if(!(v>0)){error='Escribe cuánto pagaste en '+(g.agencia||'la agencia')+'.';return}
+    v=Math.round(v*100)/100;const antes=Number(pr.pago_monto)||0;
+    if(Math.abs(v-antes)<0.005&&!porPaq){delete d['fix'+gi];return}
+    if(!(await pdConfirmar('¿Corregir el pago en '+(g.agencia||'la agencia')+' de '+M(antes)+' a '+M(v)+'?\nSe actualiza en tu caja.')))return;
+    const desc='PAGO DE ENCOMIENDA · Agencia '+(g.agencia||'');
+    try{
+      const {data:mv,error:me}=await D().from('movimientos_caja').update({monto:v}).eq('motorizado_id',ME().id).eq('pedido_id',o.id).eq('tipo','retiro').eq('descripcion',desc).select('id');
+      if(me)throw me;if(!mv||!mv.length)throw new Error('No se encontró el pago en tu caja.');
+      const lista=arr(o.agencias_proceso).map(x=>claveAg(x.agencia)===g.clave?Object.assign({},x,{pago_monto:v},porPaq?{pago_paquetes:montos}:{}):x);
+      const total=Math.round(lista.reduce((a,x)=>a+(Number(x.pago_monto)||0),0)*100)/100;
+      await guardarProceso(o,lista,{monto_pagado_agencia:total});delete d['fix'+gi];delete d['cj'+gi];pp.forEach(p=>delete d['cp'+gi+'_'+p.numero]);
+      info='Pago en '+(g.agencia||'la agencia')+' corregido: '+M(v)+'.';
+      try{await loadOrders()}catch(_){}try{window.loadCash&&window.loadCash()}catch(_){}
+    }catch(e){error='No se pudo corregir: '+(e.message||e)}
+  }
   async function pagarEnAgencia(o,gi){
     error='';info='';const g=grupos(o)[gi];if(!g)return;const d=dr(o.id);
     /* varios paquetes en la misma agencia: cada uno va a un cliente distinto, así que se anota lo que costó el envío de cada uno */
@@ -223,15 +245,15 @@
   }
   /* lugares de compra: el 1 vive en el pedido (punto1_*), los demás en puntos_recojo */
   function lugaresCompra(o){const cp=compra(o),PRc=Array.isArray(o.puntos_recojo)?o.puntos_recojo.filter(Boolean):[];
-    return [{n:1,nombre:cp.lugar||'Lugar no indicado',que:cp.detalle,obs:cp.obs,mapa:U.maps(o.latitud_recojo,o.longitud_recojo,cp.lugar,cp.url||''),hecho:o.punto1_listo_en||(Number(o.subtotal)>0?'ok':null),monto:o.punto1_monto,foto:o.punto1_foto_url}]
-      .concat(PRc.map(q=>({n:Number(q.n),nombre:q.nombre,que:q.que,obs:q.obs,costo_delivery:q.costo_delivery,mapa:U.maps(q.lat,q.lng,q.nombre,link(q.ubicacion)),hecho:q.recogido_en||(Number(o.subtotal)>0?'ok':null),monto:q.monto,foto:q.foto_url})))}
+    return [{n:1,nombre:cp.lugar||'Lugar no indicado',que:cp.detalle,obs:cp.obs,mapa:U.maps(o.latitud_recojo,o.longitud_recojo,cp.lugar,cp.url||''),hecho:(o.punto1_listo_en&&o.punto1_monto!=null?o.punto1_listo_en:null)||(Number(o.subtotal)>0?'ok':null),monto:o.punto1_monto,foto:o.punto1_foto_url}]
+      .concat(PRc.map(q=>({n:Number(q.n),nombre:q.nombre,que:q.que,obs:q.obs,costo_delivery:q.costo_delivery,mapa:U.maps(q.lat,q.lng,q.nombre,link(q.ubicacion)),hecho:(q.recogido_en&&q.monto!=null?q.recogido_en:null)||(Number(o.subtotal)>0?'ok':null),monto:q.monto,foto:q.foto_url})))}
   function sumaLugares(o){const L=lugaresCompra(o);if(!L.every(q=>q.hecho&&q.monto!=null&&q.monto!==''))return null;return Math.round(L.reduce((a,q)=>a+(Number(q.monto)||0),0)*100)/100}
   async function guardarLugarCompra(o,n){
     error='';info='';const z=((dr(o.id).cl=dr(o.id).cl||{})[n])||{},v=Number(String(z.monto||'').replace(',','.')),q=lugaresCompra(o).find(x=>x.n===n);if(!q)return;
     if(!(v>0)){error='Escribe cuánto gastaste en '+(q.nombre||'el lugar '+n)+'.';return}
-    if(!(await pdConfirmar('¿Guardar '+M(v)+' gastado en '+(q.nombre||'el lugar '+n)+'?'+(z.file?'':'\nSin foto de boleta.'))))return;
+    if(!(await pdConfirmar((z.edit?'¿Corregir a ':'¿Guardar ')+M(v)+' gastado en '+(q.nombre||'el lugar '+n)+'?'+(z.file||(z.edit&&q.foto)?'':'\nSin foto de boleta.'))))return;
     z.subiendo=true;PdPasos.render();
-    try{let url=null;
+    try{let url=z.edit?(q.foto||null):null;
       if(z.file){const {data:au}=await D().auth.getUser();const uid=au&&au.user&&au.user.id;if(!uid)throw new Error('Vuelve a iniciar sesión.');
         const blob=await achicar(z.file),path=uid+'/compras/'+o.id+'_l'+n+'_'+Date.now()+'.jpg',b=D().storage.from('fotos-motorizados');
         const up=await b.upload(path,blob,{cacheControl:'3600',upsert:false,contentType:'image/jpeg'});if(up.error)throw new Error('No se pudo subir la foto: '+up.error.message);
@@ -370,20 +392,20 @@
         const LC=lugaresCompra(o),tot=LC.length,reg=Number(o.subtotal)>0,INP='min-width:3ch;border:0;border-bottom:2px dashed #C4410C;border-radius:0;background:transparent;font:inherit;letter-spacing:inherit;text-align:center;color:#1F1A17;outline:none;padding:0;margin:0;box-shadow:none';
         const dlOk=PR.length&&PR.every(x=>x.costo_delivery!=null&&x.costo_delivery!=='');
         let h=e===1&&!reg&&LC.filter(q=>!q.hecho).length?U.note(tot>1?'Tienes <b>'+tot+' lugares de compra</b>. En cada uno escribe cuánto gastaste, toma la foto de la boleta si te dieron y toca «Guardar». Al final registras la compra.':'Cuando compres, escribe cuánto gastaste, toma la foto de la boleta si te dieron y toca «Guardar».'):'';
-        LC.forEach(q=>{const z=(d.cl=d.cl||{})[q.n]||(d.cl[q.n]={}),nom=q.nombre||'Lugar '+q.n,abierto=e===1&&!reg&&!q.hecho;
+        LC.forEach(q=>{const z=(d.cl=d.cl||{})[q.n]||(d.cl[q.n]={}),nom=q.nombre||'Lugar '+q.n,abierto=e===1&&!reg&&(!q.hecho||z.edit);
           h+=`<div class="sum" style="gap:10px"><div class="lbl">${tot>1?'Lugar '+q.n+' de '+tot:'Lugar de compra'}${q.hecho&&q.hecho!=='ok'?' · comprado '+E(U.hora(q.hecho)):''}</div>`+U.who(nom,'Compra aquí'+(q.n===1?' · pedido '+E(U.ref(id)):''),'')+
             (dlOk?`<div class="li"><span>Delivery de este lugar</span><b>${M(q.n===1?Math.max(0,Math.round((servicio(o)-PR.reduce((a,x)=>a+(Number(x.costo_delivery)||0),0))*100)/100):Number(q.costo_delivery))}</b></div>`:'')+
             (q.hecho?'':irA(q.mapa,tot>1?'Ir al lugar '+q.n:'Ir al lugar de compra'))+
             `<div class="lbl" style="margin-top:4px">Qué comprar</div>`+qComp(q.que)+(q.obs?`<div class="lbl" style="margin-top:4px">Observaciones</div>`+qComp(q.obs):'');
-          if(q.hecho&&q.monto!=null){const li=(k,v,c)=>`<div class="li"><span>${k}</span><b style="text-align:right${c?';color:'+c:''}">${v}</b></div>`;
+          if(q.hecho&&q.monto!=null&&!abierto){const li=(k,v,c)=>`<div class="li"><span>${k}</span><b style="text-align:right${c?';color:'+c:''}">${v}</b></div>`;
             h+=`<div style="display:flex;gap:12px;align-items:center">`+(q.foto?`<a href="${E(q.foto)}" target="_blank" rel="noopener" style="flex:0 0 84px"><img src="${E(q.foto)}" alt="Boleta del lugar ${q.n}" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block"></a>`:'')+
-              `<div style="flex:1;min-width:0;display:flex;flex-direction:column">`+li('Gastado',M(q.monto))+li('Boleta',q.foto?'Guardada ✓':'Sin boleta',q.foto?'#15803D':'')+`</div></div>`}
-          else if(q.hecho)h+=U.st('Comprado aquí','ok');
+              `<div style="flex:1;min-width:0;display:flex;flex-direction:column">`+li('Gastado',M(q.monto))+li('Boleta',q.foto?'Guardada ✓':'Sin boleta',q.foto?'#15803D':'')+`</div></div>`+(e===1&&!reg?`<button type="button" class="b" data-act="gedit${q.n}">Corregir</button>`:'')}
+          else if(q.hecho&&!abierto)h+=U.st('Comprado aquí','ok');
           else if(abierto){const v=z.monto||'';
             h+=`<div class="amt"><div class="k">Total gastado en ${E(nom)}</div><div class="n" style="display:flex;justify-content:center;align-items:baseline;gap:8px"><span>S/</span><input data-act="gm${q.n}" inputmode="decimal" placeholder="0.00" aria-label="Cuánto gastaste en ${E(nom)}" value="${E(v)}" style="width:${Math.max(3,String(v).length||4)+0.6}ch;${INP}"></div><div class="pill">Sale de tu caja</div></div>`+
-              `<button type="button" class="b soft" data-act="gshot${q.n}">${z.file?'Foto lista · tocar para cambiar':'Tomar foto de la boleta o factura (opcional)'}</button><input type="file" data-act="gfile${q.n}" accept="image/jpeg,image/png,image/webp" capture="environment" hidden data-pd-cloud="1">`+
-              (z.url?`<img src="${E(z.url)}" alt="Boleta" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block">`:'')+
-              `<button type="button" class="b o" data-act="gok${q.n}"${z.subiendo?' disabled':''}>${z.subiendo?'Guardando…':'Guardar compra en '+E(nom)}</button>`}
+              `<button type="button" class="b soft" data-act="gshot${q.n}">${z.file?'Foto lista · tocar para cambiar':z.edit&&q.foto?'Boleta guardada · tocar para cambiarla':'Tomar foto de la boleta o factura (opcional)'}</button><input type="file" data-act="gfile${q.n}" accept="image/jpeg,image/png,image/webp" capture="environment" hidden data-pd-cloud="1">`+
+              ((z.url||(z.edit&&q.foto))?`<img src="${E(z.url||q.foto)}" alt="Boleta" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block">`:'')+
+              (z.edit?`<div style="display:flex;gap:10px"><button type="button" class="b" style="flex:1" data-act="gcan${q.n}">Cancelar</button><button type="button" class="b o" style="flex:1.6" data-act="gok${q.n}"${z.subiendo?' disabled':''}>${z.subiendo?'Guardando…':'Guardar corrección'}</button></div>`:`<button type="button" class="b o" data-act="gok${q.n}"${z.subiendo?' disabled':''}>${z.subiendo?'Guardando…':'Guardar compra en '+E(nom)}</button>`)}
           h+=`</div>`});
         h+=(cp.comp||cp.doc?`<div class="sum"><div class="lbl">Comprobante</div>${cp.comp?`<div class="li"><span>Tipo</span><b>${E(cap1(cp.comp))}</b></div>`:''}${cp.doc?`<div class="li"><span>${/factura/i.test(cp.comp||'')?'RUC':'DNI'}</span><b>${E(cp.doc)}</b></div>`:''}${cp.cnom?`<div class="li"><span>Nombre</span><b>${E(cp.cnom)}</b></div>`:''}${cp.craz?`<div class="li"><span>Razón social</span><b>${E(cp.craz)}</b></div>`:''}${cp.cdir?`<div class="li"><span>Dirección fiscal</span><b>${E(cp.cdir)}</b></div>`:''}</div>`:'')+
           `<div class="sum"><div class="lbl">Cliente</div>`+U.who(remN,'Quien pide la compra','',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`;
@@ -482,10 +504,11 @@
             (fin?'':`<button type="button" class="b o" data-act="lleg${gi}">Llegué a ${E(gr.agencia||'esta agencia')}</button>`)+`</div>`;return}
           h+=`<div class="sum" style="gap:10px;border-color:#C4410C"><div class="lbl" style="color:#9A330A">Estás en esta agencia</div><b style="font-size:18px">${tit}</b></div>`;
           const debe=gr.paquetes.some(p=>p.tipoPago==='pago_en_agencia'),pagado=grupoPagado(o,gr,gi);
-          if(debe&&!pagado&&!fin){const ppA=gr.paquetes.filter(p=>p.tipoPago==='pago_en_agencia'),v=ppA.length>1?String(ppA.reduce((a,p)=>a+(Number(String(d['cp'+gi+'_'+p.numero]||'').replace(',','.'))||0),0)||''):(d['cj'+gi]||'');
+          const fix=!!d['fix'+gi]&&pagado;
+          if(debe&&(!pagado||fix)&&!fin){const ppA=gr.paquetes.filter(p=>p.tipoPago==='pago_en_agencia'),v=ppA.length>1?String(ppA.reduce((a,p)=>a+(Number(String(d['cp'+gi+'_'+p.numero]||'').replace(',','.'))||0),0)||''):(d['cj'+gi]||'');
             h+=`<div class="amt"><div class="k">Total pagado en ${E(gr.agencia||'la agencia')}</div>${ppA.length>1?`<div class="n">${v?M(Number(String(v).replace(',','.'))||0):'S/ —'}</div>`:`<div class="n" style="display:flex;justify-content:center;align-items:baseline;gap:8px"><span>S/</span><input data-act="cj${gi}" inputmode="decimal" placeholder="0.00" aria-label="Monto pagado en ${E(gr.agencia||'la agencia')}" value="${E(v)}" style="width:${Math.max(3,String(v??'').length||4)+0.6}ch;min-width:3ch;border:0;border-bottom:2px dashed #C4410C;border-radius:0;background:transparent;font:inherit;letter-spacing:inherit;text-align:center;color:#1F1A17;outline:none;padding:0;margin:0;box-shadow:none"></div>`}<div class="pill">Sale de tu caja · paquete${gr.paquetes.filter(p=>p.tipoPago==='pago_en_agencia').length>1?'s':''} ${gr.paquetes.filter(p=>p.tipoPago==='pago_en_agencia').map(p=>p.numero).join(' y ')}</div></div>`+
-              (ppA.length>1?ppA.map(p=>`<div><div class="lbl">Envío del paquete ${p.numero} · ${E(p.destino||'')}</div><input class="inp" data-act="cp${gi}_${p.numero}" inputmode="decimal" placeholder="S/ 0.00" value="${E(d['cp'+gi+'_'+p.numero]||'')}"></div>`).join(''):'')+U.note((ppA.length>1?'Escribe el envío de cada paquete':'Escribe arriba cuánto pagaste')+' y desliza «Pagar envío en '+E(gr.agencia||'la agencia')+'». Se registra en tu caja como <b>Pago de encomienda · '+E(gr.agencia||'Agencia')+'</b>. Después subes las guías.');return}
-          if(debe)h+=pagadoTxt(o,gr,gi);
+              (ppA.length>1?ppA.map(p=>`<div><div class="lbl">Envío del paquete ${p.numero} · ${E(p.destino||'')}</div><input class="inp" data-act="cp${gi}_${p.numero}" inputmode="decimal" placeholder="S/ 0.00" value="${E(d['cp'+gi+'_'+p.numero]||'')}"></div>`).join(''):'')+(fix?`<div class="row" style="display:flex;gap:10px"><button type="button" class="b" style="flex:1" data-act="agno${gi}">Cancelar</button><button type="button" class="b o" style="flex:1.6" data-act="agok${gi}">Guardar corrección</button></div>`+U.note('Corrige el monto si te equivocaste. Se actualiza en tu caja.'):U.note((ppA.length>1?'Escribe el envío de cada paquete':'Escribe arriba cuánto pagaste')+' y desliza «Pagar envío en '+E(gr.agencia||'la agencia')+'». Se registra en tu caja como <b>Pago de encomienda · '+E(gr.agencia||'Agencia')+'</b>. Después subes las guías.'));return}
+          if(debe){h+=pagadoTxt(o,gr,gi);if(!fin&&gr.paquetes.some(p=>p.tipoPago==='pago_en_agencia'))h+=`<button type="button" class="b" data-act="agfix${gi}">Corregir monto pagado</button>`}
           h+=gr.paquetes.map(p=>guiaPkg(p,g)).join('');
         });
         /* Pagos en agencias (igual que en el Admin): una fila por agencia lista con su monto y horas, y el total */
@@ -558,9 +581,14 @@
       m.acts['gm'+n]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');inp.style.width=(Math.max(3,inp.value.length||4)+0.6)+'ch';k().monto=inp.value};
       m.acts['gshot'+n]=b=>{const f=b.getRootNode().querySelector('[data-act="gfile'+n+'"]');if(f)f.click()};
       m.acts['gfile'+n]=inp=>{const f=inp.files&&inp.files[0];if(!f)return;const z=k();z.file=f;try{z.url=URL.createObjectURL(f)}catch(_){}PdPasos.render()};
+      m.acts['gedit'+n]=()=>{const z=k();z.edit=true;z.monto=String(q.monto??'');error='';info='';PdPasos.render()};
+      m.acts['gcan'+n]=()=>{const z=k();try{if(z.url)URL.revokeObjectURL(z.url)}catch(_){}delete d.cl[n];error='';PdPasos.render()};
       m.acts['gok'+n]=async b=>{if(b.disabled)return;b.disabled=true;await guardarLugarCompra(o,n);PdPasos.render()}});
     if(t==='enc')grupos(o).forEach((g,gi)=>{
       m.acts['lleg'+gi]=async b=>{if(b.disabled)return;b.disabled=true;await llegarAgencia(o,gi);PdPasos.render()};
+      m.acts['agfix'+gi]=()=>{error='';info='';const pr=procDe(o,g)||{},pp=pr.pago_paquetes||{};d['fix'+gi]=1;d['cj'+gi]=String(pr.pago_monto||'');g.paquetes.forEach(p=>{if(pp[p.numero]!=null)d['cp'+gi+'_'+p.numero]=String(pp[p.numero])});PdPasos.render()};
+      m.acts['agno'+gi]=()=>{delete d['fix'+gi];delete d['cj'+gi];g.paquetes.forEach(p=>delete d['cp'+gi+'_'+p.numero]);error='';PdPasos.render()};
+      m.acts['agok'+gi]=async b=>{if(b.disabled)return;b.disabled=true;await corregirPagoAgencia(o,gi);PdPasos.render()};
       m.acts['cj'+gi]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');inp.style.width=(Math.max(3,inp.value.length||4)+0.6)+'ch';d['cj'+gi]=inp.value;const box=inp.parentElement&&inp.parentElement.previousElementSibling,v=Number(inp.value.replace(',','.'))||0;if(box&&box.classList.contains('amt'))box.querySelector('.n').textContent=v?M(v):'S/ —'};
       g.paquetes.forEach(p=>{m.acts['cp'+gi+'_'+p.numero]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d['cp'+gi+'_'+p.numero]=inp.value;
         const t=g.paquetes.filter(y=>y.tipoPago==='pago_en_agencia').reduce((a,y)=>a+(Number(String(d['cp'+gi+'_'+y.numero]||'').replace(',','.'))||0),0);let b=inp.parentElement;while(b&&!(b.classList&&b.classList.contains('amt')))b=b.previousElementSibling;const n=b&&b.querySelector('.n');if(n)n.textContent=t?M(t):'S/ —'}});
