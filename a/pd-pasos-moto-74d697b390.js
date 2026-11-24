@@ -164,10 +164,10 @@
   /* Con cuánto paga el cliente (lo anota el admin o la tienda): al iniciar el pedido avisa cuánto vuelto llevar */
   const pagaCon=o=>{try{if(typeof extractCashPayment!=='function')return 0;const p=extractCashPayment(o.observaciones,o.total);return Number(p&&p.paid)>0?Number(p.paid):0}catch(_){return 0}};
   function avisoVuelto(o,cobra,sinTotal){const pc=pagaCon(o);if(!(pc>0)||!efectivo(o)||o.pago_confirmado===true)return '';
-    if(sinTotal)return '<div class="vto info"><span>Lleva sencillo para el vuelto<small style="display:block;margin-top:2px;font-size:13.5px;font-weight:600;opacity:.85">El cliente paga con un billete de '+M(pc)+'. El vuelto exacto sale al registrar cuánto gastaste.</small></span><b>'+M(pc)+'</b></div>';
+    if(sinTotal)return '<div class="vto info"><span>Lleva sencillo para el vuelto<small style="display:block;margin-top:2px;font-size:13.5px;font-weight:600;opacity:.85">El cliente paga con un billete de '+M(pc)+'. El vuelto exacto sale al registrar cuánto gastaste.</small></span></div>';
     const vu=Math.round((pc-cobra)*100)/100,sub=t=>'<small style="display:block;margin-top:2px;font-size:13.5px;font-weight:600;opacity:.85">'+t+'</small>';
-    return vu>0.004?'<div class="vto"><span>Lleva '+M(vu)+' de sencillo para el vuelto'+sub('Cobras '+M(cobra)+' y el cliente paga con un billete de '+M(pc))+'</span><b>'+M(vu)+'</b></div>'
-      :'<div class="vto"><span>No necesitas sencillo'+sub('Cobras '+M(cobra)+' y el cliente paga exacto')+'</span><b>Sin vuelto</b></div>'}
+    return vu>0.004?'<div class="vto"><span>Lleva '+M(vu)+' de sencillo para el vuelto'+sub('Cobras '+M(cobra)+' y el cliente paga con un billete de '+M(pc))+'</span></div>'
+      :'<div class="vto"><span>No necesitas sencillo'+sub('Cobras '+M(cobra)+' y el cliente paga exacto')+'</span></div>'}
   function I_v(v,tot){const n=Number(String(v||'').replace(',','.'));
     if(!(n>0))return '<div class="vto info"><span>Escribe con cuánto paga</span><b>S/ —</b></div>';
     if(n+0.004<tot)return '<div class="vto bad"><span>Le faltan</span><b>'+M(Math.round((tot-n)*100)/100)+'</b></div>';
