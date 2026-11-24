@@ -120,7 +120,7 @@
         const v=draft(o.id);const tot=monto;const vals=[];[10,20,50,100,200].forEach(x=>{const r=Math.ceil(tot/x)*x;if(r>tot+0.004&&!vals.includes(r))vals.push(r)});
         h+=`<div><div class="lbl">¿Con cuánto paga?</div><input class="inp" data-act="cash" inputmode="decimal" placeholder="${M(tot)}" value="${E(v)}"></div>`+
           `<div class="quick" data-act="quick">${[tot].concat(vals.slice(0,3)).map((x,i)=>`<button type="button" data-v="${x.toFixed(2)}" class="${Number(v)===x?'on':''}">${i?'S/ '+x:'Exacto'}</button>`).join('')}</div>`+
-          `<div class="note" data-vuelto>${I_v(v,tot)}</div>`;
+          `<div data-vuelto>${I_v(v,tot)}</div>`;
       }
       s.body=h;}
     /* 5 · Confirmar entrega */
@@ -160,14 +160,12 @@
   /* Con cuánto paga el cliente (lo anota el admin o la tienda): al iniciar el pedido avisa cuánto vuelto llevar */
   const pagaCon=o=>{try{if(typeof extractCashPayment!=='function')return 0;const p=extractCashPayment(o.observaciones,o.total);return Number(p&&p.paid)>0?Number(p.paid):0}catch(_){return 0}};
   function avisoVuelto(o,cobra,sinTotal){const pc=pagaCon(o);if(!(pc>0)||!efectivo(o)||o.pago_confirmado===true)return '';
-    if(sinTotal)return `<div class="note" style="background:#FFF4EC;border:1px solid #F6CDB3">${PdPasos.util.I.info}<span>El cliente pagará con <b>${M(pc)}</b>. Cuando registres la compra verás cuánto vuelto llevar.</span></div>`;
-    const vu=Math.round((pc-cobra)*100)/100;
-    return `<div class="note" style="background:#FFF4EC;border:1px solid #F6CDB3">${PdPasos.util.I.info}<span>El cliente paga con <b>${M(pc)}</b>${vu>0.004?' · lleva <b>'+M(vu)+'</b> de vuelto':' · paga exacto, no necesitas vuelto'}</span></div>`}
+    if(sinTotal)return '<div class="vto info"><span>El cliente pagará con</span><b>'+M(pc)+'</b></div>';
+    const vu=Math.round((pc-cobra)*100)/100;return vu>0.004?'<div class="vto"><span>Lleva de vuelto · paga con '+M(pc)+'</span><b>'+M(vu)+'</b></div>':'<div class="vto"><span>Paga con '+M(pc)+'</span><b>Sin vuelto</b></div>'}
   function I_v(v,tot){const n=Number(String(v||'').replace(',','.'));
-    if(!(n>0))return PdPasos.util.I.info+'<span>Escribe con cuánto te paga para calcular el vuelto.</span>';
-    if(n+0.004<tot)return PdPasos.util.I.info+'<span>Es menos que el total ('+M(tot)+').</span>';
-    const vu=Math.round((n-tot)*100)/100;
-    return PdPasos.util.I.info+'<span>Paga con <b>'+M(n)+'</b>'+(vu>0.004?' · entrega <b>'+M(vu)+'</b> de vuelto':' · sin vuelto')+'</span>';}
+    if(!(n>0))return '<div class="vto info"><span>Escribe con cuánto paga</span><b>S/ —</b></div>';
+    if(n+0.004<tot)return '<div class="vto bad"><span>Le faltan</span><b>'+M(Math.round((tot-n)*100)/100)+'</b></div>';
+    const vu=Math.round((n-tot)*100)/100;return vu>0.004?'<div class="vto"><span>Su vuelto</span><b>'+M(vu)+'</b></div>':'<div class="vto"><span>Paga exacto</span><b>Sin vuelto</b></div>'}
 
   function abrir(id){abierto=String(id);error='';PdPasos.open(modelo,{onClose:()=>{abierto=null}})}
   window.pdAbrirPasosMoto=abrir;

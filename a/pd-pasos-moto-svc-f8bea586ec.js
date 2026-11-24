@@ -243,13 +243,12 @@
   /* Con cuánto paga el cliente (lo anota el admin o la tienda): al iniciar el pedido avisa cuánto vuelto llevar */
   const pagaCon=o=>{try{if(typeof extractCashPayment!=='function')return 0;const p=extractCashPayment(o.observaciones,o.total);return Number(p&&p.paid)>0?Number(p.paid):0}catch(_){return 0}};
   function avisoVuelto(o,cobra,sinTotal){const pc=pagaCon(o);if(!(pc>0)||!efectivo(o)||o.pago_confirmado===true)return '';
-    if(sinTotal)return `<div class="note" style="background:#FFF4EC;border:1px solid #F6CDB3">${PdPasos.util.I.info}<span>El cliente pagará con <b>${M(pc)}</b>. Cuando registres la compra verás cuánto vuelto llevar.</span></div>`;
-    const vu=Math.round((pc-cobra)*100)/100;
-    return `<div class="note" style="background:#FFF4EC;border:1px solid #F6CDB3">${PdPasos.util.I.info}<span>El cliente paga con <b>${M(pc)}</b>${vu>0.004?' · lleva <b>'+M(vu)+'</b> de vuelto':' · paga exacto, no necesitas vuelto'}</span></div>`}
+    if(sinTotal)return '<div class="vto info"><span>El cliente pagará con</span><b>'+M(pc)+'</b></div>';
+    const vu=Math.round((pc-cobra)*100)/100;return vu>0.004?'<div class="vto"><span>Lleva de vuelto · paga con '+M(pc)+'</span><b>'+M(vu)+'</b></div>':'<div class="vto"><span>Paga con '+M(pc)+'</span><b>Sin vuelto</b></div>'}
   function I_v(v,tot){const n=Number(String(v||'').replace(',','.'));
-    if(!(n>0))return U.I.info+'<span>Escribe con cuánto te paga para calcular el vuelto.</span>';
-    if(n+0.004<tot)return U.I.info+'<span>Es menos que el total ('+M(tot)+').</span>';
-    const vu=Math.round((n-tot)*100)/100;return U.I.info+'<span>Paga con <b>'+M(n)+'</b>'+(vu>0.004?' · entrega <b>'+M(vu)+'</b> de vuelto':' · sin vuelto')+'</span>'}
+    if(!(n>0))return '<div class="vto info"><span>Escribe con cuánto paga</span><b>S/ —</b></div>';
+    if(n+0.004<tot)return '<div class="vto bad"><span>Le faltan</span><b>'+M(Math.round((tot-n)*100)/100)+'</b></div>';
+    const vu=Math.round((n-tot)*100)/100;return vu>0.004?'<div class="vto"><span>Su vuelto</span><b>'+M(vu)+'</b></div>':'<div class="vto"><span>Paga exacto</span><b>Sin vuelto</b></div>'}
   const qrBtn=o=>{const qn=typeof window.pdQrDePedido==='function'?window.pdQrDePedido(o.id):null;
     return `<button type="button" class="qr" data-act="qr"><span class="im"${qn&&qn.url?` style="background-image:url('${E(qn.url)}')"`:''}>${qn&&qn.url?'':'QR'}</span><span class="t"><span class="k">${qn&&qn.negocio?'Yape del negocio':'Yape de Pidemás'}</span><span class="a">${E(qn&&qn.titular||qn&&qn.nombre||'')}</span><span class="b2">${E(qn&&qn.numero||'')}</span><span class="c">Toca para agrandar</span></span></button>`};
   function bloqueCobroRec(o){
@@ -418,7 +417,7 @@
         if(t==='compra'&&Number(o.subtotal)>0)h+=`<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Compra</span><b>${M(o.subtotal)}</b></div><div class="li"><span>Servicio</span><b>${M(servicio(o))}</b></div><div class="li t"><span>Total</span><b>${M(Number(o.subtotal)+servicio(o))}</b></div></div>`;
         if(yape(o))h+=qrBtn(o)+U.note('Confirma solo cuando veas la constancia del pago en el celular del cliente.');
         else{const v=draft(id),vals=[];[10,20,50,100,200].forEach(z=>{const r=Math.ceil(monto/z)*z;if(r>monto+0.004&&!vals.includes(r))vals.push(r)});
-          h+=`<div><div class="lbl">¿Con cuánto paga?</div><input class="inp" data-act="cash" inputmode="decimal" placeholder="${M(monto)}" value="${E(v)}"></div><div class="quick" data-act="quick">${[monto].concat(vals.slice(0,3)).map((z,i)=>`<button type="button" data-v="${z.toFixed(2)}" class="${Number(v)===z?'on':''}">${i?'S/ '+z:'Exacto'}</button>`).join('')}</div><div class="note" data-vuelto>${I_v(v,monto)}</div>`}
+          h+=`<div><div class="lbl">¿Con cuánto paga?</div><input class="inp" data-act="cash" inputmode="decimal" placeholder="${M(monto)}" value="${E(v)}"></div><div class="quick" data-act="quick">${[monto].concat(vals.slice(0,3)).map((z,i)=>`<button type="button" data-v="${z.toFixed(2)}" class="${Number(v)===z?'on':''}">${i?'S/ '+z:'Exacto'}</button>`).join('')}</div><div data-vuelto>${I_v(v,monto)}</div>`}
         s.body=h;}
       /* 4 · Confirmar entrega */
       {const s=S(4);s.locked=cobro?'Se muestra después de cobrar':'Se muestra al llegar donde el cliente';s.sum='Entregado';
