@@ -373,15 +373,15 @@
       {const s=S(3);s.locked='Se muestra al llegar a la agencia';s.sum='Guías enviadas a Pidemás';
         let h=msg;const g=guardados(o),act=agActual(o),orden=gruposOrden(o);
           /* lo que se pagó en la agencia por este paquete (si varios paquetes van a la misma agencia y no se anotó por paquete, se dice que va junto) */
-          const pagoGuia=(p,li)=>{if(p.tipoPago!=='pago_en_agencia')return li('Envío','Pago a destino');const gr=grupos(o).find(x=>x.clave===claveAg(p.agencia)),pr=gr&&procDe(o,gr);if(!pr||!pr.pago_en)return li('Pago en agencia','Pendiente','#9A330A');
-            const pp=pr.pago_paquetes||{},n=gr.paquetes.filter(x=>x.tipoPago==='pago_en_agencia');if(pp[p.numero]!=null)return li('Pago en '+E(p.agencia||'agencia'),M(pp[p.numero]));
-            return li('Pago en '+E(p.agencia||'agencia'),M(pr.pago_monto)+(n.length>1?' (paquetes '+n.map(x=>x.numero).join(' y ')+')':''))};
+          const pagoGuia=p=>{const ag=E(p.agencia||'la agencia');if(p.tipoPago!=='pago_en_agencia')return U.st('Envío pago a destino','ok');const gr=grupos(o).find(x=>x.clave===claveAg(p.agencia)),pr=gr&&procDe(o,gr);if(!pr||!pr.pago_en)return U.st('Pago en '+ag+' pendiente');
+            const pp=pr.pago_paquetes||{},n=gr.paquetes.filter(x=>x.tipoPago==='pago_en_agencia');if(pp[p.numero]!=null)return U.st('Pago en '+ag+' registrado · '+M(pp[p.numero]),'ok');
+            return U.st('Pago en '+ag+' registrado · '+M(pr.pago_monto)+(n.length>1?' (paquetes '+n.map(x=>x.numero).join(' y ')+')':''),'ok')};
           const guiaPkg=(p,g)=>{const sv=g.find(y=>Number(y.numero)===p.numero),ruta=E([p.agencia,p.destino].filter(Boolean).join(' → ')||'Paquete');
             if(pkgOk(sv)){const foto=sv.guia_url&&sv.guia_url!=='whatsapp'?sv.guia_url:'';
               const li=(k,v,c)=>`<div class="li"><span>${k}</span><b style="text-align:right${c?';color:'+c:''}">${v}</b></div>`;
               return `<div class="sum"><div class="lbl">Paquete ${p.numero} · ${ruta}</div><div style="display:flex;gap:12px;align-items:center">`+
                 (foto?`<a href="${E(foto)}" target="_blank" rel="noopener" style="flex:0 0 84px"><img src="${E(foto)}" alt="Guía del paquete ${p.numero}" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block"></a>`:'')+
-                `<div style="flex:1;min-width:0;display:flex;flex-direction:column">`+li('Clave',sv.sin_clave?'La agencia no dio clave':E(sv.clave||'—'))+pagoGuia(p,li)+li('Guía',foto?'Guardada ✓':'Por WhatsApp','#15803D')+`</div></div>`+
+                `<div style="flex:1;min-width:0;display:flex;flex-direction:column">`+li('Clave',sv.sin_clave?'La agencia no dio clave':E(sv.clave||'—'))+li('Guía',foto?'Guardada ✓':'Por WhatsApp','#15803D')+`</div></div>`+pagoGuia(p)+
                 (foto&&!fin?`<button type="button" class="b" data-act="wa${p.numero}">Compartir también por WhatsApp (opcional)</button>`:'')+`</div>`}
             if(fin)return `<div class="sum"><div class="li"><span>Paquete ${p.numero} · ${ruta}</span><b>Sin guía</b></div></div>`;
             const k=d.pk[p.numero]||(d.pk[p.numero]={});
@@ -397,6 +397,8 @@
               <button type="button" class="b o" data-act="up${p.numero}"${k.subiendo?' disabled':''}>${k.subiendo?'Subiendo guía…':'Subir guía y clave'}</button></div>`};
 
         const listas=[];
+        {const ll=GR.filter((g,gi)=>{const pr=procDe(o,g);return (pr&&pr.llegada_en)||legado(o,gi)}).map(g=>g.agencia).filter(Boolean);
+          if(ll.length)h+=U.st('Llegó a '+E(ll.join(' y ')),'ok');if(completo(o))h+=U.st('Guías completas · Pidemás se las manda al cliente','ok');}
         orden.forEach(({g:gr,gi})=>{const pr=procDe(o,gr),lleg=!!(pr&&pr.llegada_en)||(gi===0&&enAgencia(o)&&!arr(o.agencias_proceso).length),listo=grupoListo(o,gr,gi);
           const tit=(GR.length>1?'Agencia '+(gi+1)+' · ':'')+E(gr.agencia||'Agencia');
           if(listo){h+=gr.paquetes.map(p=>guiaPkg(p,g)).join('');listas.push({gr,gi});return}
