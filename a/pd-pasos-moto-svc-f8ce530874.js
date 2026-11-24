@@ -347,12 +347,25 @@
         s.sum=remN+(o.direccion_recojo?' · '+o.direccion_recojo:'');
         let h=U.who(remN,(t==='enc'?'Quien envía':'Recojo aquí')+' · pedido '+E(U.ref(id))+(o.recojo_a_nombre?`<div style="margin-top:2px">A nombre de <b style="color:#1F1A17">${E(o.recojo_a_nombre)}</b></div>`:''),'',true)+U.addr(o.direccion_recojo,o.referencia_recojo)+
           U.contact(U.maps(o.latitud_recojo,o.longitud_recojo,o.direccion_recojo,link(x.ubicacionRecojo||o.ubicacion_recojo||o.link_recojo)),remT,'Hola, soy el motorizado de Pidemás por el pedido '+U.ref(id)+'.');
-        if(PR.length){h=h.replace('Recojo aquí · pedido','Punto 1 de '+(PR.length+1)+' · recojo aquí · pedido');
-          PR.forEach(x=>{const ok=!!x.recogido_en,msgW='Hola'+(x.nombre?' '+String(x.nombre).split(' ')[0]:'')+', soy el motorizado de Pidemás. Voy a recoger el pedido '+U.ref(id)+'.';
-            h+=`<div class="sum" style="gap:10px"><div class="lbl">Punto ${E(x.n)} de ${PR.length+1}${ok?' · recogido '+E(U.hora(x.recogido_en)):''}</div>`+
-              U.who(x.nombre||'Punto '+x.n,'Recojo aquí'+(x.que?' · '+E(x.que):''),'',true)+U.addr(x.direccion,x.referencia)+(x.a_nombre?`<div class="li"><span>Pedido a nombre de</span><b>${E(x.a_nombre)}</b></div>`:'')+(x.costo_delivery!=null&&x.costo_delivery!==''?`<div class="li"><span>Delivery de este punto</span><b>${E(U.money(x.costo_delivery))}</b></div>`:'')+
-              U.contact(U.maps(x.lat,x.lng,x.direccion,link(x.ubicacion)),x.telefono,msgW)+
-              (e===1?(ok?U.st('Recogido aquí','ok'):`<button type="button" class="b o" data-act="pt${x.n}">Ya recogí en el punto ${E(x.n)}</button>`):'')+`</div>`});}
+        if(PR.length){
+          /* varios puntos de recojo: como con las agencias, el motorizado elige a cuál va primero */
+          const tot=PR.length+1,exS=PR.reduce((a,x)=>a+(Number(x.costo_delivery)||0),0),exOk=PR.every(x=>x.costo_delivery!=null&&x.costo_delivery!=='');
+          const p1={n:1,nombre:remN,direccion:o.direccion_recojo,referencia:o.referencia_recojo,a_nombre:o.recojo_a_nombre,telefono:remT,
+            mapa:U.maps(o.latitud_recojo,o.longitud_recojo,o.direccion_recojo,link(x.ubicacionRecojo||o.ubicacion_recojo||o.link_recojo)),
+            costo_delivery:exOk?Math.max(0,Math.round(((Number(o.total)||0)-exS)*100)/100):null,recogido_en:e>1?'ok':d.p1||null};
+          const L=[p1].concat(PR.map(q=>Object.assign({},q,{mapa:U.maps(q.lat,q.lng,q.direccion,link(q.ubicacion))})));
+          const pend=L.filter(q=>!q.recogido_en).length;
+          h='';
+          if(e===1&&pend>1)h+=U.note('Tienes <b>'+tot+' puntos de recojo</b>. Elige a cuál vas primero: toca «Llegué» en el punto donde estés y recoges ahí. Luego vas al siguiente.');
+          L.forEach(q=>{const ok=!!q.recogido_en,aqui=e===1&&!ok&&d.ptAct===q.n,nom=q.nombre||'Punto '+q.n;
+            const msgW='Hola'+(q.nombre?' '+String(q.nombre).split(' ')[0]:'')+', soy el motorizado de Pidemás. Voy a recoger el pedido '+U.ref(id)+'.';
+            h+=`<div class="sum" style="gap:10px${aqui?';border-color:#C4410C':''}"><div class="lbl"${aqui?' style="color:#9A330A"':''}>${aqui?'Estás en este punto · ':''}Punto ${q.n} de ${tot}${ok&&q.recogido_en!=='ok'&&q.n>1?' · recogido '+E(U.hora(q.recogido_en)):''}</div>`+
+              U.who(nom,'Recojo aquí'+(q.n===1?' · pedido '+E(U.ref(id)):'')+(q.que?' · '+E(q.que):''),'',true)+U.addr(q.direccion,q.referencia)+
+              (q.a_nombre?`<div class="li"><span>Pedido a nombre de</span><b>${E(q.a_nombre)}</b></div>`:'')+
+              (q.costo_delivery!=null&&q.costo_delivery!==''?`<div class="li"><span>Delivery de este punto</span><b>${E(U.money(q.costo_delivery))}</b></div>`:'')+
+              U.contact(q.mapa,q.telefono,msgW)+
+              (ok?U.st('Recogido aquí','ok'):e!==1?'':aqui?`<button type="button" class="b o" data-act="pt${q.n}">Ya recogí en el punto ${q.n}</button>`:`<button type="button" class="b o" data-act="pl${q.n}">Llegué a ${E(nom)}</button>`)+`</div>`});
+        }
         if(t==='recojo'){const n=String(notas(o)||'').split(/\s*·\s*/).filter(z=>z&&!/^(Pago en efectivo|Pago por Yape|Paga quien|Servicio marcado como PAGADO|Pedido a nombre de)/i.test(z)).join(' · ');if(n)h+=`<div class="sum"><div class="lbl">Notas del servicio</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(n)}</div></div>`}
         if(t==='enc')h+=paquetes(o).map(pkgHtml).join('');
         s.body=msg+avisoVuelto(o,aCobrar(o),false)+h;
@@ -457,7 +470,7 @@
     else if(e===1){
       if(cobroRecPend(o)){const modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');m.cta={label:modo==='yape'?'Ya pagó por Yape · '+M(o.total):'Ya cobré '+M(o.total),busy:'Registrando cobro…',run:()=>cobrarAlRecoger(o)}}
       else if(t==='compra'&&sinMonto(o))m.cta={label:'Registrar compra',busy:'Registrando…',run:()=>registrarCompra(o)};
-      else if(prFalta)m.cta={label:'Ya recogí todo',off:true,hint:'Te falta marcar '+prFalta+' punto'+(prFalta===1?'':'s')+' de recojo'};
+      else if(prFalta)m.cta={label:'Ya recogí todo',off:true,hint:dr(o.id).ptAct?'Marca «Ya recogí» en el punto donde estás':'Toca «Llegué» en el punto de recojo donde estés'};
       else m.cta={label:t==='enc'?'Recogí los paquetes':t==='compra'?'Compra lista · voy al cliente':PR.length?'Ya recogí todo · voy a entregar':'Ya recogí el pedido',run:()=>correr('startOrder',id)};
     }
     else if(e===2)m.cta=t==='enc'?(grupos(o).length>1?{label:'Llegué a la agencia',off:true,hint:'Toca «Llegué» en la agencia a la que fuiste primero'}:{label:'Llegué a la agencia',busy:'Registrando…',run:()=>llegarAgencia(o,0)}):{label:'Llegué donde el cliente',run:()=>correr('markInDelivery',id)};
@@ -487,7 +500,9 @@
         const t=g.paquetes.filter(y=>y.tipoPago==='pago_en_agencia').reduce((a,y)=>a+(Number(String(d['cp'+gi+'_'+y.numero]||'').replace(',','.'))||0),0);let b=inp.parentElement;while(b&&!(b.classList&&b.classList.contains('amt')))b=b.previousElementSibling;const n=b&&b.querySelector('.n');if(n)n.textContent=t?M(t):'S/ —'}});
       m.acts['pg'+gi]=async b=>{if(b.disabled)return;b.disabled=true;await pagarEnAgencia(o,gi);PdPasos.render()};
     });
-    PR.forEach(x=>{m.acts['pt'+x.n]=async b=>{if(b.disabled)return;b.disabled=true;await marcarPunto(o,x.n);PdPasos.render()}});
+    PR.forEach(x=>{m.acts['pt'+x.n]=async b=>{if(b.disabled)return;b.disabled=true;await marcarPunto(o,x.n);if(!error)dr(o.id).ptAct=null;PdPasos.render()}});
+    if(PR.length){for(let n=1;n<=PR.length+1;n++)m.acts['pl'+n]=()=>{error='';info='';dr(o.id).ptAct=n;PdPasos.render()};
+      m.acts['pt1']=()=>{const z=dr(o.id);z.p1=new Date().toISOString();z.ptAct=null;const f=PR.filter(x=>!x.recogido_en).length;info=f?'Punto 1 recogido. Te falta'+(f===1?'':'n')+' '+f+'.':'Recogiste en todos los puntos. Ya puedes ir a entregar.';PdPasos.render()}}
     if(t==='enc')paquetes(o).forEach(p=>{const n=p.numero,k=()=>d.pk[n]||(d.pk[n]={});
       m.acts['shot'+n]=b=>{const f=b.getRootNode().querySelector('[data-act="file'+n+'"]');if(f)f.click()};
       m.acts['file'+n]=inp=>{const f=inp.files&&inp.files[0];if(!f)return;const z=k();z.file=f;try{z.url=URL.createObjectURL(f)}catch(_){}PdPasos.render()};
