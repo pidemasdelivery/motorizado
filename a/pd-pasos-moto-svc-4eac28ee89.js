@@ -109,7 +109,12 @@
   }
   async function pagarEnAgencia(o,gi){
     error='';info='';const g=grupos(o)[gi];if(!g)return;const d=dr(o.id);
-    const v=Number(String(d['cj'+gi]||'').trim().replace(',','.'));if(!(v>0)){error='Escribe cuánto pagaste en '+(g.agencia||'la agencia')+'.';return}
+    /* varios paquetes en la misma agencia: cada uno va a un cliente distinto, así que se anota lo que costó el envío de cada uno */
+    const pp=g.paquetes.filter(p=>p.tipoPago==='pago_en_agencia'),porPaq=pp.length>1,montos={};
+    let v;if(porPaq){for(const p of pp){const x=Number(String(d['cp'+gi+'_'+p.numero]||'').trim().replace(',','.'));if(!(x>0)){error='Escribe cuánto pagaste por el paquete '+p.numero+'.';return}montos[p.numero]=Math.round(x*100)/100}
+      v=Object.values(montos).reduce((a,b)=>a+b,0)}
+    else v=Number(String(d['cj'+gi]||'').trim().replace(',','.'));
+    if(!(v>0)){error='Escribe cuánto pagaste en '+(g.agencia||'la agencia')+'.';return}
     if(!(await pdConfirmar('¿Registrar '+M(v)+' pagados en '+(g.agencia||'la agencia')+'? Sale de tu caja.')))return;
     const desc='PAGO DE ENCOMIENDA · Agencia '+(g.agencia||'');
     try{
@@ -117,13 +122,13 @@
       let monto=Math.round(v*100)/100;
       if(ya&&ya.length)monto=Number(ya[0].monto)||monto;
       else{const {error:me}=await D().from('movimientos_caja').insert({motorizado_id:ME().id,pedido_id:o.id,tipo:'retiro',monto,descripcion:desc});if(me)throw me}
-      const lista=arr(o.agencias_proceso).map(x=>claveAg(x.agencia)===g.clave?Object.assign({},x,{pago_monto:monto,pago_en:new Date().toISOString()}):x);
-      if(!lista.some(x=>claveAg(x.agencia)===g.clave))lista.push({agencia:g.agencia,llegada_en:new Date().toISOString(),pago_monto:monto,pago_en:new Date().toISOString()});
+      const lista=arr(o.agencias_proceso).map(x=>claveAg(x.agencia)===g.clave?Object.assign({},x,{pago_monto:monto,pago_en:new Date().toISOString()},porPaq?{pago_paquetes:montos}:{}):x);
+      if(!lista.some(x=>claveAg(x.agencia)===g.clave))lista.push(Object.assign({agencia:g.agencia,llegada_en:new Date().toISOString(),pago_monto:monto,pago_en:new Date().toISOString()},porPaq?{pago_paquetes:montos}:{}));
       const total=Math.round(lista.reduce((a,x)=>a+(Number(x.pago_monto)||0),0)*100)/100;
       const extra={monto_pagado_agencia:total};
       const pend=grupos(o).filter(x=>x.paquetes.some(p=>p.tipoPago==='pago_en_agencia')&&!(lista.find(y=>claveAg(y.agencia)===x.clave&&y.pago_en)));
       if(!pend.length){const obs=String(o.observaciones||''),tag='PAGO_ENCOMIENDA_CAJA_CONFIRMADO';if(!obs.includes(tag))extra.observaciones=(obs?obs+' | ':'')+tag}
-      await guardarProceso(o,lista,extra);delete d['cj'+gi];
+      await guardarProceso(o,lista,extra);delete d['cj'+gi];pp.forEach(p=>delete d['cp'+gi+'_'+p.numero]);
       info='Pago en '+(g.agencia||'la agencia')+' registrado: '+M(monto)+'. Ahora sube las guías.';
       try{await loadOrders()}catch(_){}try{window.loadCash&&window.loadCash()}catch(_){}
     }catch(e){error='No se pudo registrar el pago: '+(e.message||e)}
@@ -390,9 +395,9 @@
             (fin?'':`<button type="button" class="b o" data-act="lleg${gi}">Llegué a ${E(gr.agencia||'esta agencia')}</button>`)+`</div>`;return}
           h+=`<div class="sum" style="gap:10px;border-color:#C4410C"><div class="lbl" style="color:#9A330A">Estás en esta agencia</div><b style="font-size:18px">${tit}</b></div>`;
           const debe=gr.paquetes.some(p=>p.tipoPago==='pago_en_agencia'),pagado=grupoPagado(o,gr,gi);
-          if(debe&&!pagado&&!fin){const v=d['cj'+gi]||'';
+          if(debe&&!pagado&&!fin){const ppA=gr.paquetes.filter(p=>p.tipoPago==='pago_en_agencia'),v=ppA.length>1?String(ppA.reduce((a,p)=>a+(Number(String(d['cp'+gi+'_'+p.numero]||'').replace(',','.'))||0),0)||''):(d['cj'+gi]||'');
             h+=`<div class="amt"><div class="k">Pagas el envío en ${E(gr.agencia||'la agencia')}</div><div class="n">${v?M(Number(String(v).replace(',','.'))||0):'S/ —'}</div><div class="pill">Sale de tu caja · paquete${gr.paquetes.filter(p=>p.tipoPago==='pago_en_agencia').length>1?'s':''} ${gr.paquetes.filter(p=>p.tipoPago==='pago_en_agencia').map(p=>p.numero).join(' y ')}</div></div>`+
-              `<div><div class="lbl">Total pagado en ${E(gr.agencia||'la agencia')}</div><input class="inp" data-act="cj${gi}" inputmode="decimal" placeholder="S/ 0.00" value="${E(v)}"></div>`+U.note('Escribe el monto y desliza «Pagar envío en '+E(gr.agencia||'la agencia')+'». Se registra en tu caja como <b>Pago de encomienda · '+E(gr.agencia||'Agencia')+'</b>. Después subes las guías.');return}
+              (ppA.length>1?ppA.map(p=>`<div><div class="lbl">Envío del paquete ${p.numero} · ${E(p.destino||'')}</div><input class="inp" data-act="cp${gi}_${p.numero}" inputmode="decimal" placeholder="S/ 0.00" value="${E(d['cp'+gi+'_'+p.numero]||'')}"></div>`).join(''):`<div><div class="lbl">Total pagado en ${E(gr.agencia||'la agencia')}</div><input class="inp" data-act="cj${gi}" inputmode="decimal" placeholder="S/ 0.00" value="${E(v)}"></div>`)+U.note('Escribe el monto y desliza «Pagar envío en '+E(gr.agencia||'la agencia')+'». Se registra en tu caja como <b>Pago de encomienda · '+E(gr.agencia||'Agencia')+'</b>. Después subes las guías.');return}
           if(debe)h+=pagadoTxt(o,gr,gi);
           h+=gr.paquetes.map(p=>guiaPkg(p,g)).join('');
         });
@@ -454,6 +459,8 @@
     if(t==='enc')grupos(o).forEach((g,gi)=>{
       m.acts['lleg'+gi]=async b=>{if(b.disabled)return;b.disabled=true;await llegarAgencia(o,gi);PdPasos.render()};
       m.acts['cj'+gi]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d['cj'+gi]=inp.value;const box=inp.parentElement&&inp.parentElement.previousElementSibling,v=Number(inp.value.replace(',','.'))||0;if(box&&box.classList.contains('amt'))box.querySelector('.n').textContent=v?M(v):'S/ —'};
+      g.paquetes.forEach(p=>{m.acts['cp'+gi+'_'+p.numero]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d['cp'+gi+'_'+p.numero]=inp.value;
+        const t=g.paquetes.filter(y=>y.tipoPago==='pago_en_agencia').reduce((a,y)=>a+(Number(String(d['cp'+gi+'_'+y.numero]||'').replace(',','.'))||0),0);let b=inp.parentElement;while(b&&!(b.classList&&b.classList.contains('amt')))b=b.previousElementSibling;const n=b&&b.querySelector('.n');if(n)n.textContent=t?M(t):'S/ —'}});
       m.acts['pg'+gi]=async b=>{if(b.disabled)return;b.disabled=true;await pagarEnAgencia(o,gi);PdPasos.render()};
     });
     PR.forEach(x=>{m.acts['pt'+x.n]=async b=>{if(b.disabled)return;b.disabled=true;await marcarPunto(o,x.n);PdPasos.render()}});
