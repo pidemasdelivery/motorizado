@@ -434,7 +434,7 @@
       /* 3 · Cobrar */
       if(cobro){const s=S(3);s.locked='Se muestra al llegar donde el cliente';const monto=aCobrar(o);
         s.sum='Cobrado '+M(monto)+' · '+(yape(o)?'Yape':'Efectivo');
-        let h=msg+`<div class="amt"><div class="k">Cobra al cliente</div><div class="n">${M(monto)}</div><div class="pill">${yape(o)?'Yape':'Efectivo'}</div></div>`;
+        let h=msg+`<div class="amt"><div class="k">Cobra al cliente</div><div class="n">${M(monto)}</div><div class="pill">${yape(o)?'Yape':'Efectivo'}</div></div>`+(o.pago_confirmado!==true&&typeof window.pdCambiarPago==='function'?`<div><div class="lbl">¿Cómo paga el cliente?</div><div class="quick" data-act="cpago"><button type="button" data-m="efectivo" class="${efectivo(o)?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${yape(o)?'on':''}">Yape</button></div></div>`:'');
         if(t==='compra'&&Number(o.subtotal)>0)h+=`<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Compra</span><b>${M(o.subtotal)}</b></div><div class="li"><span>Servicio</span><b>${M(servicio(o))}</b></div><div class="li t"><span>Total</span><b>${M(Number(o.subtotal)+servicio(o))}</b></div></div>`;
         if(yape(o))h+=qrBtn(o)+U.note('Confirma solo cuando veas la constancia del pago en el celular del cliente.')+(window.PdYapeP?PdYapeP.html(o):'');
         else{const v=draft(id),vals=[];[10,20,50,100,200].forEach(z=>{const r=Math.ceil(monto/z)*z;if(r>monto+0.004&&!vals.includes(r))vals.push(r)});
@@ -468,6 +468,7 @@
     if(e>=1&&typeof window.pdReportarProblema==='function')m.alt=[{label:'Tengo un problema',run:()=>window.pdReportarProblema(id)}];
 
     m.acts={
+      cpago:async(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b||b.classList.contains('on'))return;error='';try{await window.pdCambiarPago(o,b.dataset.m)}catch(e){error=String(e&&e.message||e)}PdPasos.render()},
       qr:()=>{if(typeof window.showYapeQr==='function')window.showYapeQr(id)},
       modo:(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b)return;d.modo=b.dataset.m;error='';PdPasos.render()},
       rmonto:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.monto=inp.value;const n=inp.getRootNode().querySelector('[data-vr]');if(n)n.innerHTML=I_v(inp.value||o.total,Number(o.total))},

@@ -110,7 +110,7 @@
       const qn=yape(o)&&typeof window.pdQrDePedido==='function'?window.pdQrDePedido(o.id):null;
       s.sum='Cobrado '+M(o.monto_recibido>0&&efectivo(o)?Math.min(o.monto_recibido,monto):monto)+' · '+(yape(o)?(qn&&qn.negocio?'Yape del negocio':'Yape'):'Efectivo');
       let h=`<div class="amt"><div class="k">${sd?'Cobra solo el delivery':'Cobra al cliente'}</div><div class="n">${M(monto)}</div><div class="pill">${yape(o)?'Yape':'Efectivo'}</div></div>`+
-        `<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Productos</span><b>${sd?'Pagado':M(o.subtotal)}</b></div><div class="li"><span>Delivery</span><b>${M(o.costo_delivery)}</b></div></div>`;
+        `<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Productos</span><b>${sd?'Pagado':M(o.subtotal)}</b></div><div class="li"><span>Delivery</span><b>${M(o.costo_delivery)}</b></div></div>`+(o.pago_confirmado!==true&&typeof window.pdCambiarPago==='function'?`<div><div class="lbl">¿Cómo paga el cliente?</div><div class="quick" data-act="cpago"><button type="button" data-m="efectivo" class="${efectivo(o)?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${yape(o)?'on':''}">Yape</button></div></div>`:'');
       if(yape(o)){
         h+=`<button type="button" class="qr" data-act="qr"><span class="im"${qn&&qn.url?` style="background-image:url('${E(qn.url)}')"`:''}>${qn&&qn.url?'':'QR'}</span><span class="t"><span class="k">${qn&&qn.negocio?'Yape del negocio':'Yape de Pidemás'}</span><span class="a">${E(qn&&qn.titular||qn&&qn.nombre||'')}</span><span class="b2">${E(qn&&qn.numero||'')}</span><span class="c">Toca para agrandar</span></span></button>`;
         const ye=o.yape_negocio_estado||'';
@@ -152,6 +152,7 @@
     }
     else if(e===4)m.cta={label:'Finalizar entrega',green:true,busy:'Verificando…',run:()=>correr('deliverOrder',id)};
     m.acts={
+      cpago:async(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b||b.classList.contains('on'))return;error='';try{await window.pdCambiarPago(o,b.dataset.m)}catch(e){error=String(e&&e.message||e)}PdPasos.render()},
       qr:()=>{if(typeof window.showYapeQr==='function')window.showYapeQr(id)},
       cash:(inp)=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
       quick:(box,ev)=>{const b=ev.target.closest('[data-v]');if(!b)return;error='';setDraft(id,b.dataset.v);const inp=box.getRootNode().querySelector('[data-act="cash"]');if(inp){inp.value=b.dataset.v;inp.dispatchEvent(new Event('input'))}}

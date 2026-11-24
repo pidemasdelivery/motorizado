@@ -32,6 +32,7 @@
    
    
   const NOMBRE={efectivo:'Efectivo',yape:'Yape'};
+  window.pdCambiarPago=(o,n)=>cambiarPago(o,n);
   async function cambiarPago(o,nuevo){
     const antes=String(o.metodo_pago||'').toLowerCase();if(antes===nuevo)return;
     const ok=(await pdConfirmar('¿El cliente pagará con '+NOMBRE[nuevo]+' en vez de '+(NOMBRE[antes]||antes)+'?\n\nSe avisará a Pidemás'+(o.negocio_id?' y al negocio':'')+' y el cobro se registrará con '+NOMBRE[nuevo]+'.'));
