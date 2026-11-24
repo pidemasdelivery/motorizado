@@ -256,7 +256,11 @@
     const mv=sp.current.slice(0,40).map(m=>`<div class="mv"><span class="ic" style="background:${m.tipo==='ingreso'?'#FDEBDF':'#F6EFE9'};color:${m.tipo==='ingreso'?'#C4410C':'#6B5E55'}">${ico(m)}</span><span class="tx"><b>${E(P.LABEL[P.kind(m)]||'Movimiento')}</b><span>${E(P.clean(m))} · ${E(fecha(m.creado_en))}</span></span><span class="am">${m.tipo==='ingreso'?'+':'−'} ${M(P.amount(m))}</span></div>`).join('');
     h+=`<div class="cd"><div class="lbl">Movimientos de la caja abierta</div>${mv||'<div style="color:#6B5E55;font-size:15px">Todavía no hay movimientos.</div>'}</div>`;
     h+=`<div class="btns b2"><button type="button" class="b g" data-a="caja:wa">${U.I.wa}Enviar resumen</button><button type="button" class="b" data-a="caja:excel">${XI.doc}Descargar Excel</button></div>`;
-    if(sp.closed.length)h+=`<div class="cd"><div class="lbl">Cajas entregadas</div>${sp.closed.slice(0,8).map(x=>`<div class="mv"><span class="ic" style="background:#E9F6EE;color:#15803D">${XI.check}</span><span class="tx"><b>Entregada ${E(fecha(x.closer.creado_en))}</b><span>${x.summary.count} movimientos · cobros ${M(x.summary.cobros)}</span></span><span class="am">${M(P.amount(x.closer))}</span></div>`).join('')}</div>`;
+    if(sp.closed.length){const ab=window.__pdCajaAb??-1,fila=m=>`<div class="mv" style="padding-left:6px"><span class="ic" style="background:${m.tipo==='ingreso'?'#FDEBDF':'#F6EFE9'};color:${m.tipo==='ingreso'?'#C4410C':'#6B5E55'}">${ico(m)}</span><span class="tx"><b>${E(P.LABEL[P.kind(m)]||'Movimiento')}</b><span>${E(P.clean(m))} · ${E(fecha(m.creado_en))}</span></span><span class="am">${m.tipo==='ingreso'?'+':'−'} ${M(P.amount(m))}</span></div>`;
+      /* al tocar una caja entregada se despliegan sus movimientos */
+      h+=`<div class="cd"><div class="lbl">Cajas entregadas</div>${sp.closed.slice(0,8).map((x,i)=>{const on=ab===i,L=(x.movs||[]).slice().sort((a,b)=>new Date(b.creado_en)-new Date(a.creado_en));
+        return `<button type="button" class="mv" data-a="cajac:${i}" aria-expanded="${on}" style="width:100%;border:0;background:transparent;text-align:left;font:inherit;color:inherit;cursor:pointer;padding-left:0;padding-right:0"><span class="ic" style="background:#E9F6EE;color:#15803D">${XI.check}</span><span class="tx"><b>Entregada ${E(fecha(x.closer.creado_en))}</b><span>${x.summary.count} movimientos · cobros ${M(x.summary.cobros)} · ${on?'ocultar':'ver detalle'}</span></span><span class="am">${M(P.amount(x.closer))}</span></button>`+
+          (on?`<div style="margin:0 0 8px 0;padding:6px 10px;border-radius:14px;background:#FBF6F2">${L.length?L.map(fila).join(''):'<div style="color:#6B5E55;font-size:14px;padding:8px 0">Sin movimientos.</div>'}${fila(x.closer)}</div>`:'')}).join('')}</div>`}
     window.__pdCajaResumen={s,sh};
     return {head:top('Mi caja','Caja',`<button type="button" class="ib" data-a="caja:act" aria-label="Actualizar">${IC.refresh}</button>`),body:h};
   }
@@ -532,6 +536,7 @@
     if(A.startsWith('p:')){ir(tab,A.slice(2));return}
     if(A.startsWith('avs:')){if(a.disabled)return;a.disabled=true;try{if(window.PdAvisos)await window.PdAvisos.accion(A.slice(4))}finally{a.disabled=false;key='';pintar()}return}
     if(A.startsWith('acep:')||A.startsWith('rech:')){if(a.disabled)return;a.disabled=true;try{const id=A.slice(5);if(A[0]==='a'){if(typeof window.acceptOrder==='function')await window.acceptOrder(id)}else if(typeof window.rejectOrder==='function')await window.rejectOrder(id)}finally{a.disabled=false;key='';pintar()}return}
+    if(A.startsWith('cajac:')){const i=+A.slice(6);window.__pdCajaAb=window.__pdCajaAb===i?-1:i;key='';pintar();return}
     const ocupado=async fn=>{if(a.disabled)return;a.disabled=true;const tx=a.innerHTML;a.textContent='Un momento…';try{await fn()}finally{key='';pintar()}};
     switch(A){
       case 'volver':sub=null;if(regreso){tab=regreso;regreso=null}key='';pintar();if(history.state?.pdApp){ignorarPop=true;history.back()}break;
