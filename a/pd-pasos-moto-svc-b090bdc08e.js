@@ -350,7 +350,7 @@
         if(PR.length){h=h.replace('Recojo aquí · pedido','Punto 1 de '+(PR.length+1)+' · recojo aquí · pedido');
           PR.forEach(x=>{const ok=!!x.recogido_en,msgW='Hola'+(x.nombre?' '+String(x.nombre).split(' ')[0]:'')+', soy el motorizado de Pidemás. Voy a recoger el pedido '+U.ref(id)+'.';
             h+=`<div class="sum" style="gap:10px"><div class="lbl">Punto ${E(x.n)} de ${PR.length+1}${ok?' · recogido '+E(U.hora(x.recogido_en)):''}</div>`+
-              U.who(x.nombre||'Punto '+x.n,'Recojo aquí'+(x.que?' · '+E(x.que):''),'',true)+U.addr(x.direccion,x.referencia)+
+              U.who(x.nombre||'Punto '+x.n,'Recojo aquí'+(x.que?' · '+E(x.que):''),'',true)+U.addr(x.direccion,x.referencia)+(x.a_nombre?`<div class="li"><span>Pedido a nombre de</span><b>${E(x.a_nombre)}</b></div>`:'')+(x.costo_delivery!=null&&x.costo_delivery!==''?`<div class="li"><span>Delivery de este punto</span><b>${E(U.money(x.costo_delivery))}</b></div>`:'')+
               U.contact(U.maps(x.lat,x.lng,x.direccion,link(x.ubicacion)),x.telefono,msgW)+
               (e===1?(ok?U.st('Recogido aquí','ok'):`<button type="button" class="b o" data-act="pt${x.n}">Ya recogí en el punto ${E(x.n)}</button>`):'')+`</div>`});}
         if(t==='recojo'){const n=String(notas(o)||'').split(/\s*·\s*/).filter(z=>z&&!/^(Pago en efectivo|Pago por Yape|Paga quien|Servicio marcado como PAGADO|Pedido a nombre de)/i.test(z)).join(' · ');if(n)h+=`<div class="sum"><div class="lbl">Notas del servicio</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(n)}</div></div>`}
