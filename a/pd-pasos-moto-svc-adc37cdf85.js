@@ -80,7 +80,10 @@
     return `<div style="display:flex;flex-direction:column;gap:4px;padding:6px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b style="font-size:16px">Paquete ${p.numero}</b>`+
       `<span style="flex:0 0 auto;font-size:13px;font-weight:800;padding:4px 10px;border-radius:999px;background:${p.tipoPago==='pago_en_agencia'?'#FDEBDF;color:#9A330A':'#E9F6EE;color:#0F5E2E'}">${pagoTx(p.tipoPago)}</span></div>`+
       `<span style="font-size:15px;color:#1F1A17">${E(p.agencia||'Agencia')} → ${E(p.destino||'—')}</span>`+
-      `<span style="font-size:14px;color:#6B5E55">Recibe: <b style="color:#1F1A17">${E(p.recibe||'—')}</b>${p.recibeTel?' · '+E(p.recibeTel):''}${p.recibeDni?' · DNI '+E(p.recibeDni):''}</span></div>`;
+      (()=>{const row=(k,v)=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-top:1px solid #F1E4DA"><span style="font-size:14px;color:#6B5E55">${k}</span><b style="font-size:15px;color:#1F1A17;text-align:right;overflow-wrap:anywhere">${v}</b></div>`;
+        const tel=String(p.recibeTel||'').replace(/\D/g,'');
+        return `<div style="margin-top:6px;padding:4px 12px 6px;border-radius:12px;background:#FFFAF6;border:1px solid #F1E4DA"><div style="font-size:12px;font-weight:800;letter-spacing:.06em;color:#9A330A;padding:6px 0 4px">QUIEN RECIBE</div>`+
+          row('Nombre',E(p.recibe||'—'))+row('DNI',E(p.recibeDni||'—'))+row('Número',tel?`<a href="tel:${E(tel)}" style="color:#C4410C;text-decoration:none">${E(p.recibeTel)}</a>`:'—')+`</div>`})()+`</div>`;
   }
   const claveAg=n=>String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
   function grupos(o){const out=[];paquetes(o).forEach(p=>{const k=claveAg(p.agencia);let g=out.find(x=>x.clave===k);if(!g)out.push(g={clave:k,agencia:p.agencia,paquetes:[]});g.paquetes.push(p)});return out}
