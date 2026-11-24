@@ -258,7 +258,7 @@
     return `<button type="button" class="qr" data-act="qr"><span class="im"${qn&&qn.url?` style="background-image:url('${E(qn.url)}')"`:''}>${qn&&qn.url?'':'QR'}</span><span class="t"><span class="k">${qn&&qn.negocio?'Yape del negocio':'Yape de Pidemás'}</span><span class="a">${E(qn&&qn.titular||qn&&qn.nombre||'')}</span><span class="b2">${E(qn&&qn.numero||'')}</span><span class="c">Toca para agrandar</span></span></button>`};
   function bloqueCobroRec(o){
     const d=dr(o.id),modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');
-    let h=`<div class="amt"><div class="k">Cobra al recoger</div><div class="n">${M(o.total)}</div><div class="pill">${modo==='yape'?'Yape':'Efectivo'}</div></div>`+
+    let h=`<div class="amt"><div class="k">Cobro al recoger</div><div class="n">${M(o.total)}</div><div class="pill">${modo==='yape'?'Yape':'Efectivo'}</div></div>`+
       U.note(tipo(o)==='enc'?'Cóbrale a quien envía antes de llevar los paquetes a la agencia.':'Paga quien envía'+(o.nombre_remitente?' ('+E(o.nombre_remitente)+')':'')+': cóbrale al recoger, antes de salir a entregar.')+
       `<div class="quick" data-act="modo"><button type="button" data-m="efectivo" class="${modo==='efectivo'?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${modo==='yape'?'on':''}">Yape</button></div>`;
     if(modo==='efectivo')h+=`<div><div class="lbl">¿Con cuánto paga? (vacío = exacto)</div><input class="inp" data-act="rmonto" inputmode="decimal" placeholder="${M(o.total)}" value="${E(d.monto)}"></div><div class="note" data-vr>${I_v(d.monto||o.total,Number(o.total))}</div>`;
@@ -344,12 +344,12 @@
         s.body=msg+avisoVuelto(o,aCobrar(o),sinMonto(o))+h;
       }else{
         s.sum=remN+(o.direccion_recojo?' · '+o.direccion_recojo:'');
-        let h=U.who(remN,(t==='enc'?'Quien envía':'Recoges aquí')+' · pedido '+E(U.ref(id))+(o.recojo_a_nombre?`<div style="margin-top:2px">A nombre de <b style="color:#1F1A17">${E(o.recojo_a_nombre)}</b></div>`:''),'',true)+U.addr(o.direccion_recojo,o.referencia_recojo)+
+        let h=U.who(remN,(t==='enc'?'Quien envía':'Recojo aquí')+' · pedido '+E(U.ref(id))+(o.recojo_a_nombre?`<div style="margin-top:2px">A nombre de <b style="color:#1F1A17">${E(o.recojo_a_nombre)}</b></div>`:''),'',true)+U.addr(o.direccion_recojo,o.referencia_recojo)+
           U.contact(U.maps(o.latitud_recojo,o.longitud_recojo,o.direccion_recojo,link(x.ubicacionRecojo||o.ubicacion_recojo||o.link_recojo)),remT,'Hola, soy el motorizado de Pidemás por el pedido '+U.ref(id)+'.');
-        if(PR.length){h=h.replace('Recoges aquí · pedido','Punto 1 de '+(PR.length+1)+' · recoges aquí · pedido');
+        if(PR.length){h=h.replace('Recojo aquí · pedido','Punto 1 de '+(PR.length+1)+' · recojo aquí · pedido');
           PR.forEach(x=>{const ok=!!x.recogido_en,msgW='Hola'+(x.nombre?' '+String(x.nombre).split(' ')[0]:'')+', soy el motorizado de Pidemás. Voy a recoger el pedido '+U.ref(id)+'.';
             h+=`<div class="sum" style="gap:10px"><div class="lbl">Punto ${E(x.n)} de ${PR.length+1}${ok?' · recogido '+E(U.hora(x.recogido_en)):''}</div>`+
-              U.who(x.nombre||'Punto '+x.n,'Recoges aquí'+(x.que?' · '+E(x.que):''),'',true)+U.addr(x.direccion,x.referencia)+
+              U.who(x.nombre||'Punto '+x.n,'Recojo aquí'+(x.que?' · '+E(x.que):''),'',true)+U.addr(x.direccion,x.referencia)+
               U.contact(U.maps(x.lat,x.lng,x.direccion,link(x.ubicacion)),x.telefono,msgW)+
               (e===1?(ok?U.st('Recogido aquí','ok'):`<button type="button" class="b o" data-act="pt${x.n}">Ya recogí en el punto ${E(x.n)}</button>`):'')+`</div>`});}
         if(t==='recojo'){const n=String(notas(o)||'').split(/\s*·\s*/).filter(z=>z&&!/^(Pago en efectivo|Pago por Yape|Paga quien|Servicio marcado como PAGADO|Pedido a nombre de)/i.test(z)).join(' · ');if(n)h+=`<div class="sum"><div class="lbl">Notas del servicio</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(n)}</div></div>`}
@@ -429,12 +429,12 @@
       /* 2 · Llevar al cliente */
       {const s=S(2);s.locked=t==='compra'?'Se muestra al terminar la compra':'Se muestra al recoger';s.sum=recN+(o.direccion_entrega?' · '+o.direccion_entrega:'');
         const mapa=U.maps(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,link(o.ubicacion_entrega||x.ubicacionEntrega)||(cp&&cp.ubi));
-        s.body=msg+U.who(recN,(t==='compra'?'Cliente':'Quien recibe')+' · entregas aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+U.contact(mapa,recT,'')+
+        s.body=msg+U.who(recN,(t==='compra'?'Cliente':'Quien recibe')+' · entrega aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+U.contact(mapa,recT,'')+
           rapidos(o,'rec',2);}
       /* 3 · Cobrar */
       if(cobro){const s=S(3);s.locked='Se muestra al llegar donde el cliente';const monto=aCobrar(o);
         s.sum='Cobrado '+M(monto)+' · '+(yape(o)?'Yape':'Efectivo');
-        let h=msg+`<div class="amt"><div class="k">Cobra al cliente</div><div class="n">${M(monto)}</div><div class="pill">${yape(o)?'Yape':'Efectivo'}</div></div>`+(o.pago_confirmado!==true&&typeof window.pdCambiarPago==='function'?`<div><div class="lbl">¿Cómo paga el cliente?</div><div class="quick" data-act="cpago"><button type="button" data-m="efectivo" class="${efectivo(o)?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${yape(o)?'on':''}">Yape</button></div></div>`:'');
+        let h=msg+`<div class="amt"><div class="k">Cobro al cliente</div><div class="n">${M(monto)}</div><div class="pill">${yape(o)?'Yape':'Efectivo'}</div></div>`+(o.pago_confirmado!==true&&typeof window.pdCambiarPago==='function'?`<div><div class="lbl">¿Cómo paga el cliente?</div><div class="quick" data-act="cpago"><button type="button" data-m="efectivo" class="${efectivo(o)?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${yape(o)?'on':''}">Yape</button></div></div>`:'');
         if(t==='compra'&&Number(o.subtotal)>0)h+=`<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Compra</span><b>${M(o.subtotal)}</b></div><div class="li"><span>Servicio</span><b>${M(servicio(o))}</b></div><div class="li t"><span>Total</span><b>${M(Number(o.subtotal)+servicio(o))}</b></div></div>`;
         if(yape(o))h+=qrBtn(o)+U.note('Confirma solo cuando veas la constancia del pago en el celular del cliente.')+(window.PdYapeP?PdYapeP.html(o):'');
         else{const v=draft(id),vals=[];[10,20,50,100,200].forEach(z=>{const r=Math.ceil(monto/z)*z;if(r>monto+0.004&&!vals.includes(r))vals.push(r)});
