@@ -397,8 +397,6 @@
               <button type="button" class="b o" data-act="up${p.numero}"${k.subiendo?' disabled':''}>${k.subiendo?'Subiendo guía…':'Subir guía y clave'}</button></div>`};
 
         const listas=[];
-        {const ll=GR.filter((g,gi)=>{const pr=procDe(o,g);return (pr&&pr.llegada_en)||legado(o,gi)}).map(g=>g.agencia).filter(Boolean);
-          if(ll.length)h+=U.st('Llegó a '+E(ll.join(' y ')),'ok');if(completo(o))h+=U.st('Guías completas · Pidemás se las manda al cliente','ok');}
         orden.forEach(({g:gr,gi})=>{const pr=procDe(o,gr),lleg=!!(pr&&pr.llegada_en)||(gi===0&&enAgencia(o)&&!arr(o.agencias_proceso).length),listo=grupoListo(o,gr,gi);
           const tit=(GR.length>1?'Agencia '+(gi+1)+' · ':'')+E(gr.agencia||'Agencia');
           if(listo){h+=gr.paquetes.map(p=>guiaPkg(p,g)).join('');listas.push({gr,gi});return}
