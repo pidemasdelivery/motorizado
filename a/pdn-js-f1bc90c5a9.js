@@ -55,6 +55,8 @@
     const box=$('pdAlerts');if(!box)return;
     key=key||kind+':'+(pedidoId||Date.now());
     box.querySelector(`[data-key="${CSS.escape(key)}"]`)?.remove();
+    /* un solo aviso por pedido: la tarjeta de pedido nuevo reemplaza al aviso simple */
+    if(kind==='nuevo'&&pedidoId)box.querySelectorAll(`[data-key$=":${CSS.escape(String(pedidoId))}"]`).forEach(x=>x.remove());
     const card=document.createElement('div');
     card.className='pdA'+(kind==='nuevo'?' urgent':kind==='cancel'?' cancel':'');card.dataset.key=key;card.setAttribute('role','alert');
     const acts=actions||(pedidoId?[{label:'Ver pedido',main:true,run:()=>openOrder(pedidoId)}]:[]);
@@ -135,11 +137,14 @@
     }
     prevOrders=new Map([...cur].map(([k,o])=>[k,snap(o)]));
   }
-  function newTitle(o){const k=svc(o);return k==='Compra'?'Nueva compra asignada':k==='Encomienda'?'Nueva encomienda asignada':k==='Recojo y entrega'?'Nuevo recojo y entrega':'Nuevo pedido asignado'}
+  function newTitle(o){const k=svc(o);return k==='Compra'?'Nueva compra asignada':k==='Encomienda'?'Nueva encomienda asignada':k==='Recojo y entrega'?'Nuevo recojo y entrega asignado':'Nuevo pedido asignado'}
   function describe(o){
-    const from=o.direccion_recojo||o.direccion_negocio||'',to=o.direccion_entrega||'';
-    const tot=Number(o.total);
-    return [from?'Recojo: '+from:'',to?'Entrega: '+to:'',Number.isFinite(tot)&&tot>0?money(tot)+(o.metodo_pago?' · '+o.metodo_pago:''):''].filter(Boolean).join(' · ')||svc(o);
+    /* texto corto y limpio, igual para compra, encomienda y recojo (sin enlaces de Google Maps) */
+    const cl=v=>String(v||'').replace(/https?:\/\/\S+/g,'').replace(/\s*[·|,-]\s*$/,'').replace(/^\s*[·|,-]\s*/,'').trim();
+    const k=svc(o),from=cl(o.direccion_recojo||o.direccion_negocio),to=cl(o.direccion_entrega),pts=Array.isArray(o.puntos_recojo)?o.puntos_recojo.length:0;
+    const tot=Number(o.total),met=String(o.metodo_pago||'').toLowerCase(),mom=String(o.pago_servicio_momento||'').toLowerCase();
+    const pago=mom==='al_final'?'Paga al final a Pidemás':met==='yape'?'Yape':met==='efectivo'?'Efectivo':'';
+    return [from?(k==='Compra'?'Compra en: ':'Recojo: ')+from+(pts?' + '+pts+' punto'+(pts>1?'s':''):''):'',to?'Entrega: '+to:'',Number.isFinite(tot)&&tot>0?money(tot)+(pago?' · '+pago:''):''].filter(Boolean).join(' · ')||k;
   }
   function acceptActions(o){
     const acts=[{label:'Ver pedido',run:()=>openOrder(o.id)}];
@@ -201,6 +206,7 @@
         
 
         const dup=n.pedido_id&&document.querySelector(`#pdAlerts [data-key$=":${CSS.escape(String(n.pedido_id))}"]`);
+        if(!dup&&n.pedido_id&&/asignad|nuevo servicio|nueva (compra|encomienda)/i.test(String(n.titulo||'')+' '+String(n.mensaje||'')))continue;/* la tarjeta blanca de pedido nuevo ya avisa */
         if(!dup)alertUser({kind:/cancel/i.test(n.titulo+n.mensaje)?'cancel':'info',pedidoId:n.pedido_id||null,title:n.titulo||'Aviso de Pidemás',text:n.mensaje||''});
       }
       if(list[0]){lastNotif=String(list[0].creado_en);LS.set('pd_last_notif',lastNotif)}
