@@ -203,8 +203,10 @@
     const d=dr(o.id),modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo'),total=Number(o.total)||0;let paga=total;
     if(modo==='efectivo'){const raw=String(d.monto||'').trim();paga=raw===''?total:Number(raw.replace(',','.'));if(!(paga>=total-0.0001)){error='El cliente debe pagar al menos '+M(total)+'.';return}}
     let vueltoDe='';if(modo==='efectivo'&&paga-total>0.004&&typeof window.pdElegirVuelto==='function'){vueltoDe=await window.pdElegirVuelto(Math.round((paga-total)*100)/100,total,paga);if(!vueltoDe)return}
+    if(modo==='yape'&&window.PdYapeP){const f=PdYapeP.falta(o);if(f){error=f;return}}
     if(!(await pdConfirmar(modo==='efectivo'?`¿Registrar cobro de ${M(total)} en efectivo?`:`¿Confirmas que el cliente ya pagó ${M(total)} por Yape al QR de Pidemás? Revisa la constancia en su celular.`)))return;
     try{
+      if(modo==='yape'&&window.PdYapeP)await PdYapeP.guardar(o);
       const upd={pago_confirmado:true,metodo_pago:modo,monto_recibido:Math.round(paga*100)/100};
       const {error:ue}=await D().from('pedidos').update(upd).eq('id',o.id).eq('motorizado_id',ME().id);if(ue)throw ue;
       try{await D().from('cobros').upsert({pedido_id:o.id,motorizado_id:ME().id,monto:total,metodo_pago:modo,confirmado:true,confirmado_en:new Date().toISOString()},{onConflict:'pedido_id'})}catch(_){}
@@ -260,7 +262,7 @@
       U.note(tipo(o)==='enc'?'Cóbrale a quien envía antes de llevar los paquetes a la agencia.':'Paga quien envía'+(o.nombre_remitente?' ('+E(o.nombre_remitente)+')':'')+': cóbrale al recoger, antes de salir a entregar.')+
       `<div class="quick" data-act="modo"><button type="button" data-m="efectivo" class="${modo==='efectivo'?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${modo==='yape'?'on':''}">Yape</button></div>`;
     if(modo==='efectivo')h+=`<div><div class="lbl">¿Con cuánto paga? (vacío = exacto)</div><input class="inp" data-act="rmonto" inputmode="decimal" placeholder="${M(o.total)}" value="${E(d.monto)}"></div><div class="note" data-vr>${I_v(d.monto||o.total,Number(o.total))}</div>`;
-    else h+=qrBtn(o)+U.note('Revisa en el celular del cliente que el Yape se hizo y guarda la captura para el cierre de caja.');
+    else h+=qrBtn(o)+U.note('Revisa en el celular del cliente que el Yape se hizo.')+(window.PdYapeP?PdYapeP.html(o):'');
     return h;
   }
 
@@ -418,7 +420,7 @@
         s.sum='Cobrado '+M(monto)+' · '+(yape(o)?'Yape':'Efectivo');
         let h=msg+`<div class="amt"><div class="k">Cobra al cliente</div><div class="n">${M(monto)}</div><div class="pill">${yape(o)?'Yape':'Efectivo'}</div></div>`;
         if(t==='compra'&&Number(o.subtotal)>0)h+=`<div class="sum"><div class="lbl">Montos</div><div class="li"><span>Compra</span><b>${M(o.subtotal)}</b></div><div class="li"><span>Servicio</span><b>${M(servicio(o))}</b></div><div class="li t"><span>Total</span><b>${M(Number(o.subtotal)+servicio(o))}</b></div></div>`;
-        if(yape(o))h+=qrBtn(o)+U.note('Confirma solo cuando veas la constancia del pago en el celular del cliente.');
+        if(yape(o))h+=qrBtn(o)+U.note('Confirma solo cuando veas la constancia del pago en el celular del cliente.')+(window.PdYapeP?PdYapeP.html(o):'');
         else{const v=draft(id),vals=[];[10,20,50,100,200].forEach(z=>{const r=Math.ceil(monto/z)*z;if(r>monto+0.004&&!vals.includes(r))vals.push(r)});
           h+=`<div><div class="lbl">¿Con cuánto paga?</div><input class="inp" data-act="cash" inputmode="decimal" placeholder="${M(monto)}" value="${E(v)}"></div><div class="quick" data-act="quick">${[monto].concat(vals.slice(0,3)).map((z,i)=>`<button type="button" data-v="${z.toFixed(2)}" class="${Number(v)===z?'on':''}">${i?'S/ '+z:'Exacto'}</button>`).join('')}</div><div data-vuelto>${I_v(v,monto)}</div>`}
         s.body=h;}
@@ -444,7 +446,7 @@
     else if(e===3){
       if(t==='enc'){const a=agActual(o);m.cta=a&&!grupoPagado(o,a.g,a.gi)&&a.g.paquetes.some(p=>p.tipoPago==='pago_en_agencia')?{label:'Pagar envío en '+(a.g.agencia||'la agencia'),busy:'Registrando pago…',run:()=>pagarEnAgencia(o,a.gi)}
           :{label:a?'Sube las guías de '+(a.g.agencia||'la agencia'):'Ve a la siguiente agencia',off:true,hint:a?'Toma la foto y escribe la clave de cada paquete, luego toca «Subir guía y clave»':'Toca «Llegué» cuando estés en la siguiente agencia'}}
-      else m.cta={label:'Ya cobré '+M(aCobrar(o)),busy:'Registrando cobro…',run:async()=>{if(efectivo(o)){const v=Number(String(draft(id)).replace(',','.'));if(!(v>0)){error='Escribe con cuánto te paga el cliente.';return}}await correr('confirmPayment',id)}};
+      else m.cta={label:'Ya cobré '+M(aCobrar(o)),busy:'Registrando cobro…',run:async()=>{if(efectivo(o)){const v=Number(String(draft(id)).replace(',','.'));if(!(v>0)){error='Escribe con cuánto te paga el cliente.';return}}if(yape(o)&&window.PdYapeP){const f=PdYapeP.falta(o);if(f){error=f;return}try{await PdYapeP.guardar(o)}catch(e){error=e.message||String(e);return}}await correr('confirmPayment',id)}};
     }
     else if(e===4)m.cta={label:t==='enc'?'Terminar encomienda':'Finalizar entrega',green:true,busy:'Finalizando…',run:()=>correr('deliverOrder',id)};
     if(e>=1&&typeof window.pdReportarProblema==='function')m.alt=[{label:'Tengo un problema',run:()=>window.pdReportarProblema(id)}];
@@ -458,6 +460,7 @@
       cash:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick[data-act="quick"] button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
       quick:(box,ev)=>{const b=ev.target.closest('[data-v]');if(!b)return;error='';setDraft(id,b.dataset.v);const inp=box.getRootNode().querySelector('[data-act="cash"]');if(inp){inp.value=b.dataset.v;inp.dispatchEvent(new Event('input'))}}
     };
+    if(window.PdYapeP)Object.assign(m.acts,PdYapeP.acts(o));
     if(t==='enc')grupos(o).forEach((g,gi)=>{
       m.acts['lleg'+gi]=async b=>{if(b.disabled)return;b.disabled=true;await llegarAgencia(o,gi);PdPasos.render()};
       m.acts['cj'+gi]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d['cj'+gi]=inp.value;const box=inp.parentElement&&inp.parentElement.previousElementSibling,v=Number(inp.value.replace(',','.'))||0;if(box&&box.classList.contains('amt'))box.querySelector('.n').textContent=v?M(v):'S/ —'};

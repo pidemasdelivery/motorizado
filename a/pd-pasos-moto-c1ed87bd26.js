@@ -116,6 +116,7 @@
         const ye=o.yape_negocio_estado||'';
         if(qn&&qn.negocio)h+=ye==='esperando'?U.st('Esperando que el negocio confirme si le llegó el Yape…'):ye==='llego'?U.st('El negocio confirmó el Yape','ok'):ye==='no_llego'?U.st('Al negocio no le llegó el Yape. Pide al cliente que revise y vuelve a deslizar.','mal'):'';
         h+=U.note('Confirma solo cuando veas la constancia del pago en el celular del cliente.');
+        if(!(qn&&qn.negocio))h+=(window.PdYapeP?PdYapeP.html(o):'');
       }else{
         const v=draft(o.id);const tot=monto;const vals=[];[10,20,50,100,200].forEach(x=>{const r=Math.ceil(tot/x)*x;if(r>tot+0.004&&!vals.includes(r))vals.push(r)});
         h+=`<div><div class="lbl">¿Con cuánto paga?</div><input class="inp" data-act="cash" inputmode="decimal" placeholder="${M(tot)}" value="${E(v)}"></div>`+
@@ -146,6 +147,7 @@
       if(qn&&qn.negocio&&o.yape_negocio_estado==='esperando')m.cta={label:'Esperando al negocio…',off:true,hint:'Te avisamos apenas confirme si le llegó el Yape'};
       else m.cta={label:'Ya cobré '+M(aCobrar(o)),busy:'Registrando cobro…',run:async()=>{
         if(efectivo(o)){const v=Number(String(draft(id)).replace(',','.'));if(!(v>0)){error='Escribe con cuánto te paga el cliente.';return}}
+        if(yape(o)&&!(qn&&qn.negocio)&&window.PdYapeP){const f=PdYapeP.falta(o);if(f){error=f;return}try{await PdYapeP.guardar(o)}catch(e){error=e.message||String(e);return}}
         await correr('confirmPayment',id)}};
     }
     else if(e===4)m.cta={label:'Finalizar entrega',green:true,busy:'Verificando…',run:()=>correr('deliverOrder',id)};
@@ -154,6 +156,7 @@
       cash:(inp)=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
       quick:(box,ev)=>{const b=ev.target.closest('[data-v]');if(!b)return;error='';setDraft(id,b.dataset.v);const inp=box.getRootNode().querySelector('[data-act="cash"]');if(inp){inp.value=b.dataset.v;inp.dispatchEvent(new Event('input'))}}
     };
+    if(window.PdYapeP)Object.assign(m.acts,PdYapeP.acts(o));
     memo.__ultimo=m;memo.__t=Date.now();
     return m;
   }
