@@ -71,6 +71,16 @@
     Object.assign(o,patch);return completo(o);
   }
   const abrirWa=url=>{if(typeof window.pdOpenWhatsApp==='function')window.pdOpenWhatsApp(url);else window.open(url,'_blank')};
+  /* marca un punto de recojo adicional como recogido */
+  async function marcarPunto(o,n){
+    error='';info='';
+    if(!(await pdConfirmar('¿Ya recogiste en el punto '+n+'?')))return;
+    const lista=(Array.isArray(o.puntos_recojo)?o.puntos_recojo:[]).map(x=>Number(x.n)===n?Object.assign({},x,{recogido_en:new Date().toISOString()}):x);
+    const {data,error:e}=await D().from('pedidos').update({puntos_recojo:lista}).eq('id',o.id).eq('motorizado_id',ME().id).select('id').maybeSingle();
+    if(e||!data){error='No se pudo marcar el punto '+n+': '+(e?e.message:'Supabase no confirmó el cambio.');return}
+    o.puntos_recojo=lista;const f=lista.filter(x=>!x.recogido_en).length;info=f?'Punto '+n+' recogido. Te falta'+(f===1?'':'n')+' '+f+'.':'Recogiste en todos los puntos. Ya puedes ir a entregar.';
+    try{await loadOrders()}catch(_){}
+  }
   /* Guía de encomienda: la foto se sube a Supabase y la clave queda guardada en el pedido */
   function achicar(file){return new Promise(res=>{try{const u=URL.createObjectURL(file),img=new Image();
     img.onload=()=>{try{const max=1600,r=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
@@ -248,6 +258,8 @@
     const S=k=>steps[etapaDe.indexOf(k)];
     if(efectivo(o)&&!draft(o.id)&&pagaCon(o)>0&&!sinMonto(o))setDraft(o.id,String(pagaCon(o)));
     const msg=(info?U.st(E(info),'ok'):'');
+    /* recojo y entrega con varios puntos de recojo (el punto 1 es quien envía) */
+    const PR=t==='recojo'&&Array.isArray(o.puntos_recojo)?o.puntos_recojo.filter(Boolean):[],prFalta=PR.filter(x=>!x.recogido_en).length;
 
     /* 1 · Recoger / comprar */
     {const s=S(1);
@@ -268,6 +280,12 @@
         s.sum=remN+(o.direccion_recojo?' · '+o.direccion_recojo:'');
         let h=U.who(remN,(t==='enc'?'Quien envía':'Recoges aquí')+' · pedido '+E(U.ref(id))+(o.recojo_a_nombre?`<div style="margin-top:2px">A nombre de <b style="color:#1F1A17">${E(o.recojo_a_nombre)}</b></div>`:''),'',true)+U.addr(o.direccion_recojo,o.referencia_recojo)+
           U.contact(U.maps(o.latitud_recojo,o.longitud_recojo,o.direccion_recojo,link(x.ubicacionRecojo||o.ubicacion_recojo||o.link_recojo)),remT,'Hola, soy el motorizado de Pidemás por el pedido '+U.ref(id)+'.');
+        if(PR.length){h=h.replace('Recoges aquí · pedido','Punto 1 de '+(PR.length+1)+' · recoges aquí · pedido');
+          PR.forEach(x=>{const ok=!!x.recogido_en,msgW='Hola'+(x.nombre?' '+String(x.nombre).split(' ')[0]:'')+', soy el motorizado de Pidemás. Voy a recoger el pedido '+U.ref(id)+'.';
+            h+=`<div class="sum" style="gap:10px"><div class="lbl">Punto ${E(x.n)} de ${PR.length+1}${ok?' · recogido '+E(U.hora(x.recogido_en)):''}</div>`+
+              U.who(x.nombre||'Punto '+x.n,'Recoges aquí'+(x.que?' · '+E(x.que):''),'',true)+U.addr(x.direccion,x.referencia)+
+              U.contact(U.maps(x.lat,x.lng,x.direccion,link(x.ubicacion)),x.telefono,msgW)+
+              (e===1?(ok?U.st('Recogido aquí','ok'):`<button type="button" class="b o" data-act="pt${x.n}">Ya recogí en el punto ${E(x.n)}</button>`):'')+`</div>`});}
         if(t==='recojo'){const n=String(notas(o)||'').split(/\s*·\s*/).filter(z=>z&&!/^(Pago en efectivo|Pago por Yape|Paga quien|Servicio marcado como PAGADO|Pedido a nombre de)/i.test(z)).join(' · ');if(n)h+=`<div class="sum"><div class="lbl">Notas del servicio</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(n)}</div></div>`}
         if(t==='enc')h+=`<div class="sum"><div class="lbl">Paquetes</div>${paquetes(o).map(p=>`<div class="li"><span>${p.numero} · ${E([p.agencia,p.destino].filter(Boolean).join(' → ')||'—')}</span><b>${p.tipoPago==='pago_en_agencia'?'Pago en agencia':'Pago a destino'}</b></div>`).join('')}</div>`;
         s.body=msg+avisoVuelto(o,aCobrar(o),false)+h;
@@ -338,7 +356,8 @@
     else if(e===1){
       if(cobroRecPend(o)){const modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');m.cta={label:modo==='yape'?'Ya pagó por Yape · '+M(o.total):'Ya cobré '+M(o.total),busy:'Registrando cobro…',run:()=>cobrarAlRecoger(o)}}
       else if(t==='compra'&&sinMonto(o))m.cta={label:'Registrar compra',busy:'Registrando…',run:()=>registrarCompra(o)};
-      else m.cta={label:t==='enc'?'Recogí los paquetes':t==='compra'?'Compra lista · voy al cliente':'Ya recogí el pedido',run:()=>correr('startOrder',id)};
+      else if(prFalta)m.cta={label:'Ya recogí todo',off:true,hint:'Te falta marcar '+prFalta+' punto'+(prFalta===1?'':'s')+' de recojo'};
+      else m.cta={label:t==='enc'?'Recogí los paquetes':t==='compra'?'Compra lista · voy al cliente':PR.length?'Ya recogí todo · voy a entregar':'Ya recogí el pedido',run:()=>correr('startOrder',id)};
     }
     else if(e===2)m.cta=t==='enc'?{label:'Llegué a la agencia',run:()=>correr('confirmEncomiendaAgency',id)}:{label:'Llegué donde el cliente',run:()=>correr('markInDelivery',id)};
     else if(e===3){
@@ -357,6 +376,7 @@
       cash:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick[data-act="quick"] button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
       quick:(box,ev)=>{const b=ev.target.closest('[data-v]');if(!b)return;error='';setDraft(id,b.dataset.v);const inp=box.getRootNode().querySelector('[data-act="cash"]');if(inp){inp.value=b.dataset.v;inp.dispatchEvent(new Event('input'))}}
     };
+    PR.forEach(x=>{m.acts['pt'+x.n]=async b=>{if(b.disabled)return;b.disabled=true;await marcarPunto(o,x.n);PdPasos.render()}});
     if(t==='enc')paquetes(o).forEach(p=>{const n=p.numero,k=()=>d.pk[n]||(d.pk[n]={});
       m.acts['shot'+n]=b=>{const f=b.getRootNode().querySelector('[data-act="file'+n+'"]');if(f)f.click()};
       m.acts['file'+n]=inp=>{const f=inp.files&&inp.files[0];if(!f)return;const z=k();z.file=f;try{z.url=URL.createObjectURL(f)}catch(_){}PdPasos.render()};
