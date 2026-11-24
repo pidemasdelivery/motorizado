@@ -384,8 +384,10 @@
         orden.forEach(({g:gr,gi})=>{const pr=procDe(o,gr),lleg=!!(pr&&pr.llegada_en)||(gi===0&&enAgencia(o)&&!arr(o.agencias_proceso).length),listo=grupoListo(o,gr,gi);
           const tit=(GR.length>1?'Agencia '+(gi+1)+' · ':'')+E(gr.agencia||'Agencia');
           if(listo){h+=`<div class="sum"><div class="li"><span>${tit}</span><b style="color:#15803D">Lista ✓</b></div>${pagadoTxt(o,gr,gi)}</div>`+gr.paquetes.map(p=>guiaPkg(p,g)).join('');return}
+          /* La siguiente agencia solo aparece cuando la actual ya está pagada y con sus guías y claves enviadas */
+          if(!lleg&&act&&!fin)return;
           if(!lleg){h+=`<div class="sum" style="gap:10px"><div class="lbl">Siguiente agencia</div><b style="font-size:18px">${tit}</b>${gr.paquetes.map(pkgHtml).join('')}${agBotones(o,[gr.agencia])}`+
-            (fin?'':act?U.note('Primero termina en '+E(act.g.agencia)+'.'):`<button type="button" class="b o" data-act="lleg${gi}">Llegué a ${E(gr.agencia||'esta agencia')}</button>`)+`</div>`;return}
+            (fin?'':`<button type="button" class="b o" data-act="lleg${gi}">Llegué a ${E(gr.agencia||'esta agencia')}</button>`)+`</div>`;return}
           h+=`<div class="sum" style="gap:10px;border-color:#C4410C"><div class="lbl" style="color:#9A330A">Estás en esta agencia</div><b style="font-size:18px">${tit}</b></div>`;
           const debe=gr.paquetes.some(p=>p.tipoPago==='pago_en_agencia'),pagado=grupoPagado(o,gr,gi);
           if(debe&&!pagado&&!fin){const v=d['cj'+gi]||'';
