@@ -10,7 +10,7 @@
    const overlay=$('pidemasSuspendedScreen');if(overlay){overlay.classList.toggle('ps-otraCuenta',tipo==='rol');overlay.style.display='flex'}
    if(tipo==='rol'){
      /* No es una suspensión: entró con una cuenta que no es de motorizado (negocio, administrador o cliente) */
-     const nombres={negocio:'de negocio',admin:'de administrador',administrador:'de administrador',cliente:'de cliente'};
+     const nombres={negocio:'de negocio',admin:'de Pidemás',administrador:'de Pidemás',cliente:'de cliente'};
      const pill=document.querySelector('#pidemasSuspendedScreen .ps-pill'),h=$('pidemasSuspendedTitle'),pp=document.querySelector('#pidemasSuspendedScreen .ps-card > p'),out=$('pidemasSuspendedLogout');
      if(pill)pill.textContent='Cuenta '+(nombres[rol]||'sin acceso');
      if(h)h.textContent='Esta cuenta no es de motorizado';

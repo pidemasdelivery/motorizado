@@ -30,7 +30,7 @@ window.PdCaja=window.PdCaja||(function(){
     if(pay){const rest=raw.replace(RX_PAY,'').trim();return (pay[1].toLowerCase()==='compra'?'Compra':'Encomienda')+(rest?' · '+rest:'')}
     const d=raw
       .replace(/^(INGRESO MANUAL DE CAJA|INGRESO DE ADMINISTRADOR|GASTO MANUAL|COBRO DE PEDIDO|LIQUIDACI[ÓO]N DE CAJA|REINICIO DE CAJA|ENTREGA PARCIAL DE CAJA)\s*[·:—-]?\s*/i,'').trim();
-    return d||LABEL[kind(m)];
+    return String(d||LABEL[kind(m)]).replace(/\(administraci[oó]n\)/gi,'(Pidemás)').replace(/\bal administrador\b/gi,'a Pidemás').replace(/administraci[oó]n|administrador(a)?/gi,'Pidemás');
   }
   
 
