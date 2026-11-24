@@ -36,8 +36,8 @@
     const get=(...ls)=>{for(const l of ls){const x=l.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const m=raw.match(new RegExp('(?:^|[|]\\s*)'+x+'\\s*:\\s*([^|]*)','i'));if(m&&m[1].trim())return m[1].trim()}return ''};
     const ubi=get('Ubicación','Ubicación del cliente');
     return {url:(String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').match(/https?:\/\/\S+/)||[''])[0],lugar:String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').replace(/https?:\/\/\S+/g,'').replace(/[\s·,|-]+$/,'').trim(),detalle:get('Compra solicitada','¿Qué desea que compremos?'),
-      comp:get('Comprobante'),doc:get('DNI/RUC'),ubi:link(ubi),
-      obs:raw.split('|').flatMap(x=>x.split('·')).map(x=>x.trim()).filter(x=>x&&!/^(Ubicación(?: del cliente)?|Compra solicitada|Comprobante|DNI\/RUC|Lugar de compra|¿De dónde desea la compra\?|¿Qué desea que compremos\?)\s*:/i.test(x)&&!/^(Servicio marcado como PAGADO|Pago en efectivo|Pago por Yape|Paga quien|Pedido a nombre de)/i.test(x)).join(' · ')};
+      comp:get('Comprobante'),doc:get('DNI/RUC'),cnom:get('Nombre comprobante'),craz:get('Razón social'),cdir:get('Dirección fiscal'),ubi:link(ubi),
+      obs:raw.split('|').flatMap(x=>x.split('·')).map(x=>x.trim()).filter(x=>x&&!/^(Ubicación(?: del cliente)?|Compra solicitada|Comprobante|DNI\/RUC|Nombre comprobante|Razón social|Dirección fiscal|Lugar de compra|¿De dónde desea la compra\?|¿Qué desea que compremos\?)\s*:/i.test(x)&&!/^(Servicio marcado como PAGADO|Pago en efectivo|Pago por Yape|Paga quien|Pedido a nombre de)/i.test(x)).join(' · ')};
   }
   function notas(o){const x=extra(o);let n=String(x.clean||'');try{if(typeof cleanDeliveryTariffFromObservaciones==='function')n=cleanDeliveryTariffFromObservaciones(n)}catch(_){}
     try{if(typeof window.pdLimpiarNotas==='function')n=window.pdLimpiarNotas(n)}catch(_){}
@@ -335,7 +335,7 @@
         /* lugar de compra junto con su ubicación; el cliente (llamar / WhatsApp) va aparte */
         let h=U.who(cp.lugar||'Lugar no indicado','Compra aquí · pedido '+E(U.ref(id)),'')+
           `<a class="b o" style="display:flex;width:100%;box-sizing:border-box;justify-content:center${mapaLugar?'':';opacity:.45;pointer-events:none'}"${mapaLugar?` href="${E(mapaLugar)}" target="_blank" rel="noopener"`:' aria-disabled="true"'}>${U.I.nav||''}Ir al lugar de compra</a>`+
-          `<div class="sum"><div class="lbl">Qué comprar</div><div style="font-size:15px;line-height:1.5;white-space:pre-line;color:#1F1A17;overflow-wrap:anywhere">${E(cp.detalle||'—')}</div></div>`+(cp.comp||cp.doc?`<div class="sum"><div class="lbl">Comprobante</div>${cp.comp?`<div class="li"><span>Tipo</span><b>${E(cp.comp)}</b></div>`:''}${cp.doc?`<div class="li"><span>DNI/RUC</span><b>${E(cp.doc)}</b></div>`:''}</div>`:'')+
+          `<div class="sum"><div class="lbl">Qué comprar</div><div style="font-size:15px;line-height:1.5;white-space:pre-line;color:#1F1A17;overflow-wrap:anywhere">${E(cp.detalle||'—')}</div></div>`+(cp.comp||cp.doc?`<div class="sum"><div class="lbl">Comprobante</div>${cp.comp?`<div class="li"><span>Tipo</span><b>${E(cp.comp)}</b></div>`:''}${cp.doc?`<div class="li"><span>${/factura/i.test(cp.comp||'')?'RUC':'DNI'}</span><b>${E(cp.doc)}</b></div>`:''}${cp.cnom?`<div class="li"><span>Nombre</span><b>${E(cp.cnom)}</b></div>`:''}${cp.craz?`<div class="li"><span>Razón social</span><b>${E(cp.craz)}</b></div>`:''}${cp.cdir?`<div class="li"><span>Dirección fiscal</span><b>${E(cp.cdir)}</b></div>`:''}</div>`:'')+
           (cp.obs?U.note(E(cp.obs)):'')+
           `<div class="sum"><div class="lbl">Cliente</div>`+U.who(remN,'Quien pide la compra','',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`;
         if(e>=1&&e<9){const sv=servicio(o);
