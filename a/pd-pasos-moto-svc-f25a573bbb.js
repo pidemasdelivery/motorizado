@@ -76,15 +76,12 @@
   const abrirWa=url=>{if(typeof window.pdOpenWhatsApp==='function')window.pdOpenWhatsApp(url);else window.open(url,'_blank')};
   /* ---------- Encomiendas con varios paquetes y agencias ---------- */
   const pagoTx=t=>t==='pago_en_agencia'?'Pago en agencia':t==='pago_a_destino'?'Pago a destino':'Pago: '+(t||'—');
-  function pkgHtml(p){
-    return `<div style="display:flex;flex-direction:column;gap:4px;padding:6px 0"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b style="font-size:16px">Paquete ${p.numero}</b>`+
-      `<span style="flex:0 0 auto;font-size:13px;font-weight:800;padding:4px 10px;border-radius:999px;background:${p.tipoPago==='pago_en_agencia'?'#FDEBDF;color:#9A330A':'#E9F6EE;color:#0F5E2E'}">${pagoTx(p.tipoPago)}</span></div>`+
-      `<span style="font-size:15px;color:#1F1A17">${E(p.agencia||'Agencia')} → ${E(p.destino||'—')}</span>`+
-      (()=>{const row=(k,v)=>`<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:6px 0;border-top:1px solid #F1E4DA"><span style="font-size:14px;color:#6B5E55">${k}</span><b style="font-size:15px;color:#1F1A17;text-align:right;overflow-wrap:anywhere">${v}</b></div>`;
-        const tel=String(p.recibeTel||'').replace(/\D/g,'');
-        return `<div style="margin-top:6px;padding:4px 12px 6px;border-radius:12px;background:#FFFAF6;border:1px solid #F1E4DA"><div style="font-size:12px;font-weight:800;letter-spacing:.06em;color:#9A330A;padding:6px 0 4px">QUIEN RECIBE</div>`+
-          row('Nombre',E(p.recibe||'—'))+row('DNI',E(p.recibeDni||'—'))+row('Número',tel?`<a href="tel:${E(tel)}" style="color:#C4410C;text-decoration:none">${E(p.recibeTel)}</a>`:'—')+`</div>`})()+`</div>`;
-  }
+  /* paquete con el mismo diseño del Admin: filas Ruta, Pago del envío, Recibe · nombre, DNI y Número */
+  function pkgRows(p){const li=(k,v)=>`<div class="li"><span>${k}</span><b style="text-align:right;overflow-wrap:anywhere">${v}</b></div>`,tel=String(p.recibeTel||'').replace(/\D/g,'');
+    return `<div class="lbl">Paquete ${p.numero}</div>`+li('Ruta',E([p.agencia,p.destino].filter(Boolean).join(' → ')||'—'))+li('Pago del envío',E(pagoTx(p.tipoPago)))+
+      li('Recibe · nombre',E(p.recibe||'—'))+li('DNI',E(p.recibeDni||'—'))+li('Número',tel?`<a href="tel:${E(tel)}" style="color:inherit;text-decoration:none">${E(p.recibeTel)}</a>`:'—')}
+  function pkgHtml(p){return `<div class="sum">${pkgRows(p)}</div>`}
+
   const claveAg=n=>String(n||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
   function grupos(o){const out=[];paquetes(o).forEach(p=>{const k=claveAg(p.agencia);let g=out.find(x=>x.clave===k);if(!g)out.push(g={clave:k,agencia:p.agencia,paquetes:[]});g.paquetes.push(p)});return out}
   const procDe=(o,g)=>arr(o.agencias_proceso).find(x=>claveAg(x.agencia)===g.clave);
@@ -353,7 +350,7 @@
               U.contact(U.maps(x.lat,x.lng,x.direccion,link(x.ubicacion)),x.telefono,msgW)+
               (e===1?(ok?U.st('Recogido aquí','ok'):`<button type="button" class="b o" data-act="pt${x.n}">Ya recogí en el punto ${E(x.n)}</button>`):'')+`</div>`});}
         if(t==='recojo'){const n=String(notas(o)||'').split(/\s*·\s*/).filter(z=>z&&!/^(Pago en efectivo|Pago por Yape|Paga quien|Servicio marcado como PAGADO|Pedido a nombre de)/i.test(z)).join(' · ');if(n)h+=`<div class="sum"><div class="lbl">Notas del servicio</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(n)}</div></div>`}
-        if(t==='enc')h+=`<div class="sum"><div class="lbl">Paquetes</div>${paquetes(o).map(pkgHtml).join('<div style="height:1px;background:#F1E4DA"></div>')}</div>`;
+        if(t==='enc')h+=paquetes(o).map(pkgHtml).join('');
         s.body=msg+avisoVuelto(o,aCobrar(o),false)+h;
       }
       if(e>=1&&cobroRecPend(o))s.body+=bloqueCobroRec(o);
@@ -369,7 +366,7 @@
         let h=msg;
         if(GR.length>1)h+=U.note('Tienes <b>'+GR.length+' agencias</b>. Elige a cuál vas primero: toca «Llegué» en la agencia donde estés y haces todo ahí (pago y guías). Luego vas a la siguiente.');
         h+=GR.map((g,gi)=>`<div class="sum" style="gap:10px"><div class="lbl">${GR.length>1?'Agencia '+(gi+1)+' de '+GR.length:'Agencia'}</div><b style="font-size:18px">${E(g.agencia||'Agencia')}</b>`+
-          g.paquetes.map(pkgHtml).join('<div style="height:1px;background:#F1E4DA"></div>')+agBotones(o,[g.agencia])+
+          g.paquetes.map(pkgRows).join('<div style="height:1px;background:#F1E4DA;margin:4px 0"></div>')+agBotones(o,[g.agencia])+
           (e===2&&GR.length>1?`<button type="button" class="b o" data-act="lleg${gi}">Llegué a ${E(g.agencia||'esta agencia')}</button>`:'')+`</div>`).join('');
         s.body=h;}
       /* 3 · Guía y clave: agencia por agencia (pago de esa agencia y guías de sus paquetes) */
@@ -399,7 +396,7 @@
           if(listo){h+=`<div class="sum"><div class="li"><span>${tit}</span><b style="color:#15803D">Lista ✓</b></div>${pagadoTxt(o,gr,gi)}</div>`+gr.paquetes.map(p=>guiaPkg(p,g)).join('');return}
           /* La siguiente agencia solo aparece cuando la actual ya está pagada y con sus guías y claves enviadas */
           if(!lleg&&act&&!fin)return;
-          if(!lleg){h+=`<div class="sum" style="gap:10px"><div class="lbl">Siguiente agencia</div><b style="font-size:18px">${tit}</b>${gr.paquetes.map(pkgHtml).join('')}${agBotones(o,[gr.agencia])}`+
+          if(!lleg){h+=`<div class="sum" style="gap:10px"><div class="lbl">Siguiente agencia</div><b style="font-size:18px">${tit}</b>${gr.paquetes.map(pkgRows).join('<div style="height:1px;background:#F1E4DA;margin:4px 0"></div>')}${agBotones(o,[gr.agencia])}`+
             (fin?'':`<button type="button" class="b o" data-act="lleg${gi}">Llegué a ${E(gr.agencia||'esta agencia')}</button>`)+`</div>`;return}
           h+=`<div class="sum" style="gap:10px;border-color:#C4410C"><div class="lbl" style="color:#9A330A">Estás en esta agencia</div><b style="font-size:18px">${tit}</b></div>`;
           const debe=gr.paquetes.some(p=>p.tipoPago==='pago_en_agencia'),pagado=grupoPagado(o,gr,gi);
