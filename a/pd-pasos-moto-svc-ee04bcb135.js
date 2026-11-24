@@ -542,6 +542,16 @@
         s.body=msg+(cobro?U.st('Cobrado '+M(aCobrar(o))+' · '+(yape(o)?'Yape':'Efectivo'),'ok'):U.st(alFinal(o)?'No cobras: el cliente le paga al final a Pidemás.':alRecoger(o)||prepago(o)?'Ya está pagado: no cobres nada.':'No hay nada que cobrar.','ok'))+U.note('Entrega el pedido a '+E(recN)+' y confirma.')+rapidos(o,'rec',3);}
     }
 
+    /* no se puede deslizar si falta el monto que se necesita (se actualiza mientras escribe) */
+    const nn=v=>Number(String(v??'').trim().replace(',','.'));
+    const faltaY=()=>yape(o)&&window.PdYapeP?PdYapeP.falta(o):'';
+    const okAg=gi=>{const g=grupos(o)[gi];if(!g)return true;const pp=g.paquetes.filter(p=>p.tipoPago==='pago_en_agencia');return pp.length>1?pp.every(p=>nn(d['cp'+gi+'_'+p.numero])>0):nn(d['cj'+gi])>0};
+    const okCash=()=>{if(!efectivo(o))return !faltaY();const v=nn(draft(id));return v>0&&v+0.004>=aCobrar(o)};
+    const hCash=()=>{if(!efectivo(o))return faltaY()||'';const v=nn(draft(id));return !(v>0)?'Escribe con cuánto te paga el cliente':v+0.004<aCobrar(o)?'El cliente debe pagar al menos '+M(aCobrar(o)):''};
+    const modoR=()=>d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');
+    const okRec=()=>{if(modoR()!=='efectivo')return !(window.PdYapeP&&PdYapeP.falta(o));const raw=String(d.monto||'').trim();return !raw||nn(raw)+0.004>=Number(o.total)};
+    const hRec=()=>modoR()!=='efectivo'?((window.PdYapeP&&PdYapeP.falta(o))||''):okRec()?'':'El cliente debe pagar al menos '+M(o.total);
+    const vivo=(el,ok,hint)=>{try{const r=el.getRootNode(),sl=r.querySelector('.sl');if(sl){sl.classList.toggle('off',!ok);sl.setAttribute('aria-disabled',String(!ok))}const h=sl&&sl.nextElementSibling;if(h&&h.classList.contains('hint'))h.textContent=ok?'Desliza hacia la derecha para avanzar':hint}catch(_){}};
     const m={kicker:NOM+' · '+U.ref(id),steps,err:error,acts:{}};
     if(e===-1){m.title='Pedido cancelado';m.chip='Cancelado';m.chipCls='mal';steps.forEach(s=>s.state='locked');m.fin={mal:true,title:'Este pedido fue cancelado',text:o.motivo_cancelacion||'Ya no tienes que hacer nada con él.'};return m}
     if(e>=9){m.title='Entregado';m.chip='Listo';m.chipCls='ok';m.fin={title:t==='enc'?'¡Encomienda terminada!':'¡Pedido entregado!',text:o.entregado_en?'Terminado a las '+U.hora(o.entregado_en)+'.':''};return m}
@@ -550,7 +560,7 @@
     m.chip=e===0?'Nuevo':'Paso '+actual+' de '+steps.length;
     if(e===0){m.cta={label:'Aceptar pedido',run:()=>correr('acceptOrder',id)};m.alt=[{label:'Rechazar pedido',mal:true,run:()=>correr('rejectOrder',id)}]}
     else if(e===1){
-      if(cobroRecPend(o)){const modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');m.cta={label:modo==='yape'?'Ya pagó por Yape · '+M(o.total):'Ya cobré '+M(o.total),busy:'Registrando cobro…',run:()=>cobrarAlRecoger(o)}}
+      if(cobroRecPend(o)){const modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');m.cta={label:modo==='yape'?'Ya pagó por Yape · '+M(o.total):'Ya cobré '+M(o.total),get off(){return !okRec()},get hint(){return hRec()},busy:'Registrando cobro…',run:()=>cobrarAlRecoger(o)}}
       else if(t==='compra'&&sinMonto(o)&&sumaLugares(o)==null)m.cta={label:'Registrar compra',off:true,hint:lugaresCompra(o).length>1?'Guarda lo que gastaste en cada lugar':'Escribe cuánto gastaste y toca «Guardar»'};
       else if(t==='compra'&&sinMonto(o))m.cta={label:'Registrar compra · '+M(sumaLugares(o)),busy:'Registrando…',run:()=>registrarCompra(o)};
       else if(prFalta)m.cta={label:'Ya recogí todo',off:true,hint:dr(o.id).ptAct?'Marca «Ya recogí» en el punto donde estás':'Toca «Llegué» en el punto de recojo donde estés'};
@@ -558,9 +568,9 @@
     }
     else if(e===2)m.cta=t==='enc'?(grupos(o).length>1?{label:'Llegué a la agencia',off:true,hint:'Toca «Llegué» en la agencia a la que fuiste primero'}:{label:'Llegué a la agencia',busy:'Registrando…',run:()=>llegarAgencia(o,0)}):{label:'Llegué donde el cliente',run:()=>correr('markInDelivery',id)};
     else if(e===3){
-      if(t==='enc'){const a=agActual(o);m.cta=a&&!grupoPagado(o,a.g,a.gi)&&a.g.paquetes.some(p=>p.tipoPago==='pago_en_agencia')?{label:'Pagar envío en '+(a.g.agencia||'la agencia'),busy:'Registrando pago…',run:()=>pagarEnAgencia(o,a.gi)}
+      if(t==='enc'){const a=agActual(o);m.cta=a&&!grupoPagado(o,a.g,a.gi)&&a.g.paquetes.some(p=>p.tipoPago==='pago_en_agencia')?{label:'Pagar envío en '+(a.g.agencia||'la agencia'),get off(){return !okAg(a.gi)},get hint(){return okAg(a.gi)?'':'Escribe cuánto pagaste en '+(a.g.agencia||'la agencia')},busy:'Registrando pago…',run:()=>pagarEnAgencia(o,a.gi)}
           :{label:a?'Sube las guías de '+(a.g.agencia||'la agencia'):'Ve a la siguiente agencia',off:true,hint:a?'Toma la foto y escribe la clave de cada paquete, luego toca «Subir guía y clave»':'Toca «Llegué» cuando estés en la siguiente agencia'}}
-      else m.cta={label:'Ya cobré '+M(aCobrar(o)),busy:'Registrando cobro…',run:async()=>{if(efectivo(o)){const v=Number(String(draft(id)).replace(',','.'));if(!(v>0)){error='Escribe con cuánto te paga el cliente.';return}}if(yape(o)&&window.PdYapeP){const f=PdYapeP.falta(o);if(f){error=f;return}try{await PdYapeP.guardar(o)}catch(e){error=e.message||String(e);return}}await correr('confirmPayment',id)}};
+      else m.cta={label:'Ya cobré '+M(aCobrar(o)),get off(){return !okCash()},get hint(){return hCash()},busy:'Registrando cobro…',run:async()=>{if(efectivo(o)){const v=Number(String(draft(id)).replace(',','.'));if(!(v>0)){error='Escribe con cuánto te paga el cliente.';return}}if(yape(o)&&window.PdYapeP){const f=PdYapeP.falta(o);if(f){error=f;return}try{await PdYapeP.guardar(o)}catch(e){error=e.message||String(e);return}}await correr('confirmPayment',id)}};
     }
     else if(e===4)m.cta={label:t==='enc'?'Terminar encomienda':'Finalizar entrega',green:true,busy:'Finalizando…',run:()=>correr('deliverOrder',id)};
     if(e>=1&&typeof window.pdReportarProblema==='function')m.alt=[{label:'Tengo un problema',run:()=>window.pdReportarProblema(id)}];
@@ -569,11 +579,11 @@
       cpago:async(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b||b.classList.contains('on'))return;error='';try{await window.pdCambiarPago(o,b.dataset.m)}catch(e){error=String(e&&e.message||e)}PdPasos.render()},
       qr:()=>{if(typeof window.showYapeQr==='function')window.showYapeQr(id)},
       modo:(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b)return;d.modo=b.dataset.m;error='';PdPasos.render()},
-      rmonto:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.monto=inp.value;const n=inp.getRootNode().querySelector('[data-vr]');if(n)n.innerHTML=I_v(inp.value||o.total,Number(o.total));inp.getRootNode().querySelectorAll('.quick[data-act="rquick"] button').forEach(b=>b.classList.toggle('on',inp.value!==''&&Number(b.dataset.v)===Number(inp.value)))},
+      rmonto:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.monto=inp.value;const n=inp.getRootNode().querySelector('[data-vr]');if(n)n.innerHTML=I_v(inp.value||o.total,Number(o.total));inp.getRootNode().querySelectorAll('.quick[data-act="rquick"] button').forEach(b=>b.classList.toggle('on',inp.value!==''&&Number(b.dataset.v)===Number(inp.value)));vivo(inp,okRec(),hRec())},
       rquick:(box,ev)=>{const b=ev.target.closest('[data-v]');if(!b)return;error='';d.monto=b.dataset.v;const inp=box.getRootNode().querySelector('[data-act="rmonto"]');if(inp){inp.value=b.dataset.v;inp.dispatchEvent(new Event('input'))}},
       gasto:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');inp.style.width=(Math.max(3,inp.value.length||4)+0.6)+'ch';d.gasto=inp.value;const n=inp.getRootNode().querySelector('[data-gt] b');if(n)n.textContent=M((Number(inp.value.replace(',','.'))||0)+servicio(o))},
       caja:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.caja=inp.value;const n=inp.getRootNode().querySelector('.amt .n');if(n)n.textContent=M(Number(inp.value.replace(',','.'))||0)},
-      cash:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick[data-act="quick"] button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
+      cash:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick[data-act="quick"] button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)));vivo(inp,okCash(),hCash())},
       quick:(box,ev)=>{const b=ev.target.closest('[data-v]');if(!b)return;error='';setDraft(id,b.dataset.v);const inp=box.getRootNode().querySelector('[data-act="cash"]');if(inp){inp.value=b.dataset.v;inp.dispatchEvent(new Event('input'))}}
     };
     if(window.PdYapeP)Object.assign(m.acts,PdYapeP.acts(o));
@@ -589,9 +599,9 @@
       m.acts['agfix'+gi]=()=>{error='';info='';const pr=procDe(o,g)||{},pp=pr.pago_paquetes||{};d['fix'+gi]=1;d['cj'+gi]=String(pr.pago_monto||'');g.paquetes.forEach(p=>{if(pp[p.numero]!=null)d['cp'+gi+'_'+p.numero]=String(pp[p.numero])});PdPasos.render()};
       m.acts['agno'+gi]=()=>{delete d['fix'+gi];delete d['cj'+gi];g.paquetes.forEach(p=>delete d['cp'+gi+'_'+p.numero]);error='';PdPasos.render()};
       m.acts['agok'+gi]=async b=>{if(b.disabled)return;b.disabled=true;await corregirPagoAgencia(o,gi);PdPasos.render()};
-      m.acts['cj'+gi]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');inp.style.width=(Math.max(3,inp.value.length||4)+0.6)+'ch';d['cj'+gi]=inp.value;const box=inp.parentElement&&inp.parentElement.previousElementSibling,v=Number(inp.value.replace(',','.'))||0;if(box&&box.classList.contains('amt'))box.querySelector('.n').textContent=v?M(v):'S/ —'};
+      m.acts['cj'+gi]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');inp.style.width=(Math.max(3,inp.value.length||4)+0.6)+'ch';d['cj'+gi]=inp.value;const box=inp.parentElement&&inp.parentElement.previousElementSibling,v=Number(inp.value.replace(',','.'))||0;if(box&&box.classList.contains('amt'))box.querySelector('.n').textContent=v?M(v):'S/ —';vivo(inp,okAg(gi),'Escribe cuánto pagaste en '+(g.agencia||'la agencia'))};
       g.paquetes.forEach(p=>{m.acts['cp'+gi+'_'+p.numero]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d['cp'+gi+'_'+p.numero]=inp.value;
-        const t=g.paquetes.filter(y=>y.tipoPago==='pago_en_agencia').reduce((a,y)=>a+(Number(String(d['cp'+gi+'_'+y.numero]||'').replace(',','.'))||0),0);let b=inp.parentElement;while(b&&!(b.classList&&b.classList.contains('amt')))b=b.previousElementSibling;const n=b&&b.querySelector('.n');if(n)n.textContent=t?M(t):'S/ —'}});
+        const t=g.paquetes.filter(y=>y.tipoPago==='pago_en_agencia').reduce((a,y)=>a+(Number(String(d['cp'+gi+'_'+y.numero]||'').replace(',','.'))||0),0);let b=inp.parentElement;while(b&&!(b.classList&&b.classList.contains('amt')))b=b.previousElementSibling;const n=b&&b.querySelector('.n');if(n)n.textContent=t?M(t):'S/ —';vivo(inp,okAg(gi),'Escribe cuánto pagaste por cada paquete')}});
       m.acts['pg'+gi]=async b=>{if(b.disabled)return;b.disabled=true;await pagarEnAgencia(o,gi);PdPasos.render()};
     });
     PR.forEach(x=>{m.acts['pt'+x.n]=async b=>{if(b.disabled)return;b.disabled=true;await marcarPunto(o,x.n);if(!error)dr(o.id).ptAct=null;PdPasos.render()}});
