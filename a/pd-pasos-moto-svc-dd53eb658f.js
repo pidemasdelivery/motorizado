@@ -374,9 +374,10 @@
         let h=msg;const g=guardados(o),act=agActual(o),orden=gruposOrden(o);
           const guiaPkg=(p,g)=>{const sv=g.find(y=>Number(y.numero)===p.numero),ruta=E([p.agencia,p.destino].filter(Boolean).join(' → ')||'Paquete');
             if(pkgOk(sv)){const foto=sv.guia_url&&sv.guia_url!=='whatsapp'?sv.guia_url:'';
-              return `<div class="sum"><div class="li"><span>Paquete ${p.numero} · ${ruta}</span><b style="color:#15803D">${foto?'Guardado ✓':'Enviado por WhatsApp'}</b></div>`+
-                (foto?`<a href="${E(foto)}" target="_blank" rel="noopener"><img src="${E(foto)}" alt="Guía del paquete ${p.numero}" style="width:100%;max-height:180px;object-fit:cover;border-radius:12px;display:block"></a>`:'')+
-                `<div class="li"><span>Clave de recojo</span><b>${sv.sin_clave?'La agencia no dio clave':E(sv.clave||'—')}</b></div>`+
+              const li=(k,v,c)=>`<div class="li"><span>${k}</span><b style="text-align:right${c?';color:'+c:''}">${v}</b></div>`;
+              return `<div class="sum"><div class="lbl">Paquete ${p.numero} · ${ruta}</div><div style="display:flex;gap:12px;align-items:center">`+
+                (foto?`<a href="${E(foto)}" target="_blank" rel="noopener" style="flex:0 0 84px"><img src="${E(foto)}" alt="Guía del paquete ${p.numero}" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block"></a>`:'')+
+                `<div style="flex:1;min-width:0;display:flex;flex-direction:column">`+li('Clave',sv.sin_clave?'La agencia no dio clave':E(sv.clave||'—'))+li('Guía',foto?'Guardada ✓':'Por WhatsApp','#15803D')+`</div></div>`+
                 (foto&&!fin?`<button type="button" class="b" data-act="wa${p.numero}">Compartir también por WhatsApp (opcional)</button>`:'')+`</div>`}
             if(fin)return `<div class="sum"><div class="li"><span>Paquete ${p.numero} · ${ruta}</span><b>Sin guía</b></div></div>`;
             const k=d.pk[p.numero]||(d.pk[p.numero]={});
@@ -391,9 +392,10 @@
               <button type="button" class="b" style="color:#B42318;border-color:#F4C7C3" data-act="sin${p.numero}">La agencia no dio clave</button>`}
               <button type="button" class="b o" data-act="up${p.numero}"${k.subiendo?' disabled':''}>${k.subiendo?'Subiendo guía…':'Subir guía y clave'}</button></div>`};
 
+        const listas=[];
         orden.forEach(({g:gr,gi})=>{const pr=procDe(o,gr),lleg=!!(pr&&pr.llegada_en)||(gi===0&&enAgencia(o)&&!arr(o.agencias_proceso).length),listo=grupoListo(o,gr,gi);
           const tit=(GR.length>1?'Agencia '+(gi+1)+' · ':'')+E(gr.agencia||'Agencia');
-          if(listo){h+=`<div class="sum"><div class="li"><span>${tit}</span><b style="color:#15803D">Lista ✓</b></div>${pagadoTxt(o,gr,gi)}</div>`+gr.paquetes.map(p=>guiaPkg(p,g)).join('');return}
+          if(listo){h+=gr.paquetes.map(p=>guiaPkg(p,g)).join('');listas.push({gr,gi});return}
           /* La siguiente agencia solo aparece cuando la actual ya está pagada y con sus guías y claves enviadas */
           if(!lleg&&act&&!fin)return;
           if(!lleg){h+=`<div class="sum" style="gap:10px"><div class="lbl">Siguiente agencia</div><b style="font-size:18px">${tit}</b>${gr.paquetes.map(pkgRows).join('<div style="height:1px;background:#F1E4DA;margin:4px 0"></div>')}${agBotones(o,[gr.agencia])}`+
@@ -406,6 +408,12 @@
           if(debe)h+=pagadoTxt(o,gr,gi);
           h+=gr.paquetes.map(p=>guiaPkg(p,g)).join('');
         });
+        /* Pagos en agencias (igual que en el Admin): una fila por agencia lista con su monto y horas, y el total */
+        if(listas.length){let tot=0;const fila=({gr})=>{const pr=procDe(o,gr)||{},debe=gr.paquetes.some(p=>p.tipoPago==='pago_en_agencia'),m=debe&&pr.pago_en?Number(pr.pago_monto)||0:0;tot+=m;
+            const sub=['Paquete'+(gr.paquetes.length>1?'s ':' ')+gr.paquetes.map(p=>p.numero).join(', '),pr.llegada_en?'Llegó '+U.hora(pr.llegada_en):'',pr.pago_en?'Pagó '+U.hora(pr.pago_en):(debe?'':'Pago a destino')].filter(Boolean).join(' · ');
+            return `<div style="display:flex;flex-direction:column;gap:4px;padding:10px 0;border-top:1px solid #F1E4DA"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><b style="font-size:16px">${E(gr.agencia||'Agencia')}</b><b style="font-size:17px">${debe?M(m):'—'}</b></div><span style="font-size:13px;color:#6B5E55">${E(sub)}</span></div>`};
+          const filas=listas.map(fila).join('');
+          if(tot>0||listas.length>1)h+=`<div class="sum"><div class="lbl">Pagos en agencias</div>${filas}<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:10px;border-top:1.5px solid #E3CFC2"><b style="font-size:15px">Total pagado</b><b style="font-size:18px">${M(tot)}</b></div></div>`}
         if(!fin&&!completo(o))h+=U.note('La foto y la clave se guardan en el pedido y Pidemás las ve al instante.');
         s.body=h;}
       /* 4 · Terminar */
