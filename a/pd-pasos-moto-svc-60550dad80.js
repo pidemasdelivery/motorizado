@@ -38,7 +38,7 @@
     const ubi=get('Ubicación','Ubicación del cliente');
     return {url:(String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').match(/https?:\/\/\S+/)||[''])[0],lugar:String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').replace(/https?:\/\/\S+/g,'').replace(/[\s·,|-]+$/,'').trim(),detalle:get('Compra solicitada','¿Qué desea que compremos?'),
       comp:get('Comprobante'),doc:get('DNI/RUC'),cnom:get('Nombre comprobante'),craz:get('Razón social'),cdir:get('Dirección fiscal'),ubi:link(ubi),
-      obs:raw.split('|').flatMap(x=>x.split('·')).map(x=>x.trim()).filter(x=>x&&!/^(Ubicación(?: del cliente)?|Compra solicitada|Comprobante|DNI\/RUC|Nombre comprobante|Razón social|Dirección fiscal|Lugar de compra|¿De dónde desea la compra\?|¿Qué desea que compremos\?)\s*:/i.test(x)&&!/^(Servicio marcado como PAGADO|Pago en efectivo|Pago por Yape|Paga quien|Pedido a nombre de)/i.test(x)).join(' · ')};
+      obs:raw.split('|').flatMap(x=>x.split('·')).map(x=>x.trim()).filter(x=>x&&!/^(Ubicación(?: del cliente)?|Compra solicitada|Comprobante|DNI\/RUC|Nombre comprobante|Razón social|Dirección fiscal|Lugar de compra|¿De dónde desea la compra\?|¿Qué desea que compremos\?)\s*:/i.test(x)&&!/^(Servicio marcado como PAGADO|Pago en efectivo|Pago por Yape|Paga quien|Pedido a nombre de|El cliente paga al final)/i.test(x)).join(' · ')};
   }
   function notas(o){const x=extra(o);let n=String(x.clean||'');try{if(typeof cleanDeliveryTariffFromObservaciones==='function')n=cleanDeliveryTariffFromObservaciones(n)}catch(_){}
     try{if(typeof window.pdLimpiarNotas==='function')n=window.pdLimpiarNotas(n)}catch(_){}
@@ -141,11 +141,11 @@
   /* marca un punto de recojo adicional como recogido */
   async function marcarPunto(o,n){
     error='';info='';
-    const esC=tipo(o)==='compra';if(!(await pdConfirmar(esC?'¿Ya compraste en el sitio '+n+'?':'¿Ya recogiste en el punto '+n+'?')))return;
+    const esC=tipo(o)==='compra';if(!(await pdConfirmar(esC?'¿Ya compraste en el lugar '+n+'?':'¿Ya recogiste en el punto '+n+'?')))return;
     const lista=(Array.isArray(o.puntos_recojo)?o.puntos_recojo:[]).map(x=>Number(x.n)===n?Object.assign({},x,{recogido_en:new Date().toISOString()}):x);
     const {data,error:e}=await D().from('pedidos').update({puntos_recojo:lista}).eq('id',o.id).eq('motorizado_id',ME().id).select('id').maybeSingle();
     if(e||!data){error='No se pudo marcar el punto '+n+': '+(e?e.message:'Supabase no confirmó el cambio.');return}
-    o.puntos_recojo=lista;const f=lista.filter(x=>!x.recogido_en).length;info=esC?(f?'Sitio '+n+' listo. Te falta'+(f===1?'':'n')+' '+f+'.':'Ya compraste en los sitios adicionales. Registra cuánto gastaste en total.'):f?'Punto '+n+' recogido. Te falta'+(f===1?'':'n')+' '+f+'.':'Recogiste en todos los puntos. Ya puedes ir a entregar.';
+    o.puntos_recojo=lista;const f=lista.filter(x=>!x.recogido_en).length;info=esC?(f?'Lugar '+n+' listo. Te falta'+(f===1?'':'n')+' '+f+'.':'Ya compraste en los lugares adicionales. Registra cuánto gastaste en total.'):f?'Punto '+n+' recogido. Te falta'+(f===1?'':'n')+' '+f+'.':'Recogiste en todos los puntos. Ya puedes ir a entregar.';
     try{await loadOrders()}catch(_){}
   }
   /* Guía de encomienda: la foto se sube a Supabase y la clave queda guardada en el pedido */
@@ -342,18 +342,18 @@
         const irA=(u,l)=>`<a class="b o" style="display:flex;width:100%;box-sizing:border-box;justify-content:center${u?'':';opacity:.45;pointer-events:none'}"${u?` href="${E(u)}" target="_blank" rel="noopener"`:' aria-disabled="true"'}>${U.I.nav||''}${l}</a>`;
         const qComp=v=>`<div style="font-size:15px;line-height:1.5;white-space:pre-line;color:#1F1A17;overflow-wrap:anywhere">${E(v||'—')}</div>`;
         let h;
-        if(PR.length){/* compra en varios sitios: una tarjeta por sitio */
+        if(PR.length){/* compra en varios lugares: una tarjeta por lugar */
           const tot=PR.length+1,L=[{n:1,nombre:cp.lugar||'Lugar no indicado',que:cp.detalle,mapa:mapaLugar,recogido_en:e>1?'ok':d.p1||null}].concat(PR.map(q=>Object.assign({},q,{mapa:U.maps(q.lat,q.lng,q.nombre,link(q.ubicacion))})));
-          h=e===1&&L.filter(q=>!q.recogido_en).length>1?U.note('Tienes <b>'+tot+' sitios de compra</b>. Compra en cada uno y marca «Ya compré» al terminar ahí. Al final registra cuánto gastaste en total.'):'';
-          L.forEach(q=>{const ok=!!q.recogido_en;h+=`<div class="sum" style="gap:10px"><div class="lbl">Sitio ${q.n} de ${tot}${ok&&q.recogido_en!=='ok'&&q.n>1?' · comprado '+E(U.hora(q.recogido_en)):''}</div>`+U.who(q.nombre||'Sitio '+q.n,'Compra aquí'+(q.n===1?' · pedido '+E(U.ref(id)):''),'')+irA(q.mapa,'Ir al sitio '+q.n)+
-            `<div class="lbl" style="margin-top:4px">Qué comprar</div>`+qComp(q.que)+((q.n===1?cp.obs:q.obs)?`<div class="lbl" style="margin-top:4px">Observaciones</div>`+qComp(q.n===1?cp.obs:q.obs):'')+(ok?U.st('Comprado aquí','ok'):e===1&&!(Number(o.subtotal)>0)?`<button type="button" class="b o" data-act="pt${q.n}">Ya compré en el sitio ${q.n}</button>`:'')+`</div>`});
+          h=e===1&&L.filter(q=>!q.recogido_en).length>1?U.note('Tienes <b>'+tot+' lugares de compra</b>. Compra en cada uno y marca «Ya compré» al terminar ahí. Al final registra cuánto gastaste en total.'):'';
+          L.forEach(q=>{const ok=!!q.recogido_en;h+=`<div class="sum" style="gap:10px"><div class="lbl">Lugar ${q.n} de ${tot}${ok&&q.recogido_en!=='ok'&&q.n>1?' · comprado '+E(U.hora(q.recogido_en)):''}</div>`+U.who(q.nombre||'Lugar '+q.n,'Compra aquí'+(q.n===1?' · pedido '+E(U.ref(id)):''),'')+irA(q.mapa,'Ir al lugar '+q.n)+
+            `<div class="lbl" style="margin-top:4px">Qué comprar</div>`+qComp(q.que)+((q.n===1?cp.obs:q.obs)?`<div class="lbl" style="margin-top:4px">Observaciones</div>`+qComp(q.n===1?cp.obs:q.obs):'')+(ok?U.st('Comprado aquí','ok'):e===1&&!(Number(o.subtotal)>0)?`<button type="button" class="b o" data-act="pt${q.n}">Ya compré en el lugar ${q.n}</button>`:'')+`</div>`});
         }else h=U.who(cp.lugar||'Lugar no indicado','Compra aquí · pedido '+E(U.ref(id)),'')+irA(mapaLugar,'Ir al lugar de compra')+
           `<div class="sum"><div class="lbl">Qué comprar</div>${qComp(cp.detalle)}${cp.obs?`<div class="lbl" style="margin-top:4px">Observaciones</div>`+qComp(cp.obs):''}</div>`;
         h+=(cp.comp||cp.doc?`<div class="sum"><div class="lbl">Comprobante</div>${cp.comp?`<div class="li"><span>Tipo</span><b>${E(cap1(cp.comp))}</b></div>`:''}${cp.doc?`<div class="li"><span>${/factura/i.test(cp.comp||'')?'RUC':'DNI'}</span><b>${E(cp.doc)}</b></div>`:''}${cp.cnom?`<div class="li"><span>Nombre</span><b>${E(cp.cnom)}</b></div>`:''}${cp.craz?`<div class="li"><span>Razón social</span><b>${E(cp.craz)}</b></div>`:''}${cp.cdir?`<div class="li"><span>Dirección fiscal</span><b>${E(cp.cdir)}</b></div>`:''}</div>`:'')+
           `<div class="sum"><div class="lbl">Cliente</div>`+U.who(remN,'Quien pide la compra','',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`;
         if(e>=1&&e<9){const sv=servicio(o);
           if(Number(o.subtotal)>0)h+=U.st('Compra registrada · gastaste '+M(o.subtotal),'ok');/* los montos y el cobro se ven en el paso Cobrar */
-          else h+=`<div><div class="lbl">${PR.length?'¿Cuánto gastaste en total (todos los sitios)?':'¿Cuánto gastaste en la compra?'}</div><input class="inp" data-act="gasto" inputmode="decimal" placeholder="S/ 0.00" value="${E(d.gasto)}"></div><div class="note" data-gt>${U.I.info}<span>Sale de tu caja y se suma al cobro: cobrarás <b>${M((Number(d.gasto)||0)+sv)}</b> (servicio ${M(sv)}).</span></div>`}
+          else h+=`<div><div class="lbl">${PR.length?'¿Cuánto gastaste en total (todos los lugares)?':'¿Cuánto gastaste en la compra?'}</div><input class="inp" data-act="gasto" inputmode="decimal" placeholder="S/ 0.00" value="${E(d.gasto)}"></div><div class="note" data-gt>${U.I.info}<span>Sale de tu caja y se suma al cobro: cobrarás <b>${M((Number(d.gasto)||0)+sv)}</b> (servicio ${M(sv)}).</span></div>`}
         s.body=msg+avisoVuelto(o,aCobrar(o),sinMonto(o))+h;
       }else{
         s.sum=remN+(o.direccion_recojo?' · '+o.direccion_recojo:'');
@@ -393,7 +393,7 @@
         const dc=v=>String(v||'').replace(/https?:\/\/\S+/g,'').replace(/[\s·,|-]+$/,'').trim(),li2=(k,v)=>`<div class="li"><span>${k}</span><b style="text-align:right;overflow-wrap:anywhere">${v}</b></div>`;
         const q2=(n,d)=>E(n||'—')+(dc(d)&&dc(d)!==String(n||'').trim()?`<div style="font-weight:500;font-size:13.5px;color:#6B5E55">${E(dc(d))}</div>`:'');
         let r='';
-        if(t==='compra'){r+=li2(PR.length?'Compra · sitio 1':'Compra en',q2(cp.lugar||'—',''));PR.forEach(q=>{r+=li2('Compra · sitio '+E(q.n),q2(q.nombre,''))});r+=li2('Entrega a',q2(recN,o.direccion_entrega))}
+        if(t==='compra'){r+=li2(PR.length?'Compra · lugar 1':'Compra en',q2(cp.lugar||'—',''));PR.forEach(q=>{r+=li2('Compra · lugar '+E(q.n),q2(q.nombre,''))});r+=li2('Entrega a',q2(recN,o.direccion_entrega))}
         else if(t==='enc'){r+=li2('Recoge a',q2(remN,o.direccion_recojo));paquetes(o).forEach((p,i,A)=>{r+=li2(A.length>1?'Paquete '+p.numero:'Destino',E([p.agencia,p.destino].filter(Boolean).join(' → ')||'—'))})}
         else{r+=li2(PR.length?'Recoge · punto 1':'Recoge a',q2(remN,o.direccion_recojo));PR.forEach(q=>{r+=li2('Recoge · punto '+E(q.n),q2(q.nombre,q.direccion))});r+=li2('Entrega a',q2(recN,o.direccion_entrega))}
         r+=li2('Servicio',M(t==='compra'?servicio(o):o.total)+' · '+(alFinal(o)||momento(o)==='al_final'?'al final a Pidemás':(yape(o)?'Yape':'Efectivo')+(alRecoger(o)?' al recoger':' al entregar')));
@@ -492,7 +492,7 @@
     if(e===0){m.cta={label:'Aceptar pedido',run:()=>correr('acceptOrder',id)};m.alt=[{label:'Rechazar pedido',mal:true,run:()=>correr('rejectOrder',id)}]}
     else if(e===1){
       if(cobroRecPend(o)){const modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');m.cta={label:modo==='yape'?'Ya pagó por Yape · '+M(o.total):'Ya cobré '+M(o.total),busy:'Registrando cobro…',run:()=>cobrarAlRecoger(o)}}
-      else if(t==='compra'&&sinMonto(o)&&prFalta)m.cta={label:'Registrar compra',off:true,hint:'Marca «Ya compré» en cada sitio de compra'};
+      else if(t==='compra'&&sinMonto(o)&&prFalta)m.cta={label:'Registrar compra',off:true,hint:'Marca «Ya compré» en cada lugar de compra'};
       else if(t==='compra'&&sinMonto(o))m.cta={label:'Registrar compra',busy:'Registrando…',run:()=>registrarCompra(o)};
       else if(prFalta)m.cta={label:'Ya recogí todo',off:true,hint:dr(o.id).ptAct?'Marca «Ya recogí» en el punto donde estás':'Toca «Llegué» en el punto de recojo donde estés'};
       else m.cta={label:t==='enc'?'Recogí los paquetes':t==='compra'?'Compra lista · voy al cliente':PR.length?'Ya recogí todo · voy a entregar':'Ya recogí el pedido',run:()=>correr('startOrder',id)};
@@ -527,7 +527,7 @@
     });
     PR.forEach(x=>{m.acts['pt'+x.n]=async b=>{if(b.disabled)return;b.disabled=true;await marcarPunto(o,x.n);if(!error)dr(o.id).ptAct=null;PdPasos.render()}});
     if(PR.length){for(let n=1;n<=PR.length+1;n++)m.acts['pl'+n]=()=>{error='';info='';dr(o.id).ptAct=n;PdPasos.render()};
-      m.acts['pt1']=()=>{const z=dr(o.id);z.p1=new Date().toISOString();z.ptAct=null;const f=PR.filter(x=>!x.recogido_en).length;info=t==='compra'?(f?'Sitio 1 listo. Te falta'+(f===1?'':'n')+' '+f+'.':'Compraste en todos los sitios. Registra cuánto gastaste.'):f?'Punto 1 recogido. Te falta'+(f===1?'':'n')+' '+f+'.':'Recogiste en todos los puntos. Ya puedes ir a entregar.';PdPasos.render()}}
+      m.acts['pt1']=()=>{const z=dr(o.id);z.p1=new Date().toISOString();z.ptAct=null;const f=PR.filter(x=>!x.recogido_en).length;info=t==='compra'?(f?'Lugar 1 listo. Te falta'+(f===1?'':'n')+' '+f+'.':'Compraste en todos los lugares. Registra cuánto gastaste.'):f?'Punto 1 recogido. Te falta'+(f===1?'':'n')+' '+f+'.':'Recogiste en todos los puntos. Ya puedes ir a entregar.';PdPasos.render()}}
     if(t==='enc')paquetes(o).forEach(p=>{const n=p.numero,k=()=>d.pk[n]||(d.pk[n]={});
       m.acts['shot'+n]=b=>{const f=b.getRootNode().querySelector('[data-act="file'+n+'"]');if(f)f.click()};
       m.acts['file'+n]=inp=>{const f=inp.files&&inp.files[0];if(!f)return;const z=k();z.file=f;try{z.url=URL.createObjectURL(f)}catch(_){}PdPasos.render()};

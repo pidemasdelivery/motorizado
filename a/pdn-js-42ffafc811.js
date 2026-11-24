@@ -144,7 +144,7 @@
     const k=svc(o),from=cl(o.direccion_recojo||o.direccion_negocio),to=cl(o.direccion_entrega),pts=Array.isArray(o.puntos_recojo)?o.puntos_recojo.length:0;
     const tot=Number(o.total),met=String(o.metodo_pago||'').toLowerCase(),mom=String(o.pago_servicio_momento||'').toLowerCase();
     const pago=mom==='al_final'?'Paga al final a Pidemás':met==='yape'?'Yape':met==='efectivo'?'Efectivo':'';
-    return [from?(k==='Compra'?'Compra en: ':'Recojo: ')+from+(pts?' + '+pts+(k==='Compra'?' sitio':' punto')+(pts>1?'s':''):''):'',to?'Entrega: '+to:'',Number.isFinite(tot)&&tot>0?money(tot)+(pago?' · '+pago:''):''].filter(Boolean).join(' · ')||k;
+    return [from?(k==='Compra'?'Compra en: ':'Recojo: ')+from+(pts?' + '+pts+(k==='Compra'?' lugar'+(pts>1?'es':''):' punto'+(pts>1?'s':'')):''):'',to?'Entrega: '+to:'',Number.isFinite(tot)&&tot>0?money(tot)+(pago?' · '+pago:''):''].filter(Boolean).join(' · ')||k;
   }
   function acceptActions(o){
     const acts=[{label:'Ver pedido',run:()=>openOrder(o.id)}];
