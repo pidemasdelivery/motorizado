@@ -257,13 +257,15 @@
     const vu=Math.round((n-tot)*100)/100;return vu>0.004?'<div class="vto"><span>Su vuelto</span><b>'+M(vu)+'</b></div>':'<div class="vto"><span>Paga exacto</span><b>Sin vuelto</b></div>'}
   const qrBtn=o=>{const qn=typeof window.pdQrDePedido==='function'?window.pdQrDePedido(o.id):null;
     return `<button type="button" class="qr" data-act="qr"><span class="im"${qn&&qn.url?` style="background-image:url('${E(qn.url)}')"`:''}>${qn&&qn.url?'':'QR'}</span><span class="t"><span class="k">${qn&&qn.negocio?'Yape del negocio':'Yape de Pidemás'}</span><span class="a">${E(qn&&qn.titular||qn&&qn.nombre||'')}</span><span class="b2">${E(qn&&qn.numero||'')}</span><span class="c">Toca para agrandar</span></span></button>`};
+  /* cobro al recoger: mismo diseño que el cobro al entregar (encomienda, recojo y compra se ven igual) */
   function bloqueCobroRec(o){
-    const d=dr(o.id),modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');
-    let h=`<div class="amt"><div class="k">Cobro al recoger</div><div class="n">${M(o.total)}</div><div class="pill">${modo==='yape'?'Yape':'Efectivo'}</div></div>`+
+    const d=dr(o.id),modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo'),monto=Number(o.total)||0;
+    let h=`<div class="amt"><div class="k">Cobro al cliente</div><div class="n">${M(monto)}</div><div class="pill">${modo==='yape'?'Yape':'Efectivo'}</div></div>`+
       U.note(tipo(o)==='enc'?'Cóbrale a quien envía antes de llevar los paquetes a la agencia.':'Paga quien envía'+(o.nombre_remitente?' ('+E(o.nombre_remitente)+')':'')+': cóbrale al recoger, antes de salir a entregar.')+
-      `<div class="quick" data-act="modo"><button type="button" data-m="efectivo" class="${modo==='efectivo'?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${modo==='yape'?'on':''}">Yape</button></div>`;
-    if(modo==='efectivo')h+=`<div><div class="lbl">¿Con cuánto paga? (vacío = exacto)</div><input class="inp" data-act="rmonto" inputmode="decimal" placeholder="${M(o.total)}" value="${E(d.monto)}"></div><div class="note" data-vr>${I_v(d.monto||o.total,Number(o.total))}</div>`;
-    else h+=qrBtn(o)+U.note('Revisa en el celular del cliente que el Yape se hizo.')+(window.PdYapeP?PdYapeP.html(o):'');
+      `<div><div class="lbl">¿Cómo paga el cliente?</div><div class="quick" data-act="modo"><button type="button" data-m="efectivo" class="${modo==='efectivo'?'on':''}">Efectivo</button><button type="button" data-m="yape" class="${modo==='yape'?'on':''}">Yape</button></div></div>`;
+    if(modo==='efectivo'){const v=d.monto||'',vals=[];[10,20,50,100,200].forEach(z=>{const r=Math.ceil(monto/z)*z;if(r>monto+0.004&&!vals.includes(r))vals.push(r)});
+      h+=`<div><div class="lbl">¿Con cuánto paga?</div><input class="inp" data-act="rmonto" inputmode="decimal" placeholder="${M(monto)}" value="${E(v)}"></div><div class="quick" data-act="rquick">${[monto].concat(vals.slice(0,3)).map((z,i)=>`<button type="button" data-v="${z.toFixed(2)}" class="${v!==''&&Number(v)===z?'on':''}">${i?'S/ '+z:'Exacto'}</button>`).join('')}</div><div data-vr>${I_v(v||monto,monto)}</div>`}
+    else h+=qrBtn(o)+U.note('Confirma solo cuando veas la constancia del pago en el celular del cliente.')+(window.PdYapeP?PdYapeP.html(o):'');
     return h;
   }
 
@@ -486,7 +488,8 @@
       cpago:async(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b||b.classList.contains('on'))return;error='';try{await window.pdCambiarPago(o,b.dataset.m)}catch(e){error=String(e&&e.message||e)}PdPasos.render()},
       qr:()=>{if(typeof window.showYapeQr==='function')window.showYapeQr(id)},
       modo:(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b)return;d.modo=b.dataset.m;error='';PdPasos.render()},
-      rmonto:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.monto=inp.value;const n=inp.getRootNode().querySelector('[data-vr]');if(n)n.innerHTML=I_v(inp.value||o.total,Number(o.total))},
+      rmonto:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.monto=inp.value;const n=inp.getRootNode().querySelector('[data-vr]');if(n)n.innerHTML=I_v(inp.value||o.total,Number(o.total));inp.getRootNode().querySelectorAll('.quick[data-act="rquick"] button').forEach(b=>b.classList.toggle('on',inp.value!==''&&Number(b.dataset.v)===Number(inp.value)))},
+      rquick:(box,ev)=>{const b=ev.target.closest('[data-v]');if(!b)return;error='';d.monto=b.dataset.v;const inp=box.getRootNode().querySelector('[data-act="rmonto"]');if(inp){inp.value=b.dataset.v;inp.dispatchEvent(new Event('input'))}},
       gasto:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.gasto=inp.value;const n=inp.getRootNode().querySelector('[data-gt] b');if(n)n.textContent=M((Number(inp.value.replace(',','.'))||0)+servicio(o))},
       caja:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');d.caja=inp.value;const n=inp.getRootNode().querySelector('.amt .n');if(n)n.textContent=M(Number(inp.value.replace(',','.'))||0)},
       cash:inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick[data-act="quick"] button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
