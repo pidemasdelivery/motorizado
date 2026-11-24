@@ -369,7 +369,8 @@
               (ok?U.st('Recogido aquí','ok'):e!==1?'':aqui?`<button type="button" class="b o" data-act="pt${q.n}">Ya recogí en el punto ${q.n}</button>`:`<button type="button" class="b o" data-act="pl${q.n}">Llegué a ${E(nom)}</button>`)+`</div>`});
         }
         if(t==='recojo'){const n=String(notas(o)||'').split(/\s*·\s*/).filter(z=>z&&!/^(Pago en efectivo|Pago por Yape|Paga quien|Servicio marcado como PAGADO|Pedido a nombre de)/i.test(z)).join(' · ');if(n)h+=`<div class="sum"><div class="lbl">Notas del servicio</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(n)}</div></div>`}
-        if(t==='enc')h+=paquetes(o).map(pkgHtml).join('');
+        if(t==='enc'){h+=paquetes(o).map(pkgHtml).join('');const cq=compra(o),cmp=cq.comp||o.tipo_comprobante||'',doc=cq.doc||o.documento_comprobante||'';
+          if((cmp&&!/no especificado/i.test(cmp))||doc)h+=`<div class="sum"><div class="lbl">Comprobante</div>${cmp?`<div class="li"><span>Tipo</span><b>${E(cmp)}</b></div>`:''}${doc?`<div class="li"><span>${/factura/i.test(cmp)?'RUC':'DNI'}</span><b>${E(doc)}</b></div>`:''}${cq.cnom?`<div class="li"><span>Nombre</span><b>${E(cq.cnom)}</b></div>`:''}${cq.craz?`<div class="li"><span>Razón social</span><b>${E(cq.craz)}</b></div>`:''}${cq.cdir?`<div class="li"><span>Dirección fiscal</span><b>${E(cq.cdir)}</b></div>`:''}</div>`}
         s.body=msg+avisoVuelto(o,aCobrar(o),false)+h;
       }
       if(e>=1&&cobroRecPend(o))s.body+=bloqueCobroRec(o);
