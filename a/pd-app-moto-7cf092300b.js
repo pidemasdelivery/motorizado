@@ -370,7 +370,7 @@
     const {yo,orden,tot}=c.data;
     if(!orden.length)return {head,body:'<div class="vac">No tienes pedidos en curso. Cuando te asignen pedidos, aquí verás en qué orden te conviene ir.</div>'};
     const pts=orden.filter(s=>s.p);
-    const todo=pts.length?'https://www.google.com/maps/dir/?api=1'+(yo?'&origin='+yo.join(','):'')+'&destination='+pts[pts.length-1].p.join(',')+(pts.length>1?'&waypoints='+pts.slice(0,-1).slice(0,9).map(s=>s.p.join(',')).join('|'):'')+'&travelmode=driving':'';
+    const todo='';/* sin ruta trazada: cada parada abre solo su punto */
     let h=tot?`<div class="amt"><div class="k">Recorrido aproximado</div><div class="n">${tot.toFixed(1)} km</div><div class="pill">${orden.length} paradas</div></div>`:'';
     h+=orden.map((s,i)=>`<div class="stop"><span class="n">${i+1}</span><span style="flex:1 1 0%;min-width:0"><span class="tg" style="background:${s.tipo==='recojo'?'#FDEBDF;color:#9A330A':'#E9F6EE;color:#0F5E2E'}">${s.tipo==='recojo'?'Recojo':'Entrega'} · ${E(ref(s.o.id))}</span><b style="display:block;font-size:16px;margin-top:4px">${E(s.nom)}</b><span style="font-size:13px;color:#6B5E55">${s.d!=null?s.d.toFixed(1)+' km':'Sin ubicación'}</span></span>${s.p?`<a class="b o" style="height:40px;padding:0 14px" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${s.p.join(',')}">${XI.nav}Ir</a>`:''}</div>`).join('');
     h+=U.note('Primero recoges y luego entregas, siempre yendo al punto más cercano.'+(yo?'':' Activa tu GPS para calcular mejor.'));

@@ -75,7 +75,7 @@
     }
     let tot=0,prev=yo;orden.forEach(s=>{if(s.p&&prev){s.d=km(prev,s.p);tot+=s.d}if(s.p)prev=s.p});
     const pts=orden.filter(s=>s.p);
-    const todo=pts.length?'https://www.google.com/maps/dir/?api=1'+(yo?'&origin='+yo[0]+','+yo[1]:'')+'&destination='+pts[pts.length-1].p.join(',')+(pts.length>1?'&waypoints='+pts.slice(0,-1).slice(0,9).map(s=>s.p.join(',')).join('|'):'')+'&travelmode=driving':'';
+    const todo='';/* sin ruta trazada: cada parada abre solo su punto */
     b.innerHTML=(tot?'<div class="pdmmStat"><span>Recorrido aproximado</span><b>'+tot.toFixed(1)+' km</b></div>':'')
       +orden.map((s,i)=>'<div class="pdmmStop"><span class="pdmmN '+s.tipo+'">'+(i+1)+'</span><span class="pdmmTx"><b>'+(s.tipo==='recojo'?'Recoger':'Entregar')+' '+E(ref(s.o.id))+'</b><small>'+E(s.nom)+(s.d!=null?' · '+s.d.toFixed(1)+' km':'')+'</small></span>'+(s.p?'<a class="pdmmGo" target="_blank" rel="noopener" href="'+gmaps(s.p)+'">Ir</a>':'<small class="pdmmSin">Sin ubicación</small>')+'</div>').join('')
       +(todo?'<a class="btn pdmmTodo" target="_blank" rel="noopener" href="'+todo+'">Abrir toda la ruta en Google Maps</a>':'')
