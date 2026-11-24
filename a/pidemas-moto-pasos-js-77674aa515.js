@@ -44,13 +44,13 @@
     const c=(()=>{try{return db}catch(e){return window.db}})();if(!c)return;
     const patchPago={metodo_pago:nuevo,observaciones:obs};
     /* Si iba a pagar con el Yape del negocio y paga en efectivo, el dinero lo tiene el motorizado: el pedido pasa a «efectivo» para que Pidemás le pague los productos al negocio */
-    if(String(o.pago_acordado||'')==='yape_negocio'&&nuevo==='efectivo'){patchPago.pago_acordado='efectivo';patchPago.yape_negocio_estado=null;patchPago.observaciones=obs+' | YA NO PAGA CON EL YAPE DEL NEGOCIO: PAGA EN EFECTIVO AL MOTORIZADO'}
+    if(String(o.pago_acordado||'')==='yape_negocio'&&nuevo==='efectivo'){patchPago.yape_negocio_estado=null;patchPago.observaciones=obs+' | YA NO PAGA CON EL YAPE DEL NEGOCIO: PAGA EN EFECTIVO AL MOTORIZADO'}
     let q=c.from('pedidos').update(patchPago).eq('id',o.id);
     try{if(typeof moto!=='undefined'&&moto&&moto.id)q=q.eq('motorizado_id',moto.id)}catch(e){}
     window.__pdCambioPropio={code:'#'+String(o.id).slice(0,8).toUpperCase(),t:Date.now()};
     const {error}=await q;
     if(error){(window.pdAvisoMoto||alert)('No se pudo cambiar el método de pago: '+error.message);return}
-    o.metodo_pago=nuevo;o.observaciones=patchPago.observaciones;if('pago_acordado' in patchPago){o.pago_acordado=patchPago.pago_acordado;o.yape_negocio_estado=null}
+    o.metodo_pago=nuevo;o.observaciones=patchPago.observaciones;if('yape_negocio_estado' in patchPago){o.yape_negocio_estado=null}
     try{const n=(typeof orders!=='undefined'?orders:[]).find(x=>String(x.id)===String(o.id));if(n){n.metodo_pago=nuevo;n.observaciones=obs}}catch(e){}
     try{if(typeof window.loadOrders==='function')await window.loadOrders()}catch(e){}
     try{const modal=document.getElementById('pidemasOrderFullModal');const card=document.querySelector('.order[data-order-id="'+o.id+'"]');if(modal&&card&&typeof window.populateFullOrderModal==='function')window.populateFullOrderModal(card,modal)}catch(e){}
