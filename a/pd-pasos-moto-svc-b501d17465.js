@@ -386,8 +386,12 @@
             return `<div class="sum"><div class="lbl">Guía · paquete ${p.numero} · ${ruta}</div>
               <button type="button" class="b soft" data-act="shot${p.numero}">${k.file?'Foto lista · tocar para cambiar':'Tomar foto de la guía o voucher'}</button><input type="file" data-act="file${p.numero}" accept="image/jpeg,image/png,image/webp" capture="environment" hidden data-pd-cloud="1">
               ${k.url?`<img src="${E(k.url)}" alt="Guía del paquete ${p.numero}" style="width:100%;max-height:180px;object-fit:cover;border-radius:12px">`:''}
-              <input class="inp" data-act="clave${p.numero}" placeholder="Clave de recojo" value="${E(k.clave||'')}"${k.sin?' disabled':''}>
-              <button type="button" class="b" data-act="sin${p.numero}">${k.sin?'✓ ':''}La agencia no dio clave</button>
+              ${k.sin?`<div style="display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:14px;background:#FDE8E8;border:1.5px solid #F4B4AE;color:#8A1C12">
+                <span style="flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:#B42318;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px">!</span>
+                <span style="display:flex;flex-direction:column;gap:3px"><b style="font-size:16px;color:#8A1C12">Sin clave de recojo</b><span style="font-size:14px;line-height:1.4">Marcaste que la agencia no dio clave. Pidemás se lo avisará al cliente junto con la guía.</span></span></div>
+              <button type="button" class="b" data-act="sin${p.numero}">Sí dio clave · escribirla</button>`
+              :`<input class="inp" data-act="clave${p.numero}" placeholder="Clave de recojo" value="${E(k.clave||'')}">
+              <button type="button" class="b" style="color:#B42318;border-color:#F4C7C3" data-act="sin${p.numero}">La agencia no dio clave</button>`}
               <button type="button" class="b o" data-act="up${p.numero}"${k.subiendo?' disabled':''}>${k.subiendo?'Subiendo guía…':'Subir guía y clave'}</button></div>`};
 
         orden.forEach(({g:gr,gi})=>{const pr=procDe(o,gr),lleg=!!(pr&&pr.llegada_en)||(gi===0&&enAgencia(o)&&!arr(o.agencias_proceso).length),listo=grupoListo(o,gr,gi);
@@ -473,7 +477,9 @@
       m.acts['shot'+n]=b=>{const f=b.getRootNode().querySelector('[data-act="file'+n+'"]');if(f)f.click()};
       m.acts['file'+n]=inp=>{const f=inp.files&&inp.files[0];if(!f)return;const z=k();z.file=f;try{z.url=URL.createObjectURL(f)}catch(_){}PdPasos.render()};
       m.acts['clave'+n]=inp=>{k().clave=inp.value};
-      m.acts['sin'+n]=()=>{const z=k();z.sin=!z.sin;if(z.sin)z.clave='';PdPasos.render()};
+      m.acts['sin'+n]=async()=>{const z=k();
+        if(!z.sin){const ok=typeof window.pdConfirmar==='function'?await window.pdConfirmar('¿La agencia no te dio clave de recojo?\nRevisa bien la guía o el voucher: muchas veces la clave viene impresa. Si de verdad no hay clave, el cliente recogerá solo con su DNI.'):true;if(!ok)return}
+        z.sin=!z.sin;if(z.sin)z.clave='';PdPasos.render()};
       m.acts['up'+n]=async()=>{await subirGuia(o,n);PdPasos.render()};
       m.acts['wa'+n]=()=>compartirGuia(o,n);
     });
