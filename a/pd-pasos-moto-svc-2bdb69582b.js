@@ -247,6 +247,7 @@
   function lugaresCompra(o){const cp=compra(o),PRc=Array.isArray(o.puntos_recojo)?o.puntos_recojo.filter(Boolean):[];
     return [{n:1,nombre:cp.lugar||'Lugar no indicado',que:cp.detalle,obs:cp.obs,mapa:U.maps(o.latitud_recojo,o.longitud_recojo,cp.lugar,cp.url||''),hecho:(o.punto1_listo_en&&o.punto1_monto!=null?o.punto1_listo_en:null)||(Number(o.subtotal)>0?'ok':null),monto:o.punto1_monto,foto:o.punto1_foto_url}]
       .concat(PRc.map(q=>({n:Number(q.n),nombre:q.nombre,que:q.que,obs:q.obs,costo_delivery:q.costo_delivery,mapa:U.maps(q.lat,q.lng,q.nombre,link(q.ubicacion)),hecho:(q.recogido_en&&q.monto!=null?q.recogido_en:null)||(Number(o.subtotal)>0?'ok':null),monto:q.monto,foto:q.foto_url})))}
+  function lugarActual(o){const L=lugaresCompra(o),cl=dr(o.id).cl||{},ed=L.find(q=>cl[q.n]&&cl[q.n].edit);if(ed)return Object.assign({edit:true},ed);const p=L.find(q=>!q.hecho);return p||null}
   function sumaLugares(o){const L=lugaresCompra(o);if(!L.every(q=>q.hecho&&q.monto!=null&&q.monto!==''))return null;return Math.round(L.reduce((a,q)=>a+(Number(q.monto)||0),0)*100)/100}
   async function guardarLugarCompra(o,n){
     error='';info='';const z=((dr(o.id).cl=dr(o.id).cl||{})[n])||{},v=Number(String(z.monto||'').replace(',','.')),q=lugaresCompra(o).find(x=>x.n===n);if(!q)return;
@@ -391,21 +392,22 @@
         /* cada lugar de compra (1, 2, 3…): el motorizado guarda lo que gastó ahí y la foto de la boleta (opcional), uno por uno */
         const LC=lugaresCompra(o),tot=LC.length,reg=Number(o.subtotal)>0,INP='min-width:3ch;border:0;border-bottom:2px dashed #C4410C;border-radius:0;background:transparent;font:inherit;letter-spacing:inherit;text-align:center;color:#1F1A17;outline:none;padding:0;margin:0;box-shadow:none';
         const dlOk=PR.length&&PR.every(x=>x.costo_delivery!=null&&x.costo_delivery!=='');
-        let h=e===1&&!reg&&LC.filter(q=>!q.hecho).length?U.note(tot>1?'Tienes <b>'+tot+' lugares de compra</b>. En cada uno escribe cuánto gastaste, toma la foto de la boleta si te dieron y toca «Guardar». Al final registras la compra.':'Cuando compres, escribe cuánto gastaste, toma la foto de la boleta si te dieron y toca «Guardar».'):'';
-        LC.forEach(q=>{const z=(d.cl=d.cl||{})[q.n]||(d.cl[q.n]={}),nom=q.nombre||'Lugar '+q.n,abierto=e===1&&!reg&&(!q.hecho||z.edit);
-          h+=`<div class="sum" style="gap:10px"><div class="lbl">${tot>1?'Lugar '+q.n+' de '+tot:'Lugar de compra'}${q.hecho&&q.hecho!=='ok'?' · comprado '+E(U.hora(q.hecho)):''}</div>`+U.who(nom,'Compra aquí'+(q.n===1?' · pedido '+E(U.ref(id)):''),'')+
+        let h=e===1&&!reg&&LC.filter(q=>!q.hecho).length?U.note(tot>1?'Tienes <b>'+tot+' lugares de compra</b>. Ve uno por uno: escribe cuánto gastaste, toma la foto de la boleta si te dieron y desliza «Guardar compra». Al final registras la compra.':'Cuando compres, escribe cuánto gastaste, toma la foto de la boleta si te dieron y desliza «Guardar compra».'):'';
+        const curL=lugarActual(o);
+        LC.forEach(q=>{const z=(d.cl=d.cl||{})[q.n]||(d.cl[q.n]={}),nom=q.nombre||'Lugar '+q.n,abierto=e===1&&!reg&&curL&&curL.n===q.n,sigue=e===1&&!reg&&!q.hecho&&!abierto;
+          h+=`<div class="sum" style="gap:10px${abierto&&tot>1?';border-color:#C4410C':''}"><div class="lbl"${abierto&&tot>1?' style="color:#9A330A"':''}>${abierto&&tot>1?'Estás en este lugar · ':sigue?'Siguiente · ':''}${tot>1?'Lugar '+q.n+' de '+tot:'Lugar de compra'}${q.hecho&&q.hecho!=='ok'?' · comprado '+E(U.hora(q.hecho)):''}</div>`+U.who(nom,'Compra aquí'+(q.n===1?' · pedido '+E(U.ref(id)):''),'')+
             (dlOk?`<div class="li"><span>Delivery de este lugar</span><b>${M(q.n===1?Math.max(0,Math.round((servicio(o)-PR.reduce((a,x)=>a+(Number(x.costo_delivery)||0),0))*100)/100):Number(q.costo_delivery))}</b></div>`:'')+
             (q.hecho?'':irA(q.mapa,tot>1?'Ir al lugar '+q.n:'Ir al lugar de compra'))+
             `<div class="lbl" style="margin-top:4px">Qué comprar</div>`+qComp(q.que)+(q.obs?`<div class="lbl" style="margin-top:4px">Observaciones</div>`+qComp(q.obs):'');
           if(q.hecho&&q.monto!=null&&!abierto){const li=(k,v,c)=>`<div class="li"><span>${k}</span><b style="text-align:right${c?';color:'+c:''}">${v}</b></div>`;
             h+=`<div style="display:flex;gap:12px;align-items:center">`+(q.foto?`<a href="${E(q.foto)}" target="_blank" rel="noopener" style="flex:0 0 84px"><img src="${E(q.foto)}" alt="Boleta del lugar ${q.n}" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block"></a>`:'')+
-              `<div style="flex:1;min-width:0;display:flex;flex-direction:column">`+li('Gastado',M(q.monto))+li('Boleta',q.foto?'Guardada ✓':'Sin boleta',q.foto?'#15803D':'')+`</div></div>`+(e===1&&!reg?`<button type="button" class="b" data-act="gedit${q.n}">Me equivoqué · cambiar monto o boleta</button>`:'')}
+              `<div style="flex:1;min-width:0;display:flex;flex-direction:column">`+li('Gastado',M(q.monto))+li('Boleta',q.foto?'Guardada ✓':'Sin boleta',q.foto?'#15803D':'')+`</div></div>`+(e===1&&!reg&&!(curL&&curL.edit)?`<button type="button" class="b" data-act="gedit${q.n}">Me equivoqué · cambiar monto o boleta</button>`:'')}
           else if(q.hecho&&!abierto)h+=U.st('Comprado aquí','ok');
           else if(abierto){const v=z.monto||'';
             h+=`<div class="amt"><div class="k">Total gastado en ${E(nom)}</div><div class="n" style="display:flex;justify-content:center;align-items:baseline;gap:8px"><span>S/</span><input data-act="gm${q.n}" inputmode="decimal" placeholder="0.00" aria-label="Cuánto gastaste en ${E(nom)}" value="${E(v)}" style="width:${Math.max(3,String(v).length||4)+0.6}ch;${INP}"></div><div class="pill">Sale de tu caja</div></div>`+
               `<button type="button" class="b soft" data-act="gshot${q.n}">${z.file?'Foto lista · tocar para cambiar':z.edit&&q.foto?'Boleta guardada · tocar para cambiarla':'Tomar foto de la boleta o factura (opcional)'}</button><input type="file" data-act="gfile${q.n}" accept="image/jpeg,image/png,image/webp" capture="environment" hidden data-pd-cloud="1">`+
               ((z.url||(z.edit&&q.foto))?`<img src="${E(z.url||q.foto)}" alt="Boleta" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block">`:'')+
-              (z.edit?`<div style="display:flex;gap:10px"><button type="button" class="b" style="flex:1" data-act="gcan${q.n}">Cancelar</button><button type="button" class="b o" style="flex:1.6" data-act="gok${q.n}"${z.subiendo?' disabled':''}>${z.subiendo?'Guardando…':'Guardar corrección'}</button></div>`:`<button type="button" class="b o" data-act="gok${q.n}"${z.subiendo?' disabled':''}>${z.subiendo?'Guardando…':'Guardar compra en '+E(nom)}</button>`)}
+              (z.edit?`<button type="button" class="b" data-act="gcan${q.n}">Cancelar el cambio</button>`:'')+U.note('Escribe arriba cuánto gastaste y desliza «'+(z.edit?'Guardar corrección':'Guardar compra en '+E(nom))+'». Sale de tu caja al registrar la compra.')}
           h+=`</div>`});
         h+=(cp.comp||cp.doc?`<div class="sum"><div class="lbl">Comprobante</div>${cp.comp?`<div class="li"><span>Tipo</span><b>${E(cap1(cp.comp))}</b></div>`:''}${cp.doc?`<div class="li"><span>${/factura/i.test(cp.comp||'')?'RUC':'DNI'}</span><b>${E(cp.doc)}</b></div>`:''}${cp.cnom?`<div class="li"><span>Nombre</span><b>${E(cp.cnom)}</b></div>`:''}${cp.craz?`<div class="li"><span>Razón social</span><b>${E(cp.craz)}</b></div>`:''}${cp.cdir?`<div class="li"><span>Dirección fiscal</span><b>${E(cp.cdir)}</b></div>`:''}</div>`:'')+
           `<div class="sum"><div class="lbl">Cliente</div>`+U.who(remN,'Quien pide la compra','',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`;
@@ -561,9 +563,10 @@
     if(e===0){m.cta={label:'Aceptar pedido',run:()=>correr('acceptOrder',id)};m.alt=[{label:'Rechazar pedido',mal:true,run:()=>correr('rejectOrder',id)}]}
     else if(e===1){
       if(cobroRecPend(o)){const modo=d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');m.cta={label:modo==='yape'?'Ya pagó por Yape · '+M(o.total):'Ya cobré '+M(o.total),get off(){return !okRec()},get hint(){return hRec()},busy:'Registrando cobro…',run:()=>cobrarAlRecoger(o)}}
-      else if(t==='compra'&&sinMonto(o)&&sumaLugares(o)==null)m.cta={label:'Registrar compra',off:true,hint:lugaresCompra(o).length>1?'Guarda lo que gastaste en cada lugar':'Escribe cuánto gastaste y toca «Guardar»'};
+      else if(t==='compra'&&sinMonto(o)&&lugarActual(o)){const q=lugarActual(o),z=(d.cl||{})[q.n]||{},nom=q.nombre||'Lugar '+q.n,okG=()=>nn(((d.cl||{})[q.n]||{}).monto)>0;
+        m.cta={label:(q.edit?'Guardar corrección en ':'Guardar compra en ')+nom,get off(){return !okG()},get hint(){return okG()?'':'Escribe cuánto gastaste en '+nom},busy:'Guardando…',run:()=>guardarLugarCompra(o,q.n)}}
       else if(t==='compra'&&sinMonto(o))m.cta={label:'Registrar compra · '+M(sumaLugares(o)),busy:'Registrando…',run:()=>registrarCompra(o)};
-      else if(prFalta)m.cta={label:'Ya recogí todo',off:true,hint:dr(o.id).ptAct?'Marca «Ya recogí» en el punto donde estás':'Toca «Llegué» en el punto de recojo donde estés'};
+      else if(prFalta&&t==='recojo')m.cta={label:'Ya recogí todo',off:true,hint:dr(o.id).ptAct?'Marca «Ya recogí» en el punto donde estás':'Toca «Llegué» en el punto de recojo donde estés'};
       else m.cta={label:t==='enc'?'Recogí los paquetes':t==='compra'?'Compra lista · voy al cliente':PR.length?'Ya recogí todo · voy a entregar':'Ya recogí el pedido',run:()=>correr('startOrder',id)};
     }
     else if(e===2)m.cta=t==='enc'?(grupos(o).length>1?{label:'Llegué a la agencia',off:true,hint:'Toca «Llegué» en la agencia a la que fuiste primero'}:{label:'Llegué a la agencia',busy:'Registrando…',run:()=>llegarAgencia(o,0)}):{label:'Llegué donde el cliente',run:()=>correr('markInDelivery',id)};
@@ -588,7 +591,7 @@
     };
     if(window.PdYapeP)Object.assign(m.acts,PdYapeP.acts(o));
     if(t==='compra')lugaresCompra(o).forEach(q=>{const n=q.n,k=()=>((d.cl=d.cl||{})[n]||(d.cl[n]={}));
-      m.acts['gm'+n]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');inp.style.width=(Math.max(3,inp.value.length||4)+0.6)+'ch';k().monto=inp.value};
+      m.acts['gm'+n]=inp=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');inp.style.width=(Math.max(3,inp.value.length||4)+0.6)+'ch';k().monto=inp.value;vivo(inp,nn(inp.value)>0,'Escribe cuánto gastaste en '+(q.nombre||'el lugar '+n))};
       m.acts['gshot'+n]=b=>{const f=b.getRootNode().querySelector('[data-act="gfile'+n+'"]');if(f)f.click()};
       m.acts['gfile'+n]=inp=>{const f=inp.files&&inp.files[0];if(!f)return;const z=k();z.file=f;try{z.url=URL.createObjectURL(f)}catch(_){}PdPasos.render()};
       m.acts['gedit'+n]=()=>{const z=k();z.edit=true;z.monto=String(q.monto??'');error='';info='';PdPasos.render()};
