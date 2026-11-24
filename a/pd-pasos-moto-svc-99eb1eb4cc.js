@@ -19,7 +19,8 @@
   const momento=o=>{const m=String(o.pago_servicio_momento||'').toLowerCase();if(m)return m;if(o.pago_confirmado===true)return 'pagado';return yape(o)?'recojo_yape':'recojo_efectivo'};
   const alRecoger=o=>typeof window.pdCobraAlRecoger==='function'?!!window.pdCobraAlRecoger(o):false;
   const cobroRecPend=o=>alRecoger(o)&&o.pago_confirmado!==true&&Number(o.total)>0&&!['asignado','entregado','cancelado'].includes(st(o));
-  const cobroEntrega=o=>tipo(o)!=='enc'&&!alRecoger(o)&&!prepago(o)&&aCobrar(o)>0;
+  const alFinal=o=>String(o.pago_servicio_momento||'').toLowerCase()==='al_final';
+  const cobroEntrega=o=>tipo(o)!=='enc'&&!alFinal(o)&&!alRecoger(o)&&!prepago(o)&&aCobrar(o)>0;
   const servicio=o=>Number(o.costo_delivery)>0?Number(o.costo_delivery):(Number(o.subtotal)>0?Math.max(0,Number(o.total)-Number(o.subtotal)):Number(o.total)||0);
   const sinMonto=o=>tipo(o)==='compra'&&!(Number(o.subtotal)>0);
   const draft=id=>{const d=window.__pidemasCashDrafts||{};return d[String(id)]||''};
@@ -222,7 +223,7 @@
   async function registrarCompra(o){
     error='';const v=Number(String(dr(o.id).gasto||'').replace(',','.'));if(!(v>0)){error='Escribe cuánto gastaste en la compra.';return}
     const sv=servicio(o);
-    if(!(await pdConfirmar(`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja y al entregar cobrarás al cliente ${M(v+sv)} (efectivo o Yape).`)))return;
+    if(!(await pdConfirmar(alFinal(o)?`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja. No cobras al entregar: el cliente le paga ${M(v+sv)} a Pidemás.`:`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja y al entregar cobrarás al cliente ${M(v+sv)} (efectivo o Yape).`)))return;
     try{
       const {data:prev}=await D().from('movimientos_caja').select('id').eq('motorizado_id',ME().id).eq('pedido_id',o.id).eq('tipo','retiro').ilike('descripcion','PAGO DE COMPRA%').limit(1);
       if(!(prev&&prev.length)){const {error:me}=await D().from('movimientos_caja').insert({motorizado_id:ME().id,pedido_id:o.id,tipo:'retiro',monto:Math.round(v*100)/100,descripcion:'PAGO DE COMPRA · Pedido #'+String(o.id).slice(0,8).toUpperCase()});if(me)throw me}
@@ -360,6 +361,7 @@
       else if(alRecoger(o)&&o.pago_confirmado===true)s.body+=U.st('Cobro registrado · '+M(o.total)+' · '+(yape(o)?'Yape':'Efectivo'),'ok');
       else if(t==='enc'&&momento(o)==='pagado')s.body+=U.st('Ya pagado · no cobres nada','ok');
       else if(t==='enc'&&momento(o)==='al_final')s.body+=U.note('No cobres ahora: el cliente paga después de recibir la guía y la clave.');
+      else if(t!=='enc'&&alFinal(o))s.body+=U.st('No cobras: el cliente le paga al final a Pidemás','ok');
       if(e===0)s.body+=U.note('Acepta el pedido para empezar.');else if(e===1)s.body+=rapidos(o,'rem',1);}
 
     if(t==='enc'){
@@ -442,7 +444,7 @@
         s.body=h;}
       /* 4 · Confirmar entrega */
       {const s=S(4);s.locked=cobro?'Se muestra después de cobrar':'Se muestra al llegar donde el cliente';s.sum='Entregado';
-        s.body=msg+(cobro?U.st('Cobrado '+M(aCobrar(o))+' · '+(yape(o)?'Yape':'Efectivo'),'ok'):U.st(alRecoger(o)||prepago(o)?'Ya está pagado: no cobres nada.':'No hay nada que cobrar.','ok'))+U.note('Entrega el pedido a '+E(recN)+' y confirma.')+rapidos(o,'rec',3);}
+        s.body=msg+(cobro?U.st('Cobrado '+M(aCobrar(o))+' · '+(yape(o)?'Yape':'Efectivo'),'ok'):U.st(alFinal(o)?'No cobras: el cliente le paga al final a Pidemás.':alRecoger(o)||prepago(o)?'Ya está pagado: no cobres nada.':'No hay nada que cobrar.','ok'))+U.note('Entrega el pedido a '+E(recN)+' y confirma.')+rapidos(o,'rec',3);}
     }
 
     const m={kicker:NOM+' · '+U.ref(id),steps,err:error,acts:{}};
