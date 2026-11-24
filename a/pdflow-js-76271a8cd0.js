@@ -71,9 +71,9 @@
         if(typeof window.pdOpenWhatsApp==='function')window.pdOpenWhatsApp(url);else window.open(url,'_blank');
       }catch(_){}
       const {error}=await db.from('pedidos').update({incidencia:motivo,incidencia_en:new Date().toISOString(),incidencia_resuelta:false}).eq('id',id).eq('motorizado_id',moto.id);
-      if(error){show($('appMsg'),'No se pudo avisar a Administración: '+error.message);return}
+      if(error){show($('appMsg'),'No se pudo avisar a Pidemás: '+error.message);return}
       const o=orders.find(x=>String(x.id)===String(id));if(o){o.incidencia=motivo;o.incidencia_resuelta=false}
-      show($('appMsg'),'Aviso enviado a Administración: '+motivo);
+      show($('appMsg'),'Aviso enviado a Pidemás: '+motivo);
       await loadOrders();
   }
   window.pdReportarProblema=problema;window.pdEnviarProblema=enviarProblema;
@@ -114,8 +114,8 @@
     
 
     const cards=[];
-    if(o.incidencia&&o.incidencia_resuelta!==true)cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Problema reportado:</b> ${E(o.incidencia)}<br>Administración ya fue avisada.</span></div>`);
-    if(String(o.observaciones||'').includes('PRODUCTO_MAYOR_18'))cards.push(`<div class="pfCard dark"><span><b>PRODUCTO +18</b><small>Pide el DNI al entregar. Si es menor de edad, no entregues y avisa a Administración.</small></span></div>`);
+    if(o.incidencia&&o.incidencia_resuelta!==true)cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Problema reportado:</b> ${E(o.incidencia)}<br>Pidemás ya fue avisado.</span></div>`);
+    if(String(o.observaciones||'').includes('PRODUCTO_MAYOR_18'))cards.push(`<div class="pfCard dark"><span><b>PRODUCTO +18</b><small>Pide el DNI al entregar. Si es menor de edad, no entregues y avisa a Pidemás.</small></span></div>`);
     if(/__PIDEMAS_DESCARTABLES__/.test(String(o.observaciones||'')))cards.push(`<div class="pfCard"><span class="pfDot"></span><span><b>Con descartables</b><br>Al recoger, confirma que el negocio incluyó: ${E(((String(o.observaciones||'').match(/"n":"([^"]+)"/g)||[]).map(x=>x.slice(5,-1)).concat(/"cubiertos":true/.test(String(o.observaciones||''))?['Cubiertos']:[])).join(', ')||'los descartables')}.</span></div>`);
     if(isNegocio(o)&&idx===1){
       if(o.listo_para_recojo===true)cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>El negocio marcó: pedido listo</b>${o.en_local_en?'':'<br>Ya puedes ir a recogerlo.'}</span></div>`);
@@ -177,7 +177,7 @@
       box.innerHTML=R.map(r=>`<button type="button" data-rep="${E(r[2])}"><i>${r[0]}</i>${E(r[1])}</button>`).join('')+'<button type="button" data-rep=""><i>⚠️</i>Otro</button>';
       box.addEventListener('click',async e=>{const b=e.target.closest('[data-rep]');if(!b)return;const m=b.dataset.rep;
         if(!m){problema(id);return}
-        if(window.pdConfirmar&&!(await pdConfirmar('¿Avisar a Administración? '+m)))return;
+        if(window.pdConfirmar&&!(await pdConfirmar('¿Avisar a Pidemás? '+m)))return;
         await enviarProblema(id,m)});
       acts.appendChild(box);
     }

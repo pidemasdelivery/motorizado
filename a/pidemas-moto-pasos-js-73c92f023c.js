@@ -34,7 +34,7 @@
   const NOMBRE={efectivo:'Efectivo',yape:'Yape'};
   async function cambiarPago(o,nuevo){
     const antes=String(o.metodo_pago||'').toLowerCase();if(antes===nuevo)return;
-    const ok=(await pdConfirmar('¿El cliente pagará con '+NOMBRE[nuevo]+' en vez de '+(NOMBRE[antes]||antes)+'?\n\nSe avisará a Administración'+(o.negocio_id?' y al negocio':'')+' y el cobro se registrará con '+NOMBRE[nuevo]+'.'));
+    const ok=(await pdConfirmar('¿El cliente pagará con '+NOMBRE[nuevo]+' en vez de '+(NOMBRE[antes]||antes)+'?\n\nSe avisará a Pidemás'+(o.negocio_id?' y al negocio':'')+' y el cobro se registrará con '+NOMBRE[nuevo]+'.'));
     if(!ok)return;
     const hora=new Date().toLocaleTimeString('es-PE',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Lima'});
     let obs=String(o.observaciones||'');
@@ -62,7 +62,7 @@
     if(!box||!o||o.pago_confirmado===true||!NOMBRE[m]){return}
     let sel=box.querySelector(':scope > .pdCambioPago');
     if(!sel){sel=document.createElement('div');sel.className='pdCambioPago';
-      sel.innerHTML='<label>¿Cómo paga el cliente?</label><div class="seg"><button type="button" data-m="efectivo">Efectivo</button><button type="button" data-m="yape">Yape</button></div><small>Si el cliente cambió de idea, elige cómo te paga realmente. Se avisa a Administración y tu caja queda bien.</small>';
+      sel.innerHTML='<label>¿Cómo paga el cliente?</label><div class="seg"><button type="button" data-m="efectivo">Efectivo</button><button type="button" data-m="yape">Yape</button></div><small>Si el cliente cambió de idea, elige cómo te paga realmente. Se avisa a Pidemás y tu caja queda bien.</small>';
       const h=box.querySelector(':scope > h4');h?h.after(sel):box.prepend(sel);
       sel.addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(!b||b.classList.contains('on'))return;const id=modal.dataset.orderId;const oo=pedido(id);if(oo)cambiarPago(oo,b.dataset.m)});
     }

@@ -91,7 +91,7 @@
   function pintarEspera(o){
     const w=tel(o.telefono_receptor||o.telefono_cliente);
     const msg='Hola, soy '+(String(ME()?.nombre_completo||'tu motorizado').split(' ')[0])+' de *Pidemás Delivery*. Estoy afuera con tu pedido '+ref(o.id)+' en '+(o.direccion_entrega||'tu dirección')+'. Por favor contéstame o sal a recibirlo. Esperaré '+ESPERA+' minutos.';
-    const v=hoja('El cliente no contesta','<p class="pdpeTx">Llámalo y escríbele. Si en '+ESPERA+' minutos no responde, podrás marcar el pedido como <b>no entregado</b>. Administración ya ve que estás esperando.</p><div class="pdpeTimer" id="pdpeTimer">--:--</div>'
+    const v=hoja('El cliente no contesta','<p class="pdpeTx">Llámalo y escríbele. Si en '+ESPERA+' minutos no responde, podrás marcar el pedido como <b>no entregado</b>. Pidemás ya ve que estás esperando.</p><div class="pdpeTimer" id="pdpeTimer">--:--</div>'
       +(w?'<a class="pdpeWa" target="_blank" rel="noopener" href="https://wa.me/'+w+'?text='+encodeURIComponent(msg)+'">Escribir por WhatsApp</a><a class="pdpeAlt" href="tel:+'+w+'">Llamar al cliente</a>':'<p class="pdpeMsg">Este pedido no tiene teléfono del cliente.</p>')
       +'<label class="pdpeLbl">Motivo<select id="pdpeMot"><option>No contesta y no sale a recibir</option><option>Dirección incorrecta o no existe</option><option>El cliente rechazó el pedido</option><option>Otro</option></select></label><input id="pdpeDet" class="pdpeIn" maxlength="120" placeholder="Detalle (opcional)"><button type="button" class="btn" id="pdpeNo" disabled>Marcar como no entregado</button><p class="pdpeMsg" id="pdpeMsg2"></p>');
     const cerrar=()=>{clearInterval(tick);v.remove()};v.querySelector('.pdsmX').onclick=cerrar;v.addEventListener('click',e=>{if(e.target===v)cerrar()});
@@ -99,14 +99,14 @@
       const s=Math.ceil(r/1000);el.textContent=s?String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'):'Tiempo cumplido';el.classList.toggle('fin',!s);b.disabled=!!s};
     clearInterval(tick);upd();tick=setInterval(upd,1000);
     $('pdpeNo').onclick=async()=>{const mot=$('pdpeMot').value,det=($('pdpeDet').value||'').trim();const motivo=[mot!=='Otro'?mot:'',det].filter(Boolean).join(' · ')||'Cliente no contesta';
-      if(!(await pdConfirmar('¿Marcar el pedido '+ref(o.id)+' como NO ENTREGADO?\nMotivo: '+motivo+'\nRegresa con el pedido según te indique Administración.')))return;
+      if(!(await pdConfirmar('¿Marcar el pedido '+ref(o.id)+' como NO ENTREGADO?\nMotivo: '+motivo+'\nRegresa con el pedido según te indique Pidemás.')))return;
       const b=$('pdpeNo');b.disabled=true;b.textContent='Guardando…';
       const base={estado:'cancelado',cancelado_en:new Date().toISOString(),observaciones:[o.observaciones||'','NO ENTREGADO POR MOTORIZADO: '+motivo].filter(Boolean).join(' | ')};
       let r=await D().from('pedidos').update(Object.assign({},base,{cancelado_por:'motorizado',no_entregado:true,motivo_cancelacion:motivo})).eq('id',o.id).eq('motorizado_id',ME()?.id);
       if(r.error&&/cancelado_por|no_entregado|motivo_cancelacion|schema cache/.test(r.error.message))r=await D().from('pedidos').update(base).eq('id',o.id).eq('motorizado_id',ME()?.id);
       if(r.error){$('pdpeMsg2').textContent='No se pudo guardar: '+r.error.message;b.disabled=false;b.textContent='Marcar como no entregado';return}
       cerrar();try{const mm=$('pidemasOrderFullModal');if(mm)mm.classList.remove('is-open');document.body.classList.remove('pidemas-order-modal-lock')}catch(_){}
-      (window.pdExito||aviso)('Pedido marcado como no entregado. Administración fue avisada.');try{await loadOrders()}catch(_){}};
+      (window.pdExito||aviso)('Pedido marcado como no entregado. Pidemás fue avisado.');try{await loadOrders()}catch(_){}};
   }
   function boton(){
     const m=$('pidemasOrderFullModal');if(!m||!m.getClientRects().length)return;

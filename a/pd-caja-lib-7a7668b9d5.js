@@ -24,7 +24,7 @@ window.PdCaja=window.PdCaja||(function(){
     if(RX_PAY.test(d))return 'pago';
     return 'gasto';
   }
-  const LABEL={fondo:'Efectivo de administración',cobro_pedido:'Cobro de pedido',cobro:'Cobro',liquidacion:'Entrega total de caja',reinicio:'Reinicio de caja',entrega:'Entrega parcial',pago:'Pago',gasto:'Gasto'};
+  const LABEL={fondo:'Efectivo de Pidemás',cobro_pedido:'Cobro de pedido',cobro:'Cobro',liquidacion:'Entrega total de caja',reinicio:'Reinicio de caja',entrega:'Entrega parcial',pago:'Pago',gasto:'Gasto'};
   function clean(m){
     const raw=String(m.descripcion||'').trim(),pay=raw.match(RX_PAY);
     if(pay){const rest=raw.replace(RX_PAY,'').trim();return (pay[1].toLowerCase()==='compra'?'Compra':'Encomienda')+(rest?' · '+rest:'')}

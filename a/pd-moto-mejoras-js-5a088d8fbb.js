@@ -52,9 +52,9 @@
     const m=ME();if(!m)return;const v=!m.en_descanso;
     if(v&&OR().some(o=>ACTIVOS.includes(est(o)))&&!(await pdConfirmar('Todavía tienes pedidos en curso. ¿Igual quieres ponerte en descanso? No te asignarán pedidos nuevos.')))return;
     const r=await D().from('motorizados').update({en_descanso:v,en_descanso_desde:v?new Date().toISOString():null}).eq('id',m.id);
-    if(r.error){aviso(/en_descanso/.test(r.error.message)?'Esta opción todavía no está activada. Avísale a administración.':'No se pudo cambiar: '+r.error.message);return}
+    if(r.error){aviso(/en_descanso/.test(r.error.message)?'Esta opción todavía no está activada. Avísale a Pidemás.':'No se pudo cambiar: '+r.error.message);return}
     m.en_descanso=v;m.en_descanso_desde=v?new Date().toISOString():null;tarjeta();
-    (window.pdExito||aviso)(v?'Listo, estás en descanso. Administración ya lo ve.':'¡Bienvenido de vuelta! Ya puedes recibir pedidos.');
+    (window.pdExito||aviso)(v?'Listo, estás en descanso. Pidemás ya lo ve.':'¡Bienvenido de vuelta! Ya puedes recibir pedidos.');
   }
 
   /* ---------- 1. Ruta del día ---------- */
@@ -164,7 +164,7 @@
     const txt=String(window.__pidemasMotoCashBalanceText||'').trim();const val=parseFloat(txt.replace(/[^\d.-]/g,''))||0;
     try{localStorage.setItem(k,'1')}catch(e){}
     if(val<=0)return;
-    const b=hoja('Fin de tu turno','<p class="pdmmTx">Tu horario terminó. Antes de irte, entrega tu caja a administración.</p><div class="pdmmStat"><span>Saldo en caja</span><b>'+E(txt)+'</b></div><button type="button" class="btn" id="pdmmIrCaja">Ir a mi caja</button>');
+    const b=hoja('Fin de tu turno','<p class="pdmmTx">Tu horario terminó. Antes de irte, entrega tu caja a Pidemás.</p><div class="pdmmStat"><span>Saldo en caja</span><b>'+E(txt)+'</b></div><button type="button" class="btn" id="pdmmIrCaja">Ir a mi caja</button>');
     $('pdmmIrCaja').onclick=()=>{$('pdmmVelo')?.remove();document.querySelector('#nav [data-tab="cash"]')?.click()};
     try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(_){}
   }

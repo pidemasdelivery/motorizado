@@ -43,7 +43,7 @@
   const hb=$('homeSalaryBalance');if(hb)hb.textContent=amt;
   $('pdwCfg').innerHTML=cfg.hourly?`<span>Tipo</span><b>Por horas</b><span>Ingreso</span><b>${cfg.hire?E(S.parse(cfg.hire).toLocaleDateString('es-PE')):'—'}</b><span>Pago</span><b>S/ 25.625 + S/ 8 de gasolina por cada 5 h</b>`:`<span>Ingreso</span><b>${cfg.hire?E(S.parse(cfg.hire).toLocaleDateString('es-PE')):'Pendiente'}</b><span>Horario</span><b>${cfg.times?E(S.fmtTime(cfg.times.start)+' – '+S.fmtTime(cfg.times.end)):'Pendiente'}</b><span>Días</span><b>${cfg.days.length?E(ORDER.filter(d=>cfg.days.includes(d)).map(d=>SHORT[d]).join(', ')):'Pendiente'}</b>`;
   if(!res.ok){
-   $('pdslHero').innerHTML=`<span class="pdslKick">${E(P.label)}</span><span class="pdslHeroAmt" id="pdMotoSalaryAmount">${amt}</span><div class="pdslAlert">Tu sueldo empezará a contarse cuando Administración registre: ${E(cfg.missing.join(', '))}.</div>`;
+   $('pdslHero').innerHTML=`<span class="pdslKick">${E(P.label)}</span><span class="pdslHeroAmt" id="pdMotoSalaryAmount">${amt}</span><div class="pdslAlert">Tu sueldo empezará a contarse cuando Pidemás registre: ${E(cfg.missing.join(', '))}.</div>`;
    $('pdslCal').innerHTML='<span class="pdslMuted" style="grid-column:1/-1">Aún no hay asistencia para mostrar.</span>';
    window.pdPintarPagosMoto=function(){const pays=state.rows.filter(r=>String(r.tipo||'').toLowerCase()==='pago').sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha))).slice(0,10);$('pdwPays').innerHTML=pays.length?pays.map(r=>{const adv=/^adelanto/i.test(String(r.descripcion||''));return `<div class="pdslRow"><span><strong>${money(r.monto)}</strong><small>${E(fmtD(r.fecha))}${r.descripcion?' · '+E(r.descripcion):''}${r.periodo?' · '+E(S.periodOf(String(r.periodo).slice(0,10)).label):''}</small></span><span class="pdslPill ${adv?'adv':'ok'}">${adv?'Adelanto':'Recibido'}</span></div>`}).join(''):'<span class="pdslMuted">Aún no tienes pagos registrados.</span>'};window.pdPintarPagosMoto();$('pdslHistory').innerHTML='<span class="pdslMuted">Aún no hay quincenas anteriores.</span>';return;
   }
@@ -52,7 +52,7 @@
    <span class="pdslHeroAmt" id="pdMotoSalaryAmount">${amt}</span><span class="pdslHeroSub">Por cobrar de esta quincena${P.balance<-0.004?' · ya te adelantaron '+money(-P.balance):''}</span>
    <div class="pdslStats"><div><span>Jornadas</span><strong>${P.worked}</strong></div><div><span>Horas</span><strong>${P.hours}</strong></div><div><span>Gasolina</span><strong>${money(P.gasTotal)}</strong></div><div><span>Pagado</span><strong>${money(P.paid)}</strong></div></div>
    ${breakdown(P,res,amt)}
-   <span class="pdslHeroSub">Administración registra cada jornada que trabajas.</span>
+   <span class="pdslHeroSub">Pidemás registra cada jornada que trabajas.</span>
    ${res.previousDue>0.004?`<div class="pdslAlert">Pendiente de quincenas anteriores: ${money(res.previousDue)}</div>`:''}`;
    $('pdslCalTitle').textContent=cap(P.label)||'Quincena actual';
    const sh=(P.shifts||[]).slice().reverse();

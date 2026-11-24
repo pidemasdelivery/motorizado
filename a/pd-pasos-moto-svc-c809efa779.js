@@ -167,7 +167,7 @@
       const url=b.getPublicUrl(path)?.data?.publicUrl;if(!url)throw new Error('No se obtuvo el enlace de la foto.');
       const all=await guardarGuia(o,n,{guia_url:url,clave:d.sin?'':clave,sin_clave:!!d.sin,subido_en:new Date().toISOString()});
       try{if(d.url)URL.revokeObjectURL(d.url)}catch(_){}delete dr(o.id).pk[n];
-      info=all?'Listo: guardaste todas las guías. Ya puedes terminar la encomienda.':'Guía del paquete '+n+' guardada. Administración ya la ve.';
+      info=all?'Listo: guardaste todas las guías. Ya puedes terminar la encomienda.':'Guía del paquete '+n+' guardada. Pidemás ya la ve.';
       try{await loadOrders()}catch(_){}
     }catch(e){d.subiendo=false;error=String(e&&e.message||e)}
   }
@@ -182,12 +182,12 @@
     if(!d.file&&!chat){error='Toma la foto de la guía o voucher del paquete '+n+'.';return}
     if(!d.sin&&!String(d.clave||'').trim()){error='Escribe la clave del paquete '+n+' o marca que la agencia no dio clave.';return}
     const p=paquetes(o).find(x=>x.numero===n)||{numero:n};const txt=textoGuia(o,p,String(d.clave||'').trim(),!!d.sin);
-    const done=async()=>{try{const all=await marcarEnviado(o,n,d.sin);delete dr(o.id).pk[n];info=all?'Listo: enviaste todas las guías a Administración. Ya puedes terminar la encomienda.':'Paquete '+n+' enviado a Administración.';try{await loadOrders()}catch(_){}}
+    const done=async()=>{try{const all=await marcarEnviado(o,n,d.sin);delete dr(o.id).pk[n];info=all?'Listo: enviaste todas las guías a Pidemás. Ya puedes terminar la encomienda.':'Paquete '+n+' enviado a Pidemás.';try{await loadOrders()}catch(_){}}
       catch(e){error='Se abrió WhatsApp, pero no se pudo registrar el envío: '+(e.message||e)}};
-    if(chat){abrirWa('https://wa.me/'+waAdmin()+'?text='+encodeURIComponent(txt.replace('(Foto de la guía adjunta)','(Te envío la foto de la guía)')));info='En el chat del admin toca la cámara, toma la foto de la guía y envía.';await done();return}
+    if(chat){abrirWa('https://wa.me/'+waAdmin()+'?text='+encodeURIComponent(txt.replace('(Foto de la guía adjunta)','(Te envío la foto de la guía)')));info='En el chat de Pidemás toca la cámara, toma la foto de la guía y envía.';await done();return}
     try{const fl=new File([d.file],'guia_paquete_'+n+'.'+(((d.file.type||'').split('/')[1]||'jpg').replace('jpeg','jpg')),{type:d.file.type||'image/jpeg'});
-      if(navigator.canShare&&navigator.canShare({files:[fl]})){try{await navigator.share({files:[fl],text:txt,title:'Guía paquete '+n});await done()}catch(err){if(err&&err.name==='AbortError')error='No se envió la guía. Vuelve a tocar el botón y elige WhatsApp → Administración.';else{abrirWa('https://wa.me/'+waAdmin()+'?text='+encodeURIComponent(txt));await done()}}return}}catch(_){}
-    abrirWa('https://wa.me/'+waAdmin()+'?text='+encodeURIComponent(txt.replace('(Foto de la guía adjunta)','(Te adjunto la foto de la guía)')));info='Adjunta la foto de la guía en el chat de WhatsApp de Administración.';await done();
+      if(navigator.canShare&&navigator.canShare({files:[fl]})){try{await navigator.share({files:[fl],text:txt,title:'Guía paquete '+n});await done()}catch(err){if(err&&err.name==='AbortError')error='No se envió la guía. Vuelve a tocar el botón y elige WhatsApp → Pidemás.';else{abrirWa('https://wa.me/'+waAdmin()+'?text='+encodeURIComponent(txt));await done()}}return}}catch(_){}
+    abrirWa('https://wa.me/'+waAdmin()+'?text='+encodeURIComponent(txt.replace('(Foto de la guía adjunta)','(Te adjunto la foto de la guía)')));info='Adjunta la foto de la guía en el chat de WhatsApp de Pidemás.';await done();
   }
 
   /* ---------- cobros y compra (mismas reglas que la ventana anterior) ---------- */
@@ -364,7 +364,7 @@
           (e===2&&GR.length>1?`<button type="button" class="b o" data-act="lleg${gi}">Llegué a ${E(g.agencia||'esta agencia')}</button>`:'')+`</div>`).join('');
         s.body=h;}
       /* 3 · Guía y clave: agencia por agencia (pago de esa agencia y guías de sus paquetes) */
-      {const s=S(3);s.locked='Se muestra al llegar a la agencia';s.sum='Guías enviadas a Administración';
+      {const s=S(3);s.locked='Se muestra al llegar a la agencia';s.sum='Guías enviadas a Pidemás';
         let h=msg;const g=guardados(o),act=agActual(o),orden=gruposOrden(o);
           const guiaPkg=(p,g)=>{const sv=g.find(y=>Number(y.numero)===p.numero),ruta=E([p.agencia,p.destino].filter(Boolean).join(' → ')||'Paquete');
             if(pkgOk(sv)){const foto=sv.guia_url&&sv.guia_url!=='whatsapp'?sv.guia_url:'';
@@ -396,10 +396,10 @@
           if(debe)h+=pagadoTxt(o,gr,gi);
           h+=gr.paquetes.map(p=>guiaPkg(p,g)).join('');
         });
-        if(!fin&&!completo(o))h+=U.note('La foto y la clave se guardan en el pedido y Administración las ve al instante.');
+        if(!fin&&!completo(o))h+=U.note('La foto y la clave se guardan en el pedido y Pidemás las ve al instante.');
         s.body=h;}
       /* 4 · Terminar */
-      {const s=S(4);s.locked='Se muestra al enviar las guías';s.sum='Encomienda terminada';s.body=msg+U.st('Guías y claves enviadas a Administración. Administración se las manda al cliente.','ok');}
+      {const s=S(4);s.locked='Se muestra al enviar las guías';s.sum='Encomienda terminada';s.body=msg+U.st('Guías y claves enviadas a Pidemás. Pidemás se las manda al cliente.','ok');}
     }else{
       /* 2 · Llevar al cliente */
       {const s=S(2);s.locked=t==='compra'?'Se muestra al terminar la compra':'Se muestra al recoger';s.sum=recN+(o.direccion_entrega?' · '+o.direccion_entrega:'');

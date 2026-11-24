@@ -128,7 +128,7 @@ window.pdQuitarCarga=salir;
 <input id="cashInAmount" inputmode="decimal" min="0.01" placeholder="Monto del cobro" step="0.01" type="number"/>
 <select id="cashInSource" aria-label="Origen del efectivo" onchange="toggleCashInOther()" required>
 <option value="" selected disabled>Elige una opción</option>
-<option value="De Administrador">Administrador</option>
+<option value="De Administrador">De Pidemás</option>
 <option value="De Caja de Pera Madura Arequipa">Caja de la Pera Madura Arequipa</option>
 <option value="De Cliente de Pera Madura Arequipa">Cliente de la Pera Madura Arequipa</option>
 <option value="De Caja de Pera Madura Geranios">Caja de la Pera Madura Geranios</option>
@@ -148,7 +148,7 @@ window.pdQuitarCarga=salir;
 <input id="expenseAmount" min="0.01" placeholder="Monto del pago" step="0.01" type="number"/>
 <select id="expenseReason" aria-label="Motivo del pago" onchange="toggleExpenseOther()" required>
 <option value="" selected disabled>Elige una opción</option>
-<option value="Entregue al administrador">Pago al administrador</option>
+<option value="Entregue al administrador">Pago a Pidemás</option>
 <option value="Gaste en gasolina">Pago de gasolina</option>
 <option value="Gaste en encomienda">Pago de encomienda</option>
 <option value="Gasté en compra">Pago en compra</option>
@@ -191,7 +191,7 @@ window.pdQuitarCarga=salir;
 <div id="pdMotoSalaryMsg" class="pdslMsg" role="status" aria-live="polite"></div>
 </div>
 <script id="pd-sueldo-calc" src="a/pd-sueldo-calc-701abd279d.js"></script>
-<script id="pd-moto-salary-js" src="a/pd-moto-salary-js-be270d6810.js"></script>
+<script id="pd-moto-salary-js" src="a/pd-moto-salary-js-3d65efa0bc.js"></script>
 </section>
 
 <section class="hidden" id="profileTab">
@@ -201,7 +201,7 @@ window.pdQuitarCarga=salir;
   <h3>Mi horario de trabajo</h3>
   <div class="moto-profile-schedule-row"><span>Horario</span><strong id="motoProfileHours">Consultando horario…</strong></div>
   <div class="moto-profile-schedule-row"><span>Días laborables</span><strong id="motoProfileDays">Consultando días…</strong></div>
-  <p>Este horario lo configura administración. Si hay algún error, comunícate con administración para que lo actualice.</p>
+  <p>Este horario lo configura Pidemás. Si hay algún error, comunícate con Pidemás para que lo actualice.</p>
 </div>
 <div class="notice hidden" id="profileMsg" role="status"></div>
 <div class="profileGrid">
@@ -227,7 +227,7 @@ window.pdQuitarCarga=salir;
 <button aria-label="Notificaciones" class="navNotifButton" data-tab="notif"><span aria-hidden="true" class="navIcon"><svg viewbox="0 0 24 24"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"></path></svg></span><span class="navLabel">Avisos</span><span class="navNotifBadge" id="navNotifBadge">0</span></button>
 <button data-tab="profile"><span aria-hidden="true" class="navIcon"><svg viewbox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg></span><span class="navLabel">Mi perfil</span></button>
 </nav>
-<script src="a/pd-motorizado-js-6f8941f678.js"></script>
+<script src="a/pd-motorizado-js-983aa903bd.js"></script>
 <script id="pd-fix-cobro-vuelto-js" src="a/pd-fix-cobro-vuelto-js-da99d263ab.js"></script>
 
 <script id="pd-caja-recarga-forzada-inicio-v2">
@@ -248,11 +248,11 @@ window.pdQuitarCarga=salir;
 })();
 </script>
 
-<script id="pd-caja-lib" src="a/pd-caja-lib-76165ef5a8.js"></script>
-<script id="pdcjm-js" src="a/pdcjm-js-0f05935829.js"></script>
+<script id="pd-caja-lib" src="a/pd-caja-lib-7a7668b9d5.js"></script>
+<script id="pdcjm-js" src="a/pdcjm-js-f4b7e6a15c.js"></script>
 
 <div id="pdAlerts" aria-live="assertive"></div>
-<script id="pdn-js" src="a/pdn-js-589595f4c1.js"></script>
+<script id="pdn-js" src="a/pdn-js-668ef05521.js"></script>
 
 <script id="pdlg-js">
 (function(){
@@ -265,9 +265,9 @@ window.pdQuitarCarga=salir;
 
 <script id="pd-wa-js" src="a/pd-wa-js-c3259b1a8c.js"></script>
 
-<script id="pdflow-js" src="a/pdflow-js-901fff94fb.js"></script>
+<script id="pdflow-js" src="a/pdflow-js-76271a8cd0.js"></script>
 
-<script id="pdenc-js" src="a/pdenc-js-cdcbce8a97.js"></script>
+<script id="pdenc-js" src="a/pdenc-js-f974d205b0.js"></script>
 
 <script id="pd-notas-js" src="a/pd-notas-js-dbdc8d855c.js"></script>
 
@@ -290,7 +290,7 @@ window.pdQuitarCarga=salir;
 
 <script id="pdenc-cobro-js" src="a/pdenc-cobro-js-651e6eb6dc.js"></script>
 
-<script id="pd-gps-keep-js" src="a/pd-gps-keep-js-830d9671ab.js"></script>
+<script id="pd-gps-keep-js" src="a/pd-gps-keep-js-e59365b304.js"></script>
 
 <script id="pidemas-aviso-moto">
  
@@ -322,7 +322,7 @@ window.pdTxt=function(s){
 };
 </script>
 
-<script id="pidemas-moto-pasos-js" src="a/pidemas-moto-pasos-js-5c35d86e72.js"></script>
+<script id="pidemas-moto-pasos-js" src="a/pidemas-moto-pasos-js-73c92f023c.js"></script>
 
 <script id="pidemas-boton-atras" src="a/pidemas-boton-atras-e0a2473f86.js"></script>
 <script id="pidemas-version">
@@ -371,9 +371,9 @@ window.pdTxt=function(s){
 <script id="pd-ui-unico-js" src="a/pd-ui-unico-js-fb099c078f.js"></script>
 <link rel="stylesheet" id="pd-caja-control-moto-css" href="a/pd-caja-control-moto-css-f86e008879.css">
 <style id="pd-sueldo-control-moto-css">.pdsmVelo{position:fixed;inset:0;z-index:2147483646;background:rgba(31,26,23,.45);display:flex;align-items:flex-end;justify-content:center}.pdsmHoja{width:100%;max-width:560px;max-height:calc(100dvh - 56px);overflow:auto;background:#fff;border-radius:24px 24px 0 0;padding:16px 18px calc(18px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px;font-family:var(--font,Inter,sans-serif)}.pdsmTop{display:flex;justify-content:space-between;align-items:center}.pdsmTop strong{font:800 20px var(--font,Inter,sans-serif);color:#C4410C}.pdsmX{width:44px;height:44px;border-radius:14px;border:1px solid #F1E4DC;background:#fff;font:500 24px/1 var(--font,Inter,sans-serif);color:#1F1A17}</style>
-<script id="pd-pedidos-control-moto" src="a/pd-pedidos-control-moto-668a629aa3.js"></script>
+<script id="pd-pedidos-control-moto" src="a/pd-pedidos-control-moto-4afa396ea3.js"></script>
 <link rel="stylesheet" id="pd-pedidos-control-moto-css" href="a/pd-pedidos-control-moto-css-989bd4f242.css">
-<script id="pd-moto-mejoras-js" src="a/pd-moto-mejoras-js-77c0c62a4b.js"></script>
+<script id="pd-moto-mejoras-js" src="a/pd-moto-mejoras-js-5a088d8fbb.js"></script>
 <link rel="stylesheet" id="pd-moto-mejoras-css" href="a/pd-moto-mejoras-css-c03bc5dcb9.css">
 <style id="pd-perfil-moto-compacto"></style>
 <script id="pd-sin-velo" src="a/pd-sin-velo-70e102ad9f.js"></script>
@@ -394,16 +394,16 @@ window.pdTxt=function(s){
 <script id="pd-pasos-moto" src="a/pd-pasos-moto-56fd0799ba.js"></script>
 <script id="pd-dialogos-nuevo" src="a/pd-dialogos-nuevo-2aadf763da.js"></script>
 <script id="pd-minusculas" src="a/pd-minusculas-bb210e9f8a.js"></script>
-<script id="pd-pasos-moto-svc" src="a/pd-pasos-moto-svc-4c17a4e9af.js"></script>
+<script id="pd-pasos-moto-svc" src="a/pd-pasos-moto-svc-c809efa779.js"></script>
 <script id="pd-avisos-perfil" src="a/pd-avisos-perfil-5b763bd1ab.js"></script>
-<script id="pd-app-moto" src="a/pd-app-moto-7cf092300b.js"></script>
+<script id="pd-app-moto" src="a/pd-app-moto-5a8e35bfec.js"></script>
 <script src="a/pd-sin-tirar-7c274dd83c.js"></script>
 </body>
 
 </html>
 
 <div id="pidemasSuspendedScreen" role="alertdialog" aria-modal="true" aria-labelledby="pidemasSuspendedTitle">
- <div class="ps-card"><img class="ps-logo" alt="Pidemás Delivery"><span class="ps-pill">Cuenta suspendida</span><h1 id="pidemasSuspendedTitle">No puedes recibir pedidos por ahora</h1><p>El administrador de Pidemás suspendió tu cuenta de motorizado. Cuando la reactive, podrás volver a entrar y recibir pedidos.</p><button type="button" id="pidemasContactAdminBtn">Escribir al administrador</button><button type="button" class="ps-out" id="pidemasSuspendedLogout">Cerrar sesión</button></div>
+ <div class="ps-card"><img class="ps-logo" alt="Pidemás Delivery"><span class="ps-pill">Cuenta suspendida</span><h1 id="pidemasSuspendedTitle">No puedes recibir pedidos por ahora</h1><p>Pidemás suspendió tu cuenta de motorizado. Cuando la reactive, podrás volver a entrar y recibir pedidos.</p><button type="button" id="pidemasContactAdminBtn">Escribir a Pidemás</button><button type="button" class="ps-out" id="pidemasSuspendedLogout">Cerrar sesión</button></div>
 </div>
 <script id="pidemas-suspendido-logo">
 /* La pantalla de cuenta suspendida usa el mismo logo de la cabecera del panel */

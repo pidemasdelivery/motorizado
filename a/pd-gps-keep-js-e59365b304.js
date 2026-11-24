@@ -14,7 +14,7 @@
   function aviso(min){
     if(document.getElementById('pdGpsBack'))return;
     const d=document.createElement('div');d.id='pdGpsBack';
-    d.innerHTML=`<div class="bx" role="dialog" aria-label="GPS detenido"><h3>Tu GPS estuvo detenido</h3><div class="warn">Durante ${min} min no se envió tu ubicación.</div><p>Mientras tengas un pedido en curso, mantén esta página abierta. Si cierras la página o cambias de app, Administración y el cliente dejan de ver dónde estás.</p><button type="button">Entendido</button></div>`;
+    d.innerHTML=`<div class="bx" role="dialog" aria-label="GPS detenido"><h3>Tu GPS estuvo detenido</h3><div class="warn">Durante ${min} min no se envió tu ubicación.</div><p>Mientras tengas un pedido en curso, mantén esta página abierta. Si cierras la página o cambias de app, Pidemás y el cliente dejan de ver dónde estás.</p><button type="button">Entendido</button></div>`;
     d.addEventListener('click',e=>{if(e.target===d||e.target.closest('button'))d.remove()});
     document.body.appendChild(d);
   }

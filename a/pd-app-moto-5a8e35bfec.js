@@ -220,7 +220,7 @@
     cu.forEach((o,i)=>h+=(i===0?`<div class="kick">${cu.length>1?'Pedidos en curso':'Pedido en curso'}</div>`:'')+tarjeta(o,i===0&&!nv.length));
     if(!nv.length&&!cu.length)h+=`<div class="vac">No tienes pedidos en curso.<br>Te avisamos con sonido cuando te asignen uno.</div>`;
     const sal=($('homeSalaryBalance')||{}).textContent||'S/ 0.00',caj=($('homeCashBalance')||{}).textContent||'S/ 0.00';
-    h+=`<div class="two"><button type="button" class="mt" data-t="billetera"><span>Sueldo acumulado</span><b>${E(sal.trim())}</b><small>Abrir billetera</small></button><button type="button" class="mt" data-t="caja"><span>Saldo en caja</span><b>${E(caj.trim())}</b><small>Por entregar a administración</small></button></div>`;
+    h+=`<div class="two"><button type="button" class="mt" data-t="billetera"><span>Sueldo acumulado</span><b>${E(sal.trim())}</b><small>Abrir billetera</small></button><button type="button" class="mt" data-t="caja"><span>Saldo en caja</span><b>${E(caj.trim())}</b><small>Por entregar a Pidemás</small></button></div>`;
     h+=tl('p:ruta',IC.route,'Ruta del día',cu.length?cu.length+' pedido'+(cu.length===1?'':'s')+' en curso':'Sin pedidos en curso')+tl('p:rendimiento',IC.chart,'Mi rendimiento','Entregas, tiempos y meta')+tl('p:calificaciones',IC.star,'Mis calificaciones','Lo que dicen los clientes')+tl('p:historial',IC.clock,'Historial','Buscar entregas pasadas');
     h+=`<div class="btns b2"><button type="button" class="b g" data-a="grupo">${U.I.wa}Abrir grupo</button><button type="button" class="b" data-a="act">${IC.refresh}Actualizar</button></div>`;
     const foto=pr.foto_url||'';const nb=noLeidos();
@@ -247,8 +247,8 @@
     if(!c.data||!P)return {head:top('Mi caja','Caja',`<button type="button" class="ib" data-a="caja:act" aria-label="Actualizar">${IC.refresh}</button>`),body:c.err?`<div class="err">${E(c.err)}</div>`:'<div class="load">Cargando tu caja…</div>'};
     const sp=P.split(c.data),s=P.summary(sp.current);
     const k=diaLima(Date.now()),hoyM=sp.current.filter(m=>diaLima(m.creado_en)===k),sh=P.summary(hoyM);
-    h+=`<div class="amt"><div class="k">Saldo en caja</div><div class="n">${M(s.balance)}</div><div class="pill">Por entregar a administración</div></div>`;
-    h+=`<div class="g2"><div class="kp"><span>Entró hoy</span><b>+ ${M(sh.ingresos)}</b><small>Cobros ${M(sh.cobros)} · admin ${M(sh.fondos)}</small></div><div class="kp"><span>Salió hoy</span><b>− ${M(sh.retiros)}</b><small>Pagos, gastos y entregas</small></div></div>`;
+    h+=`<div class="amt"><div class="k">Saldo en caja</div><div class="n">${M(s.balance)}</div><div class="pill">Por entregar a Pidemás</div></div>`;
+    h+=`<div class="g2"><div class="kp"><span>Entró hoy</span><b>+ ${M(sh.ingresos)}</b><small>Cobros ${M(sh.cobros)} · Pidemás ${M(sh.fondos)}</small></div><div class="kp"><span>Salió hoy</span><b>− ${M(sh.retiros)}</b><small>Pagos, gastos y entregas</small></div></div>`;
     h+=`<div class="btns b2"><button type="button" class="b" style="height:50px;background:#15803D;border-color:#15803D;color:#FFFFFF" data-a="reg:ingreso">${XI.plus}Registrar ingreso</button><button type="button" class="b" style="height:50px;background:#B42318;border-color:#B42318;color:#FFFFFF" data-a="reg:salida">${XI.minus}Registrar salida</button></div>`;
     if(F.caja.ok)h+=`<div class="msgok">${E(F.caja.ok)}</div>`;
     /* movimientos */
@@ -262,7 +262,7 @@
   }
   function registrar(){
     const f=F.caja,ing=f.modo==='ingreso';
-    const SUB={'De Administrador':'Para vueltos o gastos','Otros':'Escribe el detalle','Entregue al administrador':'Le entregaste efectivo a administración','Gaste en gasolina':'Combustible de la moto','Gaste en encomienda':'Pagaste una encomienda','Gasté en compra':'Pagaste una compra de un cliente'};
+    const SUB={'De Administrador':'Para vueltos o gastos','Otros':'Escribe el detalle','Entregue al administrador':'Le entregaste efectivo a Pidemás','Gaste en gasolina':'Combustible de la moto','Gaste en encomienda':'Pagaste una encomienda','Gasté en compra':'Pagaste una compra de un cliente'};
     const ops=[...(($(ing?'cashInSource':'expenseReason')||{}).options||[])].filter(o=>o.value).map(o=>[o.value,o.textContent.trim()]);
     const monto=Number(String(f.monto).replace(',','.'))||0;
     let h=`<div class="seg" style="grid-template-columns:repeat(2,minmax(0,1fr))"><button type="button" data-cm="ingreso" class="${ing?'on':''}">Ingreso</button><button type="button" data-cm="salida" class="${!ing?'on':''}">Salida</button></div>`;
@@ -295,7 +295,7 @@
     let res;try{res=S2.calc(c.data.moto,c.data.rows)}catch(e){return {head,body:`<div class="err">${E(e.message)}</div>`}}
     const cfg=res.cfg,P=res.current,saldo=res.ok?Math.max(0,P.balance):0;
     let h=`<div class="amt"><div class="k">${E(P.label||'Quincena actual')}</div><div class="n">${M(saldo)}</div><div class="pill">Por cobrar de esta quincena</div></div>`;
-    if(!res.ok)h+=U.st('Tu sueldo empieza a contarse cuando administración registre: '+E((cfg.missing||[]).join(', '))+'.');
+    if(!res.ok)h+=U.st('Tu sueldo empieza a contarse cuando Pidemás registre: '+E((cfg.missing||[]).join(', '))+'.');
     else{const gas=res.hourly?P.gasTotal:P.gasDays*(S2.GAS||8);const desc=(P.descRows||[]).reduce((s,r)=>s+(Number(r.monto)||0),0);
       h+=`<div class="cd"><div class="lbl">Cómo se calcula</div><div class="li"><span>Sueldo</span><b>${M(P.earned-gas)}</b></div><div class="li"><span>Gasolina</span><b>${M(gas)}</b></div><div class="li"><span>Ganado</span><b>${M(P.earned)}</b></div>${desc?`<div class="li"><span>Descuentos</span><b>− ${M(desc)}</b></div>`:''}<div class="li"><span>Ya pagado</span><b>− ${M(P.paid)}</b></div><div class="li" style="border-top:1px solid #F1E4DA;padding-top:8px"><span>Por cobrar</span><b style="font-size:18px">${M(saldo)}</b></div></div>`;
       if(typeof window.__pdHoyMsg==='function')try{h+=U.note(E(window.__pdHoyMsg(P,res)))}catch(_){}}
@@ -320,7 +320,7 @@
     const DS2={lunes:'Lun',martes:'Mar',miercoles:'Mié','miércoles':'Mié',jueves:'Jue',viernes:'Vie',sabado:'Sáb','sábado':'Sáb',domingo:'Dom'};const dias=(Array.isArray(m.dias_laborables)?m.dias_laborables:String(m.dias_laborables||'').split(/[,;|]/)).map(d=>DS2[String(d).trim().toLowerCase()]||String(d).trim()).filter(Boolean).join(', ');
     let h=`<div class="ph"><span class="ava"${foto?` style="background-image:url('${E(foto)}')"`:''}>${foto?'':E(String(f.nombre||'M').charAt(0))}</span><div style="flex:1 1 0%;min-width:0"><b style="display:block;font-size:20px">${E(f.nombre||'Motorizado')}</b><span class="pl g" style="margin-top:4px">Motorizado · Activo</span></div><label class="b" style="height:44px;cursor:pointer">${XI.camera}Foto<input type="file" accept="image/jpeg,image/png,image/webp" data-in="foto" style="display:none"></label></div>`;
     if(foto&&!f.prev)h+=`<button type="button" class="b" style="height:40px;color:#B42318;border-color:#F4C7C3" data-a="pf:fotoq">Quitar foto</button>`;
-    h+=`<div class="cd"><div class="lbl">Mi trabajo</div><div class="li"><span>Horario</span><b style="white-space:normal;text-align:right">${E(m.horario_trabajo||'Lo configura admin.')}</b></div><div class="li"><span>Días</span><b style="white-space:normal;text-align:right">${E(dias||'Lo configura admin.')}</b></div><div class="li"><span>Ingreso</span><b>${E(m.fecha_ingreso||'Pendiente')}</b></div><div style="font-size:13px;color:#6B5E55">Si algo no es correcto, avísale a administración.</div></div>`;
+    h+=`<div class="cd"><div class="lbl">Mi trabajo</div><div class="li"><span>Horario</span><b style="white-space:normal;text-align:right">${E(m.horario_trabajo||'Lo configura Pidemás.')}</b></div><div class="li"><span>Días</span><b style="white-space:normal;text-align:right">${E(dias||'Lo configura Pidemás.')}</b></div><div class="li"><span>Ingreso</span><b>${E(m.fecha_ingreso||'Pendiente')}</b></div><div style="font-size:13px;color:#6B5E55">Si algo no es correcto, avísale a Pidemás.</div></div>`;
     const fl=(id,l,k,t,ph)=>`<div class="fld"><label for="${id}">${l}</label><input id="${id}" type="${t||'text'}" value="${E(f[k])}" data-in="pf:${k}"${ph?` placeholder="${E(ph)}"`:''}></div>`;
     h+=`<div class="cd"><div class="lbl">Mis datos</div>${fl('pfN','Nombres completos','nombre')}${fl('pfT','Teléfono','tel','tel')}${fl('pfD','DNI / documento','doc')}${fl('pfP','Placa de la moto','placa')}${fl('pfG','Enlace del grupo de WhatsApp','grupo','url','https://chat.whatsapp.com/…')}<div class="fld"><label>Correo</label><input value="${E(SES()?.user?.email||'')}" disabled></div></div>`;
     if(f.msg)h+=`<div class="err">${E(f.msg)}</div>`;if(f.ok)h+=`<div class="msgok">${E(f.ok)}</div>`;
@@ -545,7 +545,7 @@
       case 'caja:act':C.caja&&(C.caja.t=0);try{window.loadCash&&window.loadCash()}catch(_){}key='';pintar();break;
       case 'reg:ingreso':case 'reg:salida':F.caja={modo:A==='reg:ingreso'?'ingreso':'salida',monto:'',origen:'',otro:'',msg:'',ok:''};ir('caja','registrar');break;
       case 'caja:wa':{const r=window.__pdCajaResumen;if(!r)break;const m=ME()||{};
-        const txt=['*PIDEMÁS · RESUMEN DE CAJA*','Motorizado: '+(m.nombre_completo||''),'Fecha: '+new Date().toLocaleDateString('es-PE'),'','Saldo en caja: '+M(r.s.balance),'Cobros de hoy: '+M(r.sh.cobros),'Recibido de administración hoy: '+M(r.sh.fondos),'Pagos y gastos de hoy: '+M(r.sh.pagos+r.sh.gastos),'Entregado hoy: '+M(r.sh.entregas)].join('\n');
+        const txt=['*PIDEMÁS · RESUMEN DE CAJA*','Motorizado: '+(m.nombre_completo||''),'Fecha: '+new Date().toLocaleDateString('es-PE'),'','Saldo en caja: '+M(r.s.balance),'Cobros de hoy: '+M(r.sh.cobros),'Recibido de Pidemás hoy: '+M(r.sh.fondos),'Pagos y gastos de hoy: '+M(r.sh.pagos+r.sh.gastos),'Entregado hoy: '+M(r.sh.entregas)].join('\n');
         wa('https://wa.me/'+adminTel()+'?text='+encodeURIComponent(txt));break}
       case 'caja:excel':{const d=$('cashReportDate');if(d&&!d.value)d.value=diaLima(Date.now());await ocupado(async()=>{try{await (window.exportCashExcel||exportCashExcel)()}catch(err){aviso('No se pudo descargar: '+(err.message||err))}});break}
       case 'sueldo:act':C.sueldo&&(C.sueldo.t=0);key='';pintar();break;

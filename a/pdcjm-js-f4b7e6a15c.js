@@ -49,7 +49,7 @@
   let limit=40,closedLimit=10,last=null,reqId=0;
   function movRow(m){
     const k=C.kind(m),a=C.amount(m),inc=m.tipo==='ingreso';
-    return `<div class="pdcjMov"><span><strong>${E(C.clean(m))}${C.vueltoTag?C.vueltoTag(m):''}${C.revTag?C.revTag(m):''}<span class="pdcjTag ${inc?'in':''}">${E(k==='fondo'?'Efectivo de administración':C.LABEL[k])}</span></strong><small>${E(hm(m.creado_en))}${m.pedido_id?' · Pedido #'+E(String(m.pedido_id).slice(0,8).toUpperCase()):''}</small>${C.extra?C.extra(m,'moto'):''}</span><span class="pdcjMovR"><b class="${inc?'':'out'}">${inc?'+':'−'} ${money(a)}</b></span></div>`;
+    return `<div class="pdcjMov"><span><strong>${E(C.clean(m))}${C.vueltoTag?C.vueltoTag(m):''}${C.revTag?C.revTag(m):''}<span class="pdcjTag ${inc?'in':''}">${E(k==='fondo'?'Efectivo de Pidemás':C.LABEL[k])}</span></strong><small>${E(hm(m.creado_en))}${m.pedido_id?' · Pedido #'+E(String(m.pedido_id).slice(0,8).toUpperCase()):''}</small>${C.extra?C.extra(m,'moto'):''}</span><span class="pdcjMovR"><b class="${inc?'':'out'}">${inc?'+':'−'} ${money(a)}</b></span></div>`;
   }
   const grouped=list=>{let l='';return list.map(m=>{const k=dayKey(m.creado_en);const h=k!==l?`<div class="pdcjDay"><span>${E(k)}</span></div>`:'';l=k;return h+movRow(m)}).join('')};
   function render(){
@@ -59,7 +59,7 @@
     window.__pidemasMotoCashBalanceText=txt;
     if(bal)bal.textContent=txt;const home=$('homeCashBalance');if(home)home.textContent=txt;
     if(only)only.textContent=money(s.cobros+s.fondos);if(pays)pays.textContent=money(s.pagos);
-    $('pdcjmSub').textContent=(s.balance<0?'Pagaste más de lo que cobraste; administración te lo repondrá.':'Efectivo que debes entregar a administración')+(sp.openedAt?' · caja abierta desde '+dt(sp.openedAt):'');
+    $('pdcjmSub').textContent=(s.balance<0?'Pagaste más de lo que cobraste; Pidemás te lo repondrá.':'Efectivo que debes entregar a Pidemás')+(sp.openedAt?' · caja abierta desde '+dt(sp.openedAt):'');
     $('pdcjmStats').innerHTML=`<div><span>Cobros</span><strong>${money(s.cobros)}</strong></div><div><span>Me dieron</span><strong>${money(s.fondos)}</strong></div><div><span>Pagos</span><strong>${money(s.pagos)}</strong></div><div><span>Gastos y entregas</span><strong>${money(s.gastos+s.entregas)}</strong></div>`;
     const cur=sp.current;
     movBox.innerHTML=cur.length?grouped(cur.slice(0,limit))+(cur.length>limit?`<button type="button" class="pdcjMore" data-more="1">Ver más (${cur.length-limit} restantes)</button>`:''):'<div class="pdcjEmpty">Sin movimientos desde tu última entrega.</div>';

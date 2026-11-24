@@ -118,7 +118,7 @@
         continue;
       }
       if(now.estado!==before.estado){
-        if(now.estado==='cancelado'){ackOrder(id);alertUser({kind:'cancel',pedidoId:id,title:'Pedido '+code(id)+' cancelado',text:'Administración canceló este pedido. No lo entregues.'+(o.direccion_entrega?' Entrega: '+o.direccion_entrega:'')});}
+        if(now.estado==='cancelado'){ackOrder(id);alertUser({kind:'cancel',pedidoId:id,title:'Pedido '+code(id)+' cancelado',text:'Pidemás canceló este pedido. No lo entregues.'+(o.direccion_entrega?' Entrega: '+o.direccion_entrega:'')});}
         else if(now.estado==='asignado')alertUser({kind:'nuevo',sticky:true,key:'nuevo:'+id,pedidoId:id,title:'Pedido '+code(id)+' asignado de nuevo',text:describe(o),actions:acceptActions(o)});
         else if(before.estado==='asignado')ackOrder(id);
         else if(!RIDER_STATES.includes(now.estado))alertUser({kind:'cambio',pedidoId:id,title:'Pedido '+code(id)+' cambió de estado',text:'Ahora: '+(typeof statusText==='function'?statusText(now.estado):now.estado)});
@@ -127,11 +127,11 @@
       if(now.obs!==before.obs&&now.obs)changes.push('obs');
       if(changes.length&&now.estado!=='cancelado'&&now.estado!=='entregado'&&!(window.pdEsPropio&&window.pdEsPropio(id))){
         const parts=changes.slice(0,3).map(k=>k==='obs'?'nuevas indicaciones: «'+((a,b)=>{const L=v=>String(v||'').replace(/(Ubicación(?: de (?:recojo|entrega))?:\s*)?https?:\/\/\S+/gi,' ').replace(/\s+/g,' ').trim();const A=L(a),B=L(b);let n=B.startsWith(A)?B.slice(A.length):B;n=n.trim();return n||'ubicación actualizada'})(before.obs,now.obs).slice(0,110)+'»':k==='total'?'monto '+money(before.total)+' → '+money(now.total):'nueva '+FIELDS[k]+': '+(now[k]||'—'));
-        alertUser({kind:'cambio',pedidoId:id,key:'cambio:'+id,title:'Pedido '+code(id)+' modificado por administración',text:parts.join(' · ')+(changes.length>3?' · y '+(changes.length-3)+' cambio(s) más':'')});
+        alertUser({kind:'cambio',pedidoId:id,key:'cambio:'+id,title:'Pedido '+code(id)+' modificado por Pidemás',text:parts.join(' · ')+(changes.length>3?' · y '+(changes.length-3)+' cambio(s) más':'')});
       }
     }
     for(const [id,before] of prevOrders){
-      if(!cur.has(id)&&!['entregado','cancelado'].includes(before.estado)){ackOrder(id);alertUser({kind:'cancel',title:'Pedido '+code(id)+' retirado de tu lista',text:'Administración lo reasignó o lo eliminó. Ya no está a tu cargo.'+(before.direccion_entrega?' Entrega: '+before.direccion_entrega:'')});}
+      if(!cur.has(id)&&!['entregado','cancelado'].includes(before.estado)){ackOrder(id);alertUser({kind:'cancel',title:'Pedido '+code(id)+' retirado de tu lista',text:'Pidemás lo reasignó o lo eliminó. Ya no está a tu cargo.'+(before.direccion_entrega?' Entrega: '+before.direccion_entrega:'')});}
     }
     prevOrders=new Map([...cur].map(([k,o])=>[k,snap(o)]));
   }
@@ -163,12 +163,12 @@
     for(const [id,m] of ids){
       if(prevCash.has(id))continue;
       const d=String(m.descripcion||'');const amt=Number(m.monto||0);
-      if(/^INGRESO DE ADMINISTRADOR/i.test(d))alertUser({kind:'caja',title:'Administración te dio '+money(amt),text:d.replace(/^INGRESO DE ADMINISTRADOR\s*[·:]?\s*/i,'')||'Efectivo agregado a tu caja.'});
-      else if(/LIQUIDACI[ÓO]N DE CAJA/i.test(d))alertUser({kind:'caja',title:'Caja recibida: '+money(amt),text:'Administración recibió tu caja completa. Empiezas una caja nueva en S/ 0.00.'});
-      else if(/^ENTREGA PARCIAL DE CAJA/i.test(d))alertUser({kind:'caja',title:'Entrega parcial registrada: '+money(amt),text:'Administración registró que le entregaste parte de tu caja.'});
-      else if(/REINICIO DE CAJA/i.test(d))alertUser({kind:'caja',title:'Tu caja fue reiniciada',text:'Administración inició una caja nueva.'});
+      if(/^INGRESO DE ADMINISTRADOR/i.test(d))alertUser({kind:'caja',title:'Pidemás te dio '+money(amt),text:d.replace(/^INGRESO DE ADMINISTRADOR\s*[·:]?\s*/i,'')||'Efectivo agregado a tu caja.'});
+      else if(/LIQUIDACI[ÓO]N DE CAJA/i.test(d))alertUser({kind:'caja',title:'Caja recibida: '+money(amt),text:'Pidemás recibió tu caja completa. Empiezas una caja nueva en S/ 0.00.'});
+      else if(/^ENTREGA PARCIAL DE CAJA/i.test(d))alertUser({kind:'caja',title:'Entrega parcial registrada: '+money(amt),text:'Pidemás registró que le entregaste parte de tu caja.'});
+      else if(/REINICIO DE CAJA/i.test(d))alertUser({kind:'caja',title:'Tu caja fue reiniciada',text:'Pidemás inició una caja nueva.'});
     }
-    for(const [id,m] of prevCash){if(!ids.has(id))alertUser({kind:'cambio',title:'Se corrigió un movimiento de tu caja',text:'Administración borró: '+(String(m.descripcion||'movimiento').replace(/^(INGRESO DE ADMINISTRADOR|INGRESO MANUAL DE CAJA)\s*[·:]?\s*/i,''))+' ('+money(m.monto)+').'})}
+    for(const [id,m] of prevCash){if(!ids.has(id))alertUser({kind:'cambio',title:'Se corrigió un movimiento de tu caja',text:'Pidemás borró: '+(String(m.descripcion||'movimiento').replace(/^(INGRESO DE ADMINISTRADOR|INGRESO MANUAL DE CAJA)\s*[·:]?\s*/i,''))+' ('+money(m.monto)+').'})}
     prevCash=ids;
   });
 

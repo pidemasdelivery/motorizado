@@ -74,9 +74,9 @@
     const done=async()=>{
       btn.disabled=true;btn.textContent='Registrando envío…';
       try{const all=await marcarEnviado(o,n,sin);delete DRAFT[dk];
-        show($('appMsg'),all?'Listo: enviaste todas las guías a Administración. Ya puedes finalizar la encomienda.':'Paquete '+n+' enviado a Administración.');
+        show($('appMsg'),all?'Listo: enviaste todas las guías a Pidemás. Ya puedes finalizar la encomienda.':'Paquete '+n+' enviado a Pidemás.');
         await loadOrders();
-      }catch(e){show($('appMsg'),'Se abrió WhatsApp, pero no se pudo registrar el envío: '+(e.message||e));btn.disabled=false;btn.textContent='Enviar al admin por WhatsApp'}
+      }catch(e){show($('appMsg'),'Se abrió WhatsApp, pero no se pudo registrar el envío: '+(e.message||e));btn.disabled=false;btn.textContent='Enviar a Pidemás por WhatsApp'}
     };
     
 
@@ -85,7 +85,7 @@
       const url='https://wa.me/'+waAdmin()+'?text='+encodeURIComponent(txt.replace('(Foto de la guía adjunta)','(Te envío la foto de la guía)'));
       if(typeof window.pdOpenWhatsApp==='function')window.pdOpenWhatsApp(url);else window.open(url,'_blank'); 
 
-      show($('appMsg'),'En el chat del admin toca la cámara, toma la foto de la guía y envía.');
+      show($('appMsg'),'En el chat de Pidemás toca la cámara, toma la foto de la guía y envía.');
       done();return;
     }
     
@@ -93,7 +93,7 @@
     try{
       const fl=new File([file],'guia_paquete_'+n+'.'+(((file.type||'').split('/')[1]||'jpg').replace('jpeg','jpg')),{type:file.type||'image/jpeg'});
       if(navigator.canShare&&navigator.canShare({files:[fl]})){
-        navigator.share({files:[fl],text:txt,title:'Guía paquete '+n}).then(done).catch(err=>{if(err&&err.name==='AbortError')show($('appMsg'),'No se envió la guía. Vuelve a tocar el botón y elige WhatsApp → Administración.');else{abrirTexto()}});
+        navigator.share({files:[fl],text:txt,title:'Guía paquete '+n}).then(done).catch(err=>{if(err&&err.name==='AbortError')show($('appMsg'),'No se envió la guía. Vuelve a tocar el botón y elige WhatsApp → Pidemás.');else{abrirTexto()}});
         return;
       }
     }catch(_){}
@@ -103,7 +103,7 @@
 
       const url='https://wa.me/'+waAdmin()+'?text='+encodeURIComponent(txt.replace('(Foto de la guía adjunta)','(Te adjunto la foto de la guía)'));
       if(typeof window.pdOpenWhatsApp==='function')window.pdOpenWhatsApp(url);else window.open(url,'_blank');
-      show($('appMsg'),'Adjunta la foto de la guía en el chat de WhatsApp de Administración.');
+      show($('appMsg'),'Adjunta la foto de la guía en el chat de WhatsApp de Pidemás.');
       done();
     }
   }
@@ -127,12 +127,12 @@
     if(!asig&&idx<=2){
       const m=momento(o),tot=money(o.total);
       if((m==='recojo_efectivo'||m==='recojo_yape')&&o.pago_confirmado===true){cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Cobro registrado · ${E(money(o.total))}</b><br>${String(o.metodo_pago||'').toLowerCase()==='yape'?'Pagó con Yape.':'En efectivo.'}</span></div>`)}else
-      if(m==='pagado')cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Ya pagado · no cobres nada</b><br>El cliente pagó a Administración.</span></div>`);
+      if(m==='pagado')cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Ya pagado · no cobres nada</b><br>El cliente pagó a Pidemás.</span></div>`);
       else if(m==='al_final')cards.push(`<div class="pfCard"><span class="pfDot"></span><span><b>No cobres ahora</b><br>El cliente paga después de recibir la guía y la clave.</span></div>`);
       else if(m==='recojo_yape')cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra ${E(tot)} con Yape al recoger</b><br><button type="button" class="peQr" onclick="showYapeQr('${E(id)}')">Mostrar QR</button></span></div>`);
       else{const pc=typeof extractCashPayment==='function'?extractCashPayment(o.observaciones,o.total):{};cards.push(`<div class="pfCard warn"><span class="pfDot"></span><span><b>Cobra ${E(tot)} al recoger</b><br>En efectivo o con Yape (QR).${pc.paid!=null?`<br>Si paga en efectivo: paga con S/ ${Number(pc.paid).toFixed(2)} · lleva <b>S/ ${Number(pc.change||0).toFixed(2)}</b> de vuelto`:''}<br><button type="button" class="peQr" onclick="showYapeQr('${E(id)}')">Mostrar QR</button></span></div>`)}
     }
-    if(idx===4&&!asig)cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Guías y claves enviadas a Administración</b><br>Administración se las mandará al cliente.</span></div>`);
+    if(idx===4&&!asig)cards.push(`<div class="pfCard ok"><span class="pfDot"></span><span><b>Guías y claves enviadas a Pidemás</b><br>Pidemás se las mandará al cliente.</span></div>`);
     if(cards.length){const box=document.createElement('div');box.className='pfCards';box.innerHTML=cards.join('');(head.closest('.pdMBand')||head).after(box)}
 
     
@@ -155,14 +155,14 @@
         const ruta=[p.agencia,p.destino].filter(Boolean).join(' → ')||'Paquete';
         if(fin&&!pkgOk(sv))return `<div class="pePkg"><div class="pePkgHead"><b>Paquete ${p.numero} · ${E(ruta)}</b><span class="pePill">Sin guía</span></div><span style="font-size:13px;color:var(--fr-muted)">La encomienda se finalizó sin registrar la guía de este paquete.</span></div>`;
         if(pkgOk(sv)&&!(DRAFT[id+':'+p.numero]||{}).resend){
-          if(sv.enviado_whatsapp)return `<div class="pePkg done"><div class="pePkgHead"><b>Paquete ${p.numero} · ${E(ruta)}</b><span class="pePill">Enviado</span></div><div class="peDone"><span><b>Guía y clave enviadas al admin</b>Por WhatsApp${sv.enviado_en?' · '+E(new Date(sv.enviado_en).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})):''}</span></div>${fin?'':`<button type="button" class="peResend" data-n="${p.numero}">Volver a enviar</button>`}</div>`;
+          if(sv.enviado_whatsapp)return `<div class="pePkg done"><div class="pePkgHead"><b>Paquete ${p.numero} · ${E(ruta)}</b><span class="pePill">Enviado</span></div><div class="peDone"><span><b>Guía y clave enviadas a Pidemás</b>Por WhatsApp${sv.enviado_en?' · '+E(new Date(sv.enviado_en).toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit'})):''}</span></div>${fin?'':`<button type="button" class="peResend" data-n="${p.numero}">Volver a enviar</button>`}</div>`;
           return `<div class="pePkg done"><div class="pePkgHead"><b>Paquete ${p.numero} · ${E(ruta)}</b><span class="pePill">Completo</span></div><div class="peDone"><img src="${E(sv.guia_url)}" alt="Guía del paquete ${p.numero}"><span><b>${sv.sin_clave?'Sin clave':'Clave ••'+E(String(sv.clave).slice(-2))}</b>Foto de la guía guardada</span></div></div>`;}
         return `<div class="pePkg" data-n="${p.numero}"><div class="pePkgHead"><b>Paquete ${p.numero} · ${E(ruta)}</b><span class="pePill">${p.tipoPago==='pago_en_agencia'?'Pagas en agencia':'Paga a destino'}</span></div>
           <button type="button" class="pePhoto"><span class="peTxt">Tomar foto de la guía o voucher</span><small>Que se lean el número de guía y el monto</small></button><input type="file" class="peFile" data-pd-cloud="1" hidden accept="image/jpeg,image/png,image/webp" capture="environment" aria-label="Foto de la guía del paquete ${p.numero}">
           <input class="peClave" type="text" inputmode="text" maxlength="60" placeholder="Clave de recojo" aria-label="Clave del paquete ${p.numero}">
           <label class="peSin"><input type="checkbox"> La agencia no dio clave</label>
           <button type="button" class="peSave">Enviar foto por WhatsApp</button>
-          <button type="button" class="peChat">Abrir chat del admin</button><small class="peWaHint peWaHint2">Se abre el chat del admin con el pedido y la clave ya escritos. En WhatsApp toca la cámara, toma la foto de la guía y envía.</small></div>`;
+          <button type="button" class="peChat">Abrir chat de Pidemás</button><small class="peWaHint peWaHint2">Se abre el chat de Pidemás con el pedido y la clave ya escritos. En WhatsApp toca la cámara, toma la foto de la guía y envía.</small></div>`;
       }).join('');
       {
 
@@ -216,7 +216,7 @@
       if(pend.length&&!acts.querySelector('.peGoGuide')){
         acts.querySelectorAll('button:disabled').forEach(b=>b.classList.add('pfHidden'));
         const g=document.createElement('button');g.type='button';g.className='peGoGuide';
-        g.textContent=pend.length>1?`Enviar guía y clave al admin · faltan ${pend.length}`:`Enviar guía y clave del paquete ${pend[0].dataset.n} al admin`;
+        g.textContent=pend.length>1?`Enviar guía y clave a Pidemás · faltan ${pend.length}`:`Enviar guía y clave del paquete ${pend[0].dataset.n} a Pidemás`;
         g.addEventListener('click',()=>{const t=content.querySelector('.pePkg[data-n]');if(t){t.scrollIntoView({behavior:'smooth',block:'start'});t.classList.add('peFlash');setTimeout(()=>t.classList.remove('peFlash'),1200)}});
         const pr=acts.querySelector('.pfProblem');pr?pr.before(g):acts.appendChild(g);
       }

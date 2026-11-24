@@ -317,12 +317,12 @@ function populateProfile(p={},m={}){
   if($("profileDisplayRole")) $("profileDisplayRole").textContent="Motorizado · Pidemás";
   const hoursEl=$("motoProfileHours"), daysEl=$("motoProfileDays");
   const hours=String(m.horario_trabajo||"").trim();
-  if(hoursEl) hoursEl.textContent=hours||"Pendiente de configurar por administración";
+  if(hoursEl) hoursEl.textContent=hours||"Pendiente de configurar por Pidemás";
   const dayNames={lunes:"Lunes",martes:"Martes",miercoles:"Miércoles",miércoles:"Miércoles",jueves:"Jueves",viernes:"Viernes",sabado:"Sábado",sábado:"Sábado",domingo:"Domingo"};
   let days=Array.isArray(m.dias_laborables)?m.dias_laborables:[];
   if(typeof m.dias_laborables==="string") { try { const parsed=JSON.parse(m.dias_laborables); days=Array.isArray(parsed)?parsed:m.dias_laborables.split(/[,;|]/); } catch(e) { days=m.dias_laborables.split(/[,;|]/); } }
   const formatted=days.map(d=>dayNames[String(d).trim().toLowerCase()]||String(d).trim()).filter(Boolean);
-  if(daysEl) daysEl.textContent=formatted.length?formatted.join(" · "):"Pendiente de configurar por administración";
+  if(daysEl) daysEl.textContent=formatted.length?formatted.join(" · "):"Pendiente de configurar por Pidemás";
   setProfilePhoto(p.foto_url||"");
 }
 
@@ -649,11 +649,11 @@ window.uploadYapeProof=async function(id){
     if(error)throw new Error("La foto subió, pero no se pudo vincular al pedido: "+error.message);
     if(!data)throw new Error("No se confirmó el guardado del comprobante en este pedido.");
     o.observaciones=data.observaciones;
-    show($("appMsg"),"Foto enviada. El pedido queda pendiente de confirmación del administrador.");
+    show($("appMsg"),"Foto enviada. El pedido queda pendiente de confirmación de Pidemás.");
     await loadOrders();
   }catch(e){
     show($("appMsg"),""+(e?.message||String(e)));
-    if(btn){btn.disabled=false;btn.textContent="Subir foto y enviar a administración"}
+    if(btn){btn.disabled=false;btn.textContent="Subir foto y enviar a Pidemás"}
   }
 };
 
@@ -692,7 +692,7 @@ function populateFullOrderModal(card, modal){
   temp.innerHTML=source.innerHTML;
 
   const workflowPattern=/acceptOrder|startOrder|markInDelivery|deliverOrder|confirmEncomiendaAgency|showYapeQr|confirmPayment|registerPayment|uploadYapeProof|payEncomiendaFromCaja/i;
-  const workflowLabel=/^(aceptar pedido|iniciar pedido|en camino|en entrega|confirmar pago|confirmar cobro|pedido entregado|finalizar pedido|pedido finalizado|en agencia|confirmar en agencia|registrar pago|subir foto y enviar a administración|mostrar qr de yape)$/i;
+  const workflowLabel=/^(aceptar pedido|iniciar pedido|en camino|en entrega|confirmar pago|confirmar cobro|pedido entregado|finalizar pedido|pedido finalizado|en agencia|confirmar en agencia|registrar pago|subir foto y enviar a Pidemás|mostrar qr de yape)$/i;
 
   if(assigned){
     
@@ -854,7 +854,7 @@ function renderOrders(){
         const paid=o.pago_confirmado===true;
         if(paid){
           buttons = `
-            <div class="notice" style="margin:0 0 10px">✓ Pago confirmado${method==="yape"?" por administración":""}.</div>
+            <div class="notice" style="margin:0 0 10px">✓ Pago confirmado${method==="yape"?" por Pidemás":""}.</div>
             <button class="btn" onclick="deliverOrder('${o.id}')">Pedido entregado</button>
           `;
         }else if(method==="yape"){
@@ -1085,7 +1085,7 @@ function renderOrders(){
           <div class="deliveryTimeValue" data-delivery-timer data-start="${esc(o.en_camino_en)}" ${o.entregado_en?`data-end="${esc(o.entregado_en)}"`:''}>00:00</div>
           <div class="deliveryTimeState">${o.entregado_en ? 'Tiempo total' : 'En curso'}</div>
         </div>` : ''}
-        ${bloqueado?`<div class="notice"><b>Pedido cancelado por administración.</b><br>Este pedido ya no permite continuar con las acciones normales.</div>`:""}
+        ${bloqueado?`<div class="notice"><b>Pedido cancelado por Pidemás.</b><br>Este pedido ya no permite continuar con las acciones normales.</div>`:""}
         ${pdMDetail}
         ${o.tipo_servicio==="encomienda" ? "" : `<div class="grid" style="margin-top:14px">${buttons}</div>`}
         ${o.tipo_servicio==="encomienda" && buttons ? `<div class="grid" style="margin-top:14px">${buttons}</div>` : ""}
@@ -1158,7 +1158,7 @@ window.acceptOrder=async id=>{
 window.rejectOrder=async id=>{
   const o=orders.find(x=>String(x.id)===String(id));
   if(!o || o.estado!=="asignado")return;
-  if(!(await pdConfirmar("¿Rechazar este pedido? Se devolverá a Administración para que pueda asignarlo a otro motorizado.")))return;
+  if(!(await pdConfirmar("¿Rechazar este pedido? Se devolverá a Pidemás para que pueda asignarlo a otro motorizado.")))return;
   const btns=[...document.querySelectorAll(`button[onclick*="rejectOrder('${id}')"]`)];
   btns.forEach(b=>{b.disabled=true;b.textContent="Rechazando...";});
   localPedidoUpdates.add(id);
@@ -1166,12 +1166,12 @@ window.rejectOrder=async id=>{
   const data=Array.isArray(__rz)?__rz[0]:__rz;
   if(error || !data){
     localPedidoUpdates.delete(id);
-    show($("appMsg"),"No se pudo rechazar el pedido. Puede que Administración lo haya actualizado. "+(error?.message||""));
+    show($("appMsg"),"No se pudo rechazar el pedido. Puede que Pidemás lo haya actualizado. "+(error?.message||""));
     btns.forEach(b=>{b.disabled=false;b.textContent="Rechazar pedido";});
     return;
   }
   window.__pidemasCashDrafts && delete window.__pidemasCashDrafts[id];
-  show($("appMsg"),"Pedido rechazado y devuelto a Administración para una nueva asignación.");
+  show($("appMsg"),"Pedido rechazado y devuelto a Pidemás para una nueva asignación.");
   await loadOrders();
 };
 window.startOrder=async id=>{
@@ -1179,7 +1179,7 @@ window.startOrder=async id=>{
   if(!o)return;
   const servicioNormalizado=String(o.tipo_servicio||"").toLowerCase().replace(/[á\s_-]+/g, "");
   const enviadoPorAdmin=["recojoyentrega", "recojoentrega", "compra"].includes(servicioNormalizado);
-  /* si Administración ya asignó el pedido, el negocio ya lo confirmó: no se espera la marca de «listo» */
+  /* si Pidemás ya asignó el pedido, el negocio ya lo confirmó: no se espera la marca de «listo» */
   
 
   await changeState(id,"en_camino",{en_camino_en:new Date().toISOString()});
@@ -2276,10 +2276,10 @@ function startRealtime(){
         const id=payload.new?.id;
         const local=localPedidoUpdates.has(id);
         if(local) localPedidoUpdates.delete(id);
-        else if(payload.new?.estado==="cancelado") notifyNewEvent("Pedido cancelado por administración");
-        else notifyNewEvent("Pedido actualizado por administración");
+        else if(payload.new?.estado==="cancelado") notifyNewEvent("Pedido cancelado por Pidemás");
+        else notifyNewEvent("Pedido actualizado por Pidemás");
       }else if(payload.eventType==="DELETE"){
-        notifyNewEvent("Pedido eliminado por administración");
+        notifyNewEvent("Pedido eliminado por Pidemás");
       }
       await loadOrders();
     })
