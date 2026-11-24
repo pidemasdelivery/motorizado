@@ -90,6 +90,7 @@
   function grupoPagado(o,g,gi){const pr=procDe(o,g);return !!(pr&&pr.pago_en)||(legado(o,gi)&&cajaPago(o))||(grupos(o).length===1&&cajaPago(o))}
   function grupoListo(o,g,gi){const sv=guardados(o);const debe=g.paquetes.some(p=>p.tipoPago==='pago_en_agencia');
     return (!debe||grupoPagado(o,g,gi))&&g.paquetes.every(p=>pkgOk(sv.find(x=>Number(x.numero)===p.numero)))}
+  function montoAg(o,g,gi){const pr=procDe(o,g);if(pr&&pr.pago_en)return Number(pr.pago_monto)||0;return grupoPagado(o,g,gi)?Number(o.monto_pagado_agencia)||0:null}
   function pagadoTxt(o,g,gi){const pr=procDe(o,g);if(!g.paquetes.some(p=>p.tipoPago==='pago_en_agencia'))return '';
     return grupoPagado(o,g,gi)?U.st('Pago en '+E(g.agencia||'agencia')+' registrado'+(pr&&pr.pago_monto?' · '+M(pr.pago_monto):''),'ok'):''}
   function agActual(o){const GR=grupos(o);for(let gi=0;gi<GR.length;gi++){const g=GR[gi],pr=procDe(o,g);if(((pr&&pr.llegada_en)||legado(o,gi))&&!grupoListo(o,g,gi))return {g,gi}}return null}
@@ -204,7 +205,7 @@
     if(!(await pdConfirmar(modo==='efectivo'?`¿Registrar cobro de ${M(total)} en efectivo?`:`¿Confirmas que el cliente ya pagó ${M(total)} por Yape al QR de Pidemás? Revisa la constancia en su celular.`)))return;
     try{
       if(modo==='yape'&&window.PdYapeP)await PdYapeP.guardar(o);
-      const upd={pago_confirmado:true,metodo_pago:modo,monto_recibido:Math.round(paga*100)/100};
+      const upd={pago_confirmado:true,metodo_pago:modo,monto_recibido:Math.round(paga*100)/100,pago_servicio_momento:modo==='yape'?'recojo_yape':'recojo_efectivo'};
       const {error:ue}=await D().from('pedidos').update(upd).eq('id',o.id).eq('motorizado_id',ME().id);if(ue)throw ue;
       try{await D().from('cobros').upsert({pedido_id:o.id,motorizado_id:ME().id,monto:total,metodo_pago:modo,confirmado:true,confirmado_en:new Date().toISOString()},{onConflict:'pedido_id'})}catch(_){}
       if(modo==='efectivo'){
@@ -281,7 +282,7 @@
   function etapa(o){
     const s=st(o),t=tipo(o);
     if(s==='entregado')return 9;if(s==='cancelado')return -1;if(s==='asignado')return 0;
-    if(t==='enc'){if(completo(o)&&enAgencia(o))return 4;if(enAgencia(o))return 3;if(['en_camino','camino_entrega','en_entrega','confirmando_pago'].includes(s))return 2;return 1}
+    if(t==='enc'){if(completo(o)&&enAgencia(o)&&grupos(o).every((g,gi)=>grupoListo(o,g,gi)))return 4;if(enAgencia(o))return 3;if(['en_camino','camino_entrega','en_entrega','confirmando_pago'].includes(s))return 2;return 1}
     if(['aceptado','pedido_aceptado','camino_recojo'].includes(s))return 1;
     if(['en_camino','camino_entrega'].includes(s))return 2;
     if(['en_entrega','confirmando_pago'].includes(s))return cobroEntrega(o)&&o.pago_confirmado!==true?3:4;
@@ -373,9 +374,9 @@
       {const s=S(3);s.locked='Se muestra al llegar a la agencia';s.sum='Guías enviadas a Pidemás';
         let h=msg;const g=guardados(o),act=agActual(o),orden=gruposOrden(o);
           /* lo que se pagó en la agencia por este paquete (si varios paquetes van a la misma agencia y no se anotó por paquete, se dice que va junto) */
-          const pagoGuia=p=>{const ag=E(p.agencia||'la agencia');if(p.tipoPago!=='pago_en_agencia')return U.st('Envío pago a destino','ok');const gr=grupos(o).find(x=>x.clave===claveAg(p.agencia)),pr=gr&&procDe(o,gr);if(!pr||!pr.pago_en)return U.st('Pago en '+ag+' pendiente');
+          const pagoGuia=p=>{const ag=E(p.agencia||'la agencia');if(p.tipoPago!=='pago_en_agencia')return U.st('Envío pago a destino','ok');const GG=grupos(o),gi=GG.findIndex(x=>x.clave===claveAg(p.agencia)),gr=GG[gi],pr=(gr&&procDe(o,gr))||{},mt=gr?montoAg(o,gr,gi):null;if(mt==null)return U.st('Pago en '+ag+' pendiente');
             const pp=pr.pago_paquetes||{},n=gr.paquetes.filter(x=>x.tipoPago==='pago_en_agencia');if(pp[p.numero]!=null)return U.st('Pago en '+ag+' registrado · '+M(pp[p.numero]),'ok');
-            return U.st('Pago en '+ag+' registrado · '+M(pr.pago_monto)+(n.length>1?' (paquetes '+n.map(x=>x.numero).join(' y ')+')':''),'ok')};
+            return U.st('Pago en '+ag+' registrado · '+M(mt)+(n.length>1?' (paquetes '+n.map(x=>x.numero).join(' y ')+')':''),'ok')};
           const guiaPkg=(p,g)=>{const sv=g.find(y=>Number(y.numero)===p.numero),ruta=E([p.agencia,p.destino].filter(Boolean).join(' → ')||'Paquete');
             if(pkgOk(sv)){const foto=sv.guia_url&&sv.guia_url!=='whatsapp'?sv.guia_url:'';
               const li=(k,v,c)=>`<div class="li"><span>${k}</span><b style="text-align:right${c?';color:'+c:''}">${v}</b></div>`;
@@ -413,7 +414,7 @@
           h+=gr.paquetes.map(p=>guiaPkg(p,g)).join('');
         });
         /* Pagos en agencias (igual que en el Admin): una fila por agencia lista con su monto y horas, y el total */
-        if(listas.length){let tot=0;const fila=({gr})=>{const pr=procDe(o,gr)||{},debe=gr.paquetes.some(p=>p.tipoPago==='pago_en_agencia'),m=debe&&pr.pago_en?Number(pr.pago_monto)||0:0;tot+=m;
+        if(listas.length){let tot=0;const fila=({gr,gi})=>{const pr=procDe(o,gr)||{},debe=gr.paquetes.some(p=>p.tipoPago==='pago_en_agencia'),m=debe?montoAg(o,gr,gi)||0:0;tot+=m;
             const sub=['Paquete'+(gr.paquetes.length>1?'s ':' ')+gr.paquetes.map(p=>p.numero).join(', '),pr.llegada_en?'Llegó '+U.hora(pr.llegada_en):'',pr.pago_en?'Pagó '+U.hora(pr.pago_en):(debe?'':'Pago a destino')].filter(Boolean).join(' · ');
             return `<div style="display:flex;flex-direction:column;gap:4px;padding:10px 0;border-top:1px solid #F1E4DA"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px"><b style="font-size:16px">${E(gr.agencia||'Agencia')}</b><b style="font-size:17px">${debe?M(m):'—'}</b></div><span style="font-size:13px;color:#6B5E55">${E(sub)}</span></div>`};
           const filas=listas.map(fila).join('');
