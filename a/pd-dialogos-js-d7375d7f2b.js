@@ -19,9 +19,18 @@
         const [vu,to,pa]=texto,M=n=>'S/ '+(Number(n)||0).toFixed(2);
         let d=document.getElementById('pdDlg');
         if(!d){d=document.createElement('div');d.id='pdDlg';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');document.body.appendChild(d)}
-        d.innerHTML=`<div class="pdDlgCard"><div class="pdDlgIco">${ICO.pregunta}</div><h3 class="pdDlgT">Vuelto de ${E(M(vu))}</h3><p class="pdDlgP">El cliente paga con ${E(M(pa))} un pedido de ${E(M(to))}. ¿De dónde sacas el vuelto?</p>
-          <div class="pdVuOps"><button type="button" class="pdVuOp" data-v="propio"><b>De mi bolsillo</b><small>La caja no se toca: entra ${E(M(pa))} completo</small></button><button type="button" class="pdVuOp" data-v="caja"><b>De la caja</b><small>Se descuentan ${E(M(vu))} de la caja</small></button></div>
-          <div class="pdDlgBtns uno"><button type="button" class="pdDlgNo">Cancelar</button></div></div>`;
+        /* diseño Pidemás: monto grande en la caja melocotón (como «Cobro al cliente») y dos botones grandes */
+        const F='font-family:var(--font,"PdInter",Inter,system-ui,sans-serif)';
+        const op=(v,t,sub)=>`<button type="button" class="pdVuOp" data-v="${v}" style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;width:100%;min-height:70px;padding:14px 16px;border-radius:16px;border:1.5px solid #F1E4DA;background:#FFFFFF;color:#1F1A17;text-align:left;cursor:pointer;${F}"><b style="font-weight:800;font-size:17px;line-height:1.2;color:#1F1A17">${t}</b><small style="font-weight:500;font-size:14px;line-height:1.35;color:#6B5E55">${sub}</small></button>`;
+        d.innerHTML=`<div class="pdDlgCard" style="${F}">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 14px;border-radius:20px;background:#FCE9DF;text-align:center">
+            <div style="font-weight:800;font-size:14px;line-height:1.2;letter-spacing:.08em;text-transform:uppercase;color:#9A330A">Vuelto al cliente</div>
+            <div style="font-weight:900;font-size:44px;line-height:1.05;color:#1F1A17;letter-spacing:-.02em">${E(M(vu))}</div>
+            <div style="display:inline-block;padding:6px 14px;border-radius:999px;background:#FFFFFF;font-weight:700;font-size:14px;line-height:1.2;color:#1F1A17">Paga con ${E(M(pa))} · pedido ${E(M(to))}</div>
+          </div>
+          <div style="margin:16px 0 8px;font-weight:800;font-size:14px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;color:#6B5E55">¿De dónde sacas el vuelto?</div>
+          <div style="display:grid;gap:10px">${op('propio','De mi bolsillo','La caja no se toca: entra '+E(M(pa))+' completo')}${op('caja','De la caja','Se descuentan '+E(M(vu))+' de la caja')}</div>
+          <button type="button" class="pdDlgNo" style="display:block;width:100%;height:54px;margin-top:12px;border-radius:16px;border:1.5px solid #F1E4DA;background:#FFFFFF;color:#1F1A17;font-weight:800;font-size:16px;line-height:1;cursor:pointer;${F}">Cancelar</button></div>`;
         d.hidden=false;document.documentElement.classList.add('pdDlgOn');
         const fin=v=>{d.hidden=true;d.innerHTML='';document.documentElement.classList.remove('pdDlgOn');document.removeEventListener('keydown',tecla,true);res(v)};
         function tecla(e){if(e.key==='Escape'){e.preventDefault();fin(null)}}
