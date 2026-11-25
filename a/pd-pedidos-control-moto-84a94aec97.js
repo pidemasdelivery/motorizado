@@ -1,5 +1,6 @@
 /* Prueba de entrega (código o foto) · Cliente no contesta */
 (function(){
+  try{if(!document.getElementById('pdFotoBtnCss')){const st=document.createElement('style');st.id='pdFotoBtnCss';st.textContent=".pdFotoBtn{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:12px!important;min-height:64px!important;height:auto!important;padding:10px 16px 10px 10px!important;box-sizing:border-box;border:1.5px dashed #E2A07E!important;border-radius:18px!important;background:#FFF4EC!important;color:#9A330A!important;font:inherit;font-size:15.5px!important;font-weight:800!important;line-height:1.25;text-align:left!important;cursor:pointer;box-shadow:0 2px 8px rgba(196,65,12,.08)!important;text-decoration:none;width:100%;margin-top:8px}.pdFotoBtn::before{content:'';flex:0 0 46px;width:46px;height:46px;border-radius:14px;background:#C4410C url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M4%208h3l2-3h6l2%203h3v11H4z%22%2F%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2213%22%20r%3D%223.5%22%2F%3E%3C%2Fsvg%3E') center/24px no-repeat;box-shadow:0 4px 10px rgba(196,65,12,.28)}";(document.head||document.documentElement).appendChild(st)}}catch(_){}
   if(window.__pdPedMoto)return;window.__pdPedMoto=1;
   const $=id=>document.getElementById(id);
   const E=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -26,7 +27,7 @@
 
   /* ---------- 1. Prueba de entrega ---------- */
   function pedirPrueba(o){return new Promise(res=>{
-    const v=hoja('Confirma la entrega','<p class="pdpeTx">Pídele al cliente su <b>código de entrega</b> de 4 números. Lo ve en el seguimiento de su pedido.</p><input id="pdpeCod" class="pdpeCod" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="• • • •"><p class="pdpeMsg" id="pdpeMsg"></p><button type="button" class="btn" id="pdpeOk">Confirmar entrega</button><button type="button" class="pdpeAlt" id="pdpeFoto">El cliente no tiene el código: tomar foto de la entrega</button>');
+    const v=hoja('Confirma la entrega','<p class="pdpeTx">Pídele al cliente su <b>código de entrega</b> de 4 números. Lo ve en el seguimiento de su pedido.</p><input id="pdpeCod" class="pdpeCod" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="• • • •"><p class="pdpeMsg" id="pdpeMsg"></p><button type="button" class="btn" id="pdpeOk">Confirmar entrega</button><button type="button" class="pdpeAlt pdFotoBtn" id="pdpeFoto">El cliente no tiene el código: tomar foto de la entrega</button>');
     let hecho=false;const fin=r=>{if(hecho)return;hecho=true;v.remove();res(r)};
     v.querySelector('.pdsmX').onclick=()=>fin(false);v.addEventListener('click',e=>{if(e.target===v)fin(false)});
     const inp=$('pdpeCod'),msg=$('pdpeMsg');setTimeout(()=>inp.focus(),80);
