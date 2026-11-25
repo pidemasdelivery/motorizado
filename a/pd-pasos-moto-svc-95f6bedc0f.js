@@ -539,6 +539,7 @@
         if(yape(o))h+=qrBtn(o)+U.note('Confirma solo cuando veas la constancia del pago en el celular del cliente.')+(window.PdYapeP?PdYapeP.html(o):'');
         else{const v=draft(id),vals=[];[10,20,50,100,200].forEach(z=>{const r=Math.ceil(monto/z)*z;if(r>monto+0.004&&!vals.includes(r))vals.push(r)});
           h+=`<div><div class="lbl">¿Con cuánto paga?</div><input class="inp" data-act="cash" inputmode="decimal" placeholder="${M(monto)}" value="${E(v)}"></div><div class="quick" data-act="quick">${[monto].concat(vals.slice(0,3)).map((z,i)=>`<button type="button" data-v="${z.toFixed(2)}" class="${Number(v)===z?'on':''}">${i?'S/ '+z:'Exacto'}</button>`).join('')}</div><div data-vuelto>${I_v(v,monto)}</div>`}
+        if(!yape(o)&&window.PdYapeP&&PdYapeP.despuesHtml)h+=PdYapeP.despuesHtml(o);
         s.body=h;}}
       /* 4 · Confirmar entrega */
       {const s=S(4);s.locked=cobro?'Se muestra después de cobrar':'Se muestra al llegar donde el cliente';s.sum='Entregado';
@@ -549,8 +550,9 @@
     const nn=v=>Number(String(v??'').trim().replace(',','.'));
     const faltaY=()=>yape(o)&&window.PdYapeP?PdYapeP.falta(o):'';
     const okAg=gi=>{const g=grupos(o)[gi];if(!g)return true;const pp=g.paquetes.filter(p=>p.tipoPago==='pago_en_agencia');return pp.length>1?pp.every(p=>nn(d['cp'+gi+'_'+p.numero])>0):nn(d['cj'+gi])>0};
-    const okCash=()=>{if(!efectivo(o))return !faltaY();const v=nn(draft(id));return v>0&&v+0.004>=aCobrar(o)};
-    const hCash=()=>{if(!efectivo(o))return faltaY()||'';const v=nn(draft(id));return !(v>0)?'Escribe con cuánto te paga el cliente':v+0.004<aCobrar(o)?'El cliente debe pagar al menos '+M(aCobrar(o)):''};
+    const pdEsp=()=>String(o.pago_despues_estado||'')==='pendiente';
+    const okCash=()=>{if(pdEsp())return false;if(!efectivo(o))return !faltaY();const v=nn(draft(id));return v>0&&v+0.004>=aCobrar(o)};
+    const hCash=()=>{if(pdEsp())return 'Espera que Pidemás autorice el pago después.';if(!efectivo(o))return faltaY()||'';const v=nn(draft(id));return !(v>0)?'Escribe con cuánto te paga el cliente':v+0.004<aCobrar(o)?'El cliente debe pagar al menos '+M(aCobrar(o)):''};
     const modoR=()=>d.modo||(momento(o)==='recojo_yape'?'yape':'efectivo');
     const okRec=()=>{if(modoR()!=='efectivo')return !(window.PdYapeP&&PdYapeP.falta(o));const raw=String(d.monto||'').trim();return !raw||nn(raw)+0.004>=Number(o.total)};
     const hRec=()=>modoR()!=='efectivo'?((window.PdYapeP&&PdYapeP.falta(o))||''):okRec()?'':'El cliente debe pagar al menos '+M(o.total);
