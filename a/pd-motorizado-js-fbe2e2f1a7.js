@@ -1306,7 +1306,7 @@ window.confirmPayment=async id=>{
     
 
     const {data:existingMovement,error:checkMovementError}=await db.from("movimientos_caja")
-      .select("id").eq("motorizado_id",moto.id).eq("pedido_id",id).eq("tipo","ingreso").not("descripcion","ilike","INGRESO MANUAL%").not("descripcion","ilike","EFECTIVO PARA COMPRA%").limit(1);
+      .select("id").eq("motorizado_id",moto.id).eq("pedido_id",id).eq("tipo","ingreso").not("descripcion","ilike","INGRESO MANUAL%").not("descripcion","ilike","EFECTIVO PARA %").limit(1);
     if(checkMovementError){
       show($("appMsg"),"Pago confirmado, pero no se pudo verificar el movimiento de caja: "+checkMovementError.message);
       await loadOrders();await loadCash();return;
@@ -1961,7 +1961,7 @@ async function loadCashCore(requestId){
 
   const incomeMovs=cycleMovs.filter(m=>m.tipo==="ingreso");
   const income=incomeMovs.reduce((sum,m)=>sum+Number(m.monto||0),0);
-  const isManualIncome=m=>/^(INGRESO MANUAL DE CAJA|INGRESO DE ADMINISTRADOR|EFECTIVO PARA COMPRA)\s*[·:]?/i.test(String(m.descripcion||"").trim());
+  const isManualIncome=m=>/^(INGRESO MANUAL DE CAJA|INGRESO DE ADMINISTRADOR|EFECTIVO PARA (?:COMPRA|ENCOMIENDA))\s*[·:]?/i.test(String(m.descripcion||"").trim());
   const extraIncome=incomeMovs.filter(isManualIncome).reduce((sum,m)=>sum+Number(m.monto||0),0);
   const orderIncome=income-extraIncome;
   const isPayment=m=>/^(PAGO DE ENCOMIENDA|PAGO DE COMPRA)/i.test(String(m.descripcion||"").trim());
@@ -2004,7 +2004,7 @@ async function loadCashCore(requestId){
     const rawDescription=String(m.descripcion||"").trim();
     const d=rawDescription.toUpperCase();
     const esPago=isPayment(m), esLiquidacion=/LIQUIDACI[ÓO]N DE CAJA/.test(d);
-    const esIngresoManual=/^(INGRESO MANUAL DE CAJA|INGRESO DE ADMINISTRADOR|EFECTIVO PARA COMPRA)\s*[·:]?/i.test(rawDescription);
+    const esIngresoManual=/^(INGRESO MANUAL DE CAJA|INGRESO DE ADMINISTRADOR|EFECTIVO PARA (?:COMPRA|ENCOMIENDA))\s*[·:]?/i.test(rawDescription);
     const label=esLiquidacion?"ENTREGA DE CAJA":esPago?"PAGO":isIncome?(m.pedido_id?"COBRO DE PEDIDO":"COBRO"):"PAGO";
     
 
@@ -2085,7 +2085,7 @@ async function exportCashExcel(){
     movs=movs.filter(m=>{const t=new Date(m.creado_en).getTime();return t>=start&&t<=end;});
     movs.sort((a,b)=>new Date(a.creado_en)-new Date(b.creado_en));
     const isPayment=m=>/^(PAGO DE ENCOMIENDA|PAGO DE COMPRA)/i.test(String(m.descripcion||"").trim());
-    const isManual=m=>/^(INGRESO MANUAL DE CAJA|INGRESO DE ADMINISTRADOR|EFECTIVO PARA COMPRA)\s*[·:]?/i.test(String(m.descripcion||"").trim());
+    const isManual=m=>/^(INGRESO MANUAL DE CAJA|INGRESO DE ADMINISTRADOR|EFECTIVO PARA (?:COMPRA|ENCOMIENDA))\s*[·:]?/i.test(String(m.descripcion||"").trim());
     let running=0,totalIncome=0,totalOut=0,totalOrders=0,totalExtra=0,totalPayments=0,totalExpenses=0;
     const rows=movs.map(m=>{
       const date=new Date(m.creado_en),income=m.tipo==="ingreso",amount=Math.round(Number(m.monto||0)*100)/100;

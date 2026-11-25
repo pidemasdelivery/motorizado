@@ -58,7 +58,7 @@
       const {error:ue}=await db.from('pedidos').update(upd).eq('id',o.id).eq('motorizado_id',moto.id);if(ue)throw ue;
       try{await db.from('cobros').upsert({pedido_id:o.id,motorizado_id:moto.id,monto:total,metodo_pago:st.modo,confirmado:true,confirmado_en:new Date().toISOString()},{onConflict:'pedido_id'})}catch(_){}
       if(st.modo==='efectivo'){
-        const {data:prev}=await db.from('movimientos_caja').select('id').eq('motorizado_id',moto.id).eq('pedido_id',o.id).eq('tipo','ingreso').not('descripcion','ilike','INGRESO MANUAL%').not('descripcion','ilike','EFECTIVO PARA COMPRA%').limit(1);
+        const {data:prev}=await db.from('movimientos_caja').select('id').eq('motorizado_id',moto.id).eq('pedido_id',o.id).eq('tipo','ingreso').not('descripcion','ilike','INGRESO MANUAL%').not('descripcion','ilike','EFECTIVO PARA %').limit(1);
         if(!(prev&&prev.length)){
           const {error:me}=await db.from('movimientos_caja').insert({motorizado_id:moto.id,pedido_id:o.id,tipo:'ingreso',monto:Math.round((vueltoDe==='propio'?paga:total)*100)/100,
             descripcion:(isEnc(o)?'Cobro de encomienda':'Cobro de recojo')+' · total S/ '+total.toFixed(2)+' · cliente pagó con S/ '+paga.toFixed(2)+' · vuelto entregado S/ '+Math.max(0,paga-total).toFixed(2)+(vueltoDe?(vueltoDe==='caja'?' · VUELTO DE CAJA':' · VUELTO CON DINERO PROPIO'):'')});
