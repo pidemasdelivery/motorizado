@@ -368,7 +368,7 @@
     const t=tipo(o),e=etapa(o),id=o.id,d=dr(id),x=extra(o),cp=t==='compra'?compra(o):null;
     const NOM={enc:'Encomienda',compra:'Compra',recojo:'Recojo y entrega'}[t];
     const remN=o.nombre_remitente||o.nombre_cliente||'Cliente',remT=o.telefono_remitente||o.telefono_cliente;
-    const recN=t==='compra'?(o.nombre_cliente||o.nombre_remitente||'Cliente'):(o.nombre_receptor||o.nombre_cliente||'Quien recibe'),recT=t==='compra'?(o.telefono_cliente||o.telefono_remitente):(o.telefono_receptor||o.telefono_cliente);
+    const recN=t==='compra'?(o.nombre_receptor||o.nombre_cliente||o.nombre_remitente||'Cliente'):(o.nombre_receptor||o.nombre_cliente||'Quien recibe'),recT=t==='compra'?(o.telefono_receptor||o.telefono_cliente||o.telefono_remitente):(o.telefono_receptor||o.telefono_cliente);
     const cobro=cobroEntrega(o);
     const titulos=t==='enc'?['Recoger los paquetes','Llevar a la agencia','Guía y clave','Terminar encomienda']
       :[t==='compra'?'Hacer la compra':'Recoger','Llevar al cliente'].concat(cobro?['Cobrar']:[]).concat(['Confirmar entrega']);
@@ -528,7 +528,7 @@
       /* 2 · Llevar al cliente */
       {const s=S(2);s.locked=t==='compra'?'Se muestra al terminar la compra':'Se muestra al recoger';s.sum=recN+(o.direccion_entrega?' · '+o.direccion_entrega:'');
         const mapa=U.maps(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,link(o.ubicacion_entrega||x.ubicacionEntrega)||(cp&&cp.ubi));
-        s.body=msg+U.who(recN,(t==='compra'?'Cliente':'Quien recibe')+' · entrega aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+U.contact(mapa,recT,'')+
+        s.body=msg+U.who(recN,(t==='compra'?(o.nombre_receptor?'Recibe la compra (no es quien la pidió)':'Cliente'):(/Pide el servicio:\s*Quien recibe/i.test(String(o.observaciones||''))?'Quien recibe · pidió el servicio':'Quien recibe'))+' · entrega aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+U.contact(mapa,recT,'')+
           rapidos(o,'rec',2);}
       /* 3 · Cobrar */
       if(cobro){const s=S(3);s.locked='Se muestra al llegar donde el cliente';const monto=aCobrar(o);
@@ -557,6 +557,13 @@
     const okRec=()=>{if(modoR()!=='efectivo')return !(window.PdYapeP&&PdYapeP.falta(o));const raw=String(d.monto||'').trim();return !raw||nn(raw)+0.004>=Number(o.total)};
     const hRec=()=>modoR()!=='efectivo'?((window.PdYapeP&&PdYapeP.falta(o))||''):okRec()?'':'El cliente debe pagar al menos '+M(o.total);
     const vivo=(el,ok,hint)=>{try{const r=el.getRootNode(),sl=r.querySelector('.sl');if(sl){sl.classList.toggle('off',!ok);sl.setAttribute('aria-disabled',String(!ok))}const h=sl&&sl.nextElementSibling;if(h&&h.classList.contains('hint'))h.textContent=ok?'Desliza hacia la derecha para avanzar':hint}catch(_){}};
+    /* «Pide el servicio» arriba, en el mismo orden en Admin y Motorizado: quién pide, qué papel tiene y quién paga */
+    const pideBox=(()=>{const ob=String(o.observaciones||''),pR=/Pide el servicio:\s*Quien recibe/i.test(ob),rc=o.nombre_receptor||'';
+      const rol=t==='compra'?(rc&&rc!==o.nombre_cliente?'Manda a comprar para '+rc:'Manda a comprar para sí'):t==='enc'?(pR?'Quien recibe · manda a recoger la encomienda':'Quien envía la encomienda'):(pR?'Quien recibe · manda a recoger':'Quien envía · manda a recoger y entregar');
+      const qp=String(o.quien_paga||''),mo2=String(o.pago_servicio_momento||'').toLowerCase();
+      const paga=mo2==='pagado'?'Ya pagado':mo2==='al_final'?'Al final a Pidemás':qp==='recibe'?(t==='compra'?'Quien recibe la compra':'Quien recibe'):qp==='envia'?(t==='compra'?'Quien manda a comprar':'Quien envía'):'Quien pide el servicio';
+      return `<div class="sum" style="gap:8px"><div class="lbl">Pide el servicio</div>`+U.who(o.nombre_cliente||o.nombre_remitente||'Cliente',E(rol),'',true)+`<div class="li"><span>Paga</span><b>${E(paga)}</b></div>`+(o.telefono_cliente?U.contact(null,o.telefono_cliente,''):'')+`</div>`})();
+    if(e>=1){const k0=steps.findIndex(x=>x.state==='active');const k=k0>=0?k0:0;if(steps[k])steps[k].body=pideBox+(steps[k].body||'')}
     const m={kicker:NOM+' · '+U.ref(id),steps,err:error,acts:{}};
     if(e===-1){m.title='Pedido cancelado';m.chip='Cancelado';m.chipCls='mal';steps.forEach(s=>s.state='locked');m.fin={mal:true,title:'Este pedido fue cancelado',text:o.motivo_cancelacion||'Ya no tienes que hacer nada con él.'};return m}
     if(e>=9){m.title='Entregado';m.chip='Listo';m.chipCls='ok';m.fin={title:t==='enc'?'¡Encomienda terminada!':'¡Pedido entregado!',text:o.entregado_en?'Terminado a las '+U.hora(o.entregado_en)+'.':''};return m}
