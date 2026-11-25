@@ -89,8 +89,8 @@
     /* 1 · Ir al local */
     {const s=S(0);s.sum=negNom+(negDir?' · '+negDir:'');
       const estado=listo?U.st('El pedido está listo para recoger','ok'):prep?U.st('El negocio está preparando · listo aprox. '+E(prep)):o.negocio_aceptado_en?U.st('El negocio está preparando el pedido'):U.st('Esperando que el negocio confirme el pedido');
-      s.body=U.who(negNom,'Recojo aquí · pedido '+E(U.ref(o.id)),n.logo_url||n.imagen_url||'')+estado+avisoVuelto(o,aCobrar(o),false)+U.addr(negDir,'')+
-        U.contact(U.maps(o.latitud_recojo??n.latitud,o.longitud_recojo??n.longitud,negDir,n.google_maps_url||o.negocio_maps_url),n.telefono||o.telefono_negocio,'Hola, soy el motorizado de Pidemás por el pedido '+U.ref(o.id)+'.')+
+      s.body=U.who(negNom,'Recojo aquí · pedido '+E(U.ref(o.id)),n.logo_url||n.imagen_url||'')+U.addr(negDir,'')+
+        U.contact(U.maps(o.latitud_recojo??n.latitud,o.longitud_recojo??n.longitud,negDir,n.google_maps_url||o.negocio_maps_url),n.telefono||o.telefono_negocio,'Hola, soy el motorizado de Pidemás por el pedido '+U.ref(o.id)+'.')+estado+avisoVuelto(o,aCobrar(o),false)+
         (e===0?U.note('Al aceptar verás el código de recojo y los datos del cliente.'):rapidosCliente(o,0));}
     /* 2 · Recoger con código */
     {const s=S(1);s.locked='Se muestra al llegar al local';const c=o.codigo_recojo||'';

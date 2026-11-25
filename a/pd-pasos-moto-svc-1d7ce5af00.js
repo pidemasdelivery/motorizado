@@ -397,8 +397,8 @@
         const curL=lugarActual(o);
         LC.forEach(q=>{const z=(d.cl=d.cl||{})[q.n]||(d.cl[q.n]={}),nom=q.nombre||'Lugar '+q.n,abierto=e===1&&!reg&&curL&&curL.n===q.n,sigue=e===1&&!reg&&!q.hecho&&!abierto;
           h+=`<div class="sum" style="gap:10px${abierto&&tot>1?';border-color:#C4410C':''}"><div class="lbl"${abierto&&tot>1?' style="color:#9A330A"':''}>${abierto&&tot>1?'Estás en este lugar · ':sigue?'Siguiente · ':''}${tot>1?'Lugar '+q.n+' de '+tot:'Lugar de compra'}${q.hecho&&q.hecho!=='ok'?' · comprado '+E(U.hora(q.hecho)):''}</div>`+U.who(nom,'Compra aquí'+(q.n===1?' · pedido '+E(U.ref(id)):''),'')+
-            (dlOk?`<div class="li"><span>Delivery de este lugar</span><b>${M(q.n===1?Math.max(0,Math.round((servicio(o)-PR.reduce((a,x)=>a+(Number(x.costo_delivery)||0),0))*100)/100):Number(q.costo_delivery))}</b></div>`:'')+
             (q.hecho?'':irA(q.mapa,tot>1?'Ir al lugar '+q.n:'Ir al lugar de compra'))+
+            (dlOk?`<div class="li"><span>Delivery de este lugar</span><b>${M(q.n===1?Math.max(0,Math.round((servicio(o)-PR.reduce((a,x)=>a+(Number(x.costo_delivery)||0),0))*100)/100):Number(q.costo_delivery))}</b></div>`:'')+
             `<div class="lbl" style="margin-top:4px">Qué comprar</div>`+qComp(q.que)+(q.n===1?fotosC(o):'')+(q.obs?`<div class="lbl" style="margin-top:4px">Observaciones</div>`+qComp(q.obs):'');
           if(q.hecho&&q.monto!=null&&!abierto){const li=(k,v,c)=>`<div class="li"><span>${k}</span><b style="text-align:right${c?';color:'+c:''}">${v}</b></div>`;
             h+=`<div style="display:flex;gap:12px;align-items:center">`+(q.foto?`<a href="${E(q.foto)}" target="_blank" rel="noopener" style="flex:0 0 84px"><img src="${E(q.foto)}" alt="Boleta del lugar ${q.n}" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block"></a>`:'')+
@@ -434,9 +434,9 @@
             const msgW='Hola'+(q.nombre?' '+String(q.nombre).split(' ')[0]:'')+', soy el motorizado de Pidemás. Voy a recoger el pedido '+U.ref(id)+'.';
             h+=`<div class="sum" style="gap:10px${aqui?';border-color:#C4410C':''}"><div class="lbl"${aqui?' style="color:#9A330A"':''}>${aqui?'Estás en este punto · ':''}Punto ${q.n} de ${tot}${ok&&q.recogido_en!=='ok'?' · recogido '+E(U.hora(q.recogido_en)):''}</div>`+
               U.who(nom,'Recojo aquí'+(q.n===1?' · pedido '+E(U.ref(id)):'')+(q.que?' · '+E(q.que):''),'',true)+U.addr(q.direccion,q.referencia)+
+              U.contact(q.mapa,q.telefono,msgW)+
               (q.a_nombre?`<div class="li"><span>Pedido a nombre de</span><b>${E(q.a_nombre)}</b></div>`:'')+
               (q.costo_delivery!=null&&q.costo_delivery!==''?`<div class="li"><span>Delivery de este punto</span><b>${E(U.money(q.costo_delivery))}</b></div>`:'')+
-              U.contact(q.mapa,q.telefono,msgW)+
               (alRecoger(o)&&o.pago_confirmado!==true&&(q.n===1?!PR.some(z=>z.paga_aqui):q.paga_aqui)?U.st('Aquí cobras el servicio · '+M(o.total)+' (todos los puntos)'):'')+
               (ok?U.st('Recogido aquí','ok'):e!==1?'':aqui?`<button type="button" class="b o" data-act="pt${q.n}">Ya recogí en el punto ${q.n}</button>`:`<button type="button" class="b o" data-act="pl${q.n}">Llegué a ${E(nom)}</button>`)+`</div>`});
         }
@@ -466,8 +466,8 @@
       {const s=S(2);s.locked='Se muestra al recoger los paquetes';s.sum=GR.map(g=>g.agencia).filter(Boolean).join(' · ')||'En agencia';
         let h=msg;
         if(GR.length>1)h+=U.note('Tienes <b>'+GR.length+' agencias</b>. Elige a cuál vas primero: toca «Llegué» en la agencia donde estés y haces todo ahí (pago y guías). Luego vas a la siguiente.');
-        h+=GR.map((g,gi)=>`<div class="sum" style="gap:10px"><div class="lbl">${GR.length>1?'Agencia '+(gi+1)+' de '+GR.length:'Agencia'}</div><b style="font-size:18px">${E(g.agencia||'Agencia')}</b>`+
-          g.paquetes.map(pkgRows).join('<div style="height:1px;background:#F1E4DA;margin:4px 0"></div>')+agBotones(o,[g.agencia])+
+        h+=GR.map((g,gi)=>`<div class="sum" style="gap:10px"><div class="lbl">${GR.length>1?'Agencia '+(gi+1)+' de '+GR.length:'Agencia'}</div><b style="font-size:18px">${E(g.agencia||'Agencia')}</b>`+agBotones(o,[g.agencia])+
+          g.paquetes.map(pkgRows).join('<div style="height:1px;background:#F1E4DA;margin:4px 0"></div>')+
           (e===2&&GR.length>1?`<button type="button" class="b o" data-act="lleg${gi}">Llegué a ${E(g.agencia||'esta agencia')}</button>`:'')+`</div>`).join('');
         s.body=h;}
       /* 3 · Guía y clave: agencia por agencia (pago de esa agencia y guías de sus paquetes) */
@@ -503,7 +503,7 @@
           if(listo){h+=gr.paquetes.map(p=>guiaPkg(p,g)).join('');listas.push({gr,gi});return}
           /* La siguiente agencia solo aparece cuando la actual ya está pagada y con sus guías y claves enviadas */
           if(!lleg&&act&&!fin)return;
-          if(!lleg){h+=`<div class="sum" style="gap:10px"><div class="lbl">Siguiente agencia</div><b style="font-size:18px">${tit}</b>${gr.paquetes.map(pkgRows).join('<div style="height:1px;background:#F1E4DA;margin:4px 0"></div>')}${agBotones(o,[gr.agencia])}`+
+          if(!lleg){h+=`<div class="sum" style="gap:10px"><div class="lbl">Siguiente agencia</div><b style="font-size:18px">${tit}</b>${agBotones(o,[gr.agencia])}${gr.paquetes.map(pkgRows).join('<div style="height:1px;background:#F1E4DA;margin:4px 0"></div>')}`+
             (fin?'':`<button type="button" class="b o" data-act="lleg${gi}">Llegué a ${E(gr.agencia||'esta agencia')}</button>`)+`</div>`;return}
           h+=`<div class="sum" style="gap:10px;border-color:#C4410C"><div class="lbl" style="color:#9A330A">Estás en esta agencia</div><b style="font-size:18px">${tit}</b></div>`;
           const debe=gr.paquetes.some(p=>p.tipoPago==='pago_en_agencia'),pagado=grupoPagado(o,gr,gi);
