@@ -55,7 +55,7 @@
       .filter((p,i,a)=>p.numero&&a.findIndex(x=>x.numero===p.numero)===i);
   }
   const guardados=o=>{const g=arr(o.paquetes_envio).slice();if(!g.some(x=>Number(x.numero)===1)&&o.guia_url){const sc=String(o.clave_guia||'').trim()==='SIN_CLAVE';g.push({numero:1,guia_url:o.guia_url,clave:sc?'':String(o.clave_guia||''),sin_clave:sc||(!o.clave_guia&&String(o.observaciones||'').includes('SIN_CLAVE_GUIA_CONFIRMADO'))})}return g};
-  const pkgOk=p=>!!(p&&(p.enviado_whatsapp||(p.guia_url&&p.guia_url!=='whatsapp'&&(p.sin_clave||String(p.clave||'').trim()))));
+  const pkgOk=p=>!!(p&&(p.enviado_whatsapp||((p.sin_guia||(p.guia_url&&p.guia_url!=='whatsapp'&&p.guia_url!=='sin_guia'))&&(p.sin_clave||String(p.clave||'').trim()))));
   const completo=o=>{const g=guardados(o);return paquetes(o).every(p=>pkgOk(g.find(x=>Number(x.numero)===p.numero)))};
   const enAgencia=o=>o.pedido_en_agencia===true||String(o.pedido_en_agencia||'').toLowerCase()==='true';
   const pagoAg=o=>o.tipo_pago_encomienda==='pago_en_agencia';
@@ -179,8 +179,8 @@
     const lista=guardados(o).filter(x=>Number(x.numero)!==n);
     lista.push(Object.assign({numero:n},dato));lista.sort((a,b)=>a.numero-b.numero);
     const patch={paquetes_envio:lista};
-    if(completo({...o,paquetes_envio:lista})){const ok=lista.filter(x=>x.guia_url&&x.guia_url!=='whatsapp');
-      patch.guia_url=(ok[0]&&ok[0].guia_url)||'whatsapp';
+    if(completo({...o,paquetes_envio:lista})){const ok=lista.filter(x=>x.guia_url&&x.guia_url!=='whatsapp'&&!x.sin_guia);
+      patch.guia_url=(ok[0]&&ok[0].guia_url)||(lista.every(x=>x.sin_guia)?'sin_guia':'whatsapp');
       patch.clave_guia=lista.every(x=>x.sin_clave)?'SIN_CLAVE':lista.map(x=>x.sin_clave?'P'+x.numero+': sin clave':(lista.length>1?'P'+x.numero+': ':'')+String(x.clave||'')).join(' | ')}
     const {data,error:e}=await D().from('pedidos').update(patch).eq('id',o.id).eq('motorizado_id',ME().id).select('id').maybeSingle();
     if(e)throw new Error(e.message);if(!data)throw new Error('Supabase no confirmó el registro de la guía.');
@@ -188,16 +188,17 @@
   }
   async function subirGuia(o,n){
     error='';info='';const d=dr(o.id).pk[n]||(dr(o.id).pk[n]={});
-    if(!d.file){error='Toma la foto de la guía o voucher del paquete '+n+'.';return}
+    if(!d.file&&!d.sinG){error='Toma la foto de la guía o voucher del paquete '+n+', o marca que la agencia no dio guía.';return}
     const clave=String(d.clave||'').trim();
     if(!d.sin&&!clave){error='Escribe la clave del paquete '+n+' o marca que la agencia no dio clave.';return}
     if(d.subiendo)return;d.subiendo=true;PdPasos.render();
     try{
-      const {data:au}=await D().auth.getUser();const uid=au&&au.user&&au.user.id;if(!uid)throw new Error('Vuelve a iniciar sesión.');
+      let url=null;
+      if(!d.sinG){const {data:au}=await D().auth.getUser();const uid=au&&au.user&&au.user.id;if(!uid)throw new Error('Vuelve a iniciar sesión.');
       const blob=await achicar(d.file),path=uid+'/guias/'+o.id+'_p'+n+'_'+Date.now()+'.jpg',b=D().storage.from('fotos-motorizados');
       const up=await b.upload(path,blob,{cacheControl:'3600',upsert:false,contentType:'image/jpeg'});if(up.error)throw new Error('No se pudo subir la foto: '+up.error.message);
-      const url=b.getPublicUrl(path)?.data?.publicUrl;if(!url)throw new Error('No se obtuvo el enlace de la foto.');
-      const all=await guardarGuia(o,n,{guia_url:url,clave:d.sin?'':clave,sin_clave:!!d.sin,subido_en:new Date().toISOString()});
+      url=b.getPublicUrl(path)?.data?.publicUrl;if(!url)throw new Error('No se obtuvo el enlace de la foto.')}
+      const all=await guardarGuia(o,n,Object.assign({guia_url:url,clave:d.sin?'':clave,sin_clave:!!d.sin,subido_en:new Date().toISOString()},d.sinG?{sin_guia:true}:{}));
       try{if(d.url)URL.revokeObjectURL(d.url)}catch(_){}delete dr(o.id).pk[n];
       info=all?'Listo: guardaste todas las guías. Ya puedes terminar la encomienda.':'Guía del paquete '+n+' guardada. Pidemás ya la ve.';
       try{await loadOrders()}catch(_){}
@@ -482,13 +483,13 @@
               const li=(k,v,c)=>`<div class="li"><span>${k}</span><b style="text-align:right${c?';color:'+c:''}">${v}</b></div>`;
               return `<div class="sum"><div class="lbl">Paquete ${p.numero} · ${ruta}</div><div style="display:flex;gap:12px;align-items:center">`+
                 (foto?`<a href="${E(foto)}" target="_blank" rel="noopener" style="flex:0 0 84px"><img src="${E(foto)}" alt="Guía del paquete ${p.numero}" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block"></a>`:'')+
-                `<div style="flex:1;min-width:0;display:flex;flex-direction:column">`+li('Clave',sv.sin_clave?'La agencia no dio clave':E(sv.clave||'—'))+li('Guía',foto?'Guardada ✓':'Por WhatsApp','#15803D')+`</div></div>`+pagoGuia(p)+
+                `<div style="flex:1;min-width:0;display:flex;flex-direction:column">`+li('Clave',sv.sin_clave?'La agencia no dio clave':E(sv.clave||'—'))+li('Guía',foto?'Guardada ✓':sv.sin_guia?'La agencia no dio guía':'Por WhatsApp',sv.sin_guia?'#B42318':'#15803D')+`</div></div>`+pagoGuia(p)+
                 (foto&&!fin?`<button type="button" class="b" data-act="wa${p.numero}">Compartir también por WhatsApp (opcional)</button>`:'')+`</div>`}
             if(fin)return `<div class="sum"><div class="li"><span>Paquete ${p.numero} · ${ruta}</span><b>Sin guía</b></div></div>`;
             const k=d.pk[p.numero]||(d.pk[p.numero]={});
             return `<div class="sum"><div class="lbl">Guía · paquete ${p.numero} · ${ruta}</div>
-              <button type="button" class="b soft${k.file?' ok':''}" data-act="shot${p.numero}">${k.file?'Foto lista · tocar para cambiar':'Tomar foto de la guía o voucher'}</button><input type="file" data-act="file${p.numero}" accept="image/jpeg,image/png,image/webp" capture="environment" hidden data-pd-cloud="1">
-              ${k.url?`<img src="${E(k.url)}" alt="Guía del paquete ${p.numero}" style="width:100%;max-height:180px;object-fit:cover;border-radius:12px">`:''}
+              ${k.sinG?`<div style="display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:14px;background:#FDE8E8;border:1.5px solid #F4B4AE;color:#8A1C12"><span style="flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:#B42318;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px">!</span><span style="display:flex;flex-direction:column;gap:3px"><b style="font-size:16px;color:#8A1C12">Sin guía</b><span style="font-size:14px;line-height:1.4">Marcaste que la agencia no dio guía ni voucher. Pidemás se lo avisará al cliente.</span></span></div><button type="button" class="b" data-act="sing${p.numero}">Sí dio guía · tomar foto</button>`:`<button type="button" class="b soft${k.file?' ok':''}" data-act="shot${p.numero}">${k.file?'Foto lista · tocar para cambiar':'Tomar foto de la guía o voucher'}</button><input type="file" data-act="file${p.numero}" accept="image/jpeg,image/png,image/webp" capture="environment" hidden data-pd-cloud="1">${k.file?'':`<button type="button" class="b" style="color:#B42318;border-color:#F4C7C3" data-act="sing${p.numero}">La agencia no dio guía</button>`}`}
+              ${!k.sinG&&k.url?`<img src="${E(k.url)}" alt="Guía del paquete ${p.numero}" style="width:100%;max-height:180px;object-fit:cover;border-radius:12px">`:''}
               ${k.sin?`<div style="display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:14px;background:#FDE8E8;border:1.5px solid #F4B4AE;color:#8A1C12">
                 <span style="flex:0 0 28px;width:28px;height:28px;border-radius:50%;background:#B42318;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px">!</span>
                 <span style="display:flex;flex-direction:column;gap:3px"><b style="font-size:16px;color:#8A1C12">Sin clave de recojo</b><span style="font-size:14px;line-height:1.4">Marcaste que la agencia no dio clave. Pidemás se lo avisará al cliente junto con la guía.</span></span></div>
@@ -631,6 +632,9 @@
       m.acts['sin'+n]=async()=>{const z=k();
         if(!z.sin){const ok=typeof window.pdConfirmar==='function'?await window.pdConfirmar('¿La agencia no te dio clave de recojo?\nRevisa bien la guía o el voucher: muchas veces la clave viene impresa. Márcalo solo si de verdad no hay clave.'):true;if(!ok)return}
         z.sin=!z.sin;if(z.sin)z.clave='';PdPasos.render()};
+      m.acts['sing'+n]=async()=>{const z=k();
+        if(!z.sinG){const ok=typeof window.pdConfirmar==='function'?await window.pdConfirmar('¿La agencia no te dio guía ni voucher?\nPídela antes de irte: casi siempre la dan. Márcalo solo si de verdad no hay guía.'):true;if(!ok)return}
+        z.sinG=!z.sinG;if(z.sinG){z.file=null;try{if(z.url)URL.revokeObjectURL(z.url)}catch(_){}z.url=''}PdPasos.render()};
       m.acts['up'+n]=async()=>{await subirGuia(o,n);PdPasos.render()};
       m.acts['wa'+n]=()=>compartirGuia(o,n);
     });
