@@ -386,65 +386,6 @@
     });
     return h;
   }
-  /* ---------- Información del pedido: los mismos datos y el mismo diseño que el formulario del admin ---------- */
-  function infoPedido(o){
-    const t=tipo(o),T=v=>String(v??'').trim();
-    const IC={user:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>',
-      pin:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
-      box:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>',
-      store:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v10h16V10M3 4h18l-1.5 6h-15z"/><path d="M10 20v-5h4v5"/></svg>',
-      list:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>',
-      cash:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>'};
-    const li=(k,v)=>T(v)?`<div class="li"><span>${E(k)}</span><b>${E(T(v))}</b></div>`:'';
-    const tel=v=>{const d=T(v).replace(/[^\d+]/g,'');return d?`<div class="li"><span>Número</span><b><a href="tel:${E(d)}">${E(T(v))}</a></b></div>`:''};
-    const mapa=(lat,lng,dir,url)=>{const u=U.maps(lat,lng,dir,link(url));return u?`<a class="gmap" href="${E(u)}" target="_blank" rel="noopener">${IC.pin}Ver en el mapa</a>`:''};
-    const sec=(ic,tt,h)=>T(h.replace(/<[^>]*>/g,''))||/class="gmap"/.test(h)?`<section class="gs"><div class="gsh"><span class="gsi">${IC[ic]}</span><b>${E(tt)}</b></div>${h}</section>`:'';
-    const blq=(tt,nom,h)=>h?`<div class="gb"><div class="gbt">${E(tt)}</div>${T(nom)?`<div class="gbn">${E(nom)}</div>`:''}${h}</div>`:'';
-    const lineas=v=>T(v)?`<div class="glist">${T(v).split(/\n+/).map(x=>`<div>${E(x.trim())}</div>`).join('')}</div>`:'';
-    const x=extra(o)||{};
-    let h='';
-    if(t==='recojo'){
-      const PR=arr(o.puntos_recojo).filter(Boolean),PE=arr(o.puntos_entrega).filter(Boolean);
-      h+=`<div class="gsec">Recojos</div>`;
-      h+=blq('Recojo 1',o.nombre_remitente,sec('user','Datos de contacto',li('Nombre',o.nombre_remitente)+tel(o.telefono_remitente)+li('A nombre de',o.recojo_a_nombre||x.pedidoANombre))+sec('pin','Ubicación',li('Dirección',o.direccion_recojo)+li('Referencia',o.referencia_recojo)+mapa(o.latitud_recojo,o.longitud_recojo,o.direccion_recojo,o.ubicacion_recojo)));
-      PR.forEach(q=>{h+=blq('Recojo '+q.n,q.nombre,sec('user','Datos de contacto',li('Nombre',q.nombre)+tel(q.telefono)+li('A nombre de',q.a_nombre))+sec('pin','Ubicación',li('Dirección',q.direccion)+li('Referencia',q.referencia)+mapa(q.lat,q.lng,q.direccion,q.ubicacion))+sec('box','Qué se recoge',li('Qué',q.que)))});
-      h+=`<div class="gsec">Entregas</div>`;
-      h+=blq('Entrega 1',o.nombre_receptor,sec('user','Datos de contacto',li('Nombre',o.nombre_receptor)+tel(o.telefono_receptor))+sec('pin','Ubicación',li('Dirección',o.direccion_entrega)+li('Referencia',o.referencia_entrega)+mapa(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,o.ubicacion_entrega))+sec('box','Qué se lleva',li('Qué',o.que_se_lleva)));
-      PE.forEach(q=>{h+=blq('Entrega '+q.n,q.nombre,sec('user','Datos de contacto',li('Nombre',q.nombre)+tel(q.telefono))+sec('pin','Ubicación',li('Dirección',q.direccion)+li('Referencia',q.referencia)+mapa(q.lat,q.lng,q.direccion,q.ubicacion))+sec('box','Qué se deja',li('Qué',q.que)))});
-    }else if(t==='compra'){
-      const cp=compra(o),LC=lugaresCompra(o),PR=arr(o.puntos_recojo).filter(Boolean),F=Array.isArray(o.compra_fotos)?o.compra_fotos.filter(Boolean):[];
-      h+=sec('user','Quien compra',li('Nombre',o.nombre_cliente)+tel(o.telefono_cliente));
-      h+=sec('pin','Dónde se recibe',li('Dirección',o.direccion_entrega)+li('Referencia',o.referencia_entrega)+mapa(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,o.ubicacion_entrega||cp.ubi));
-      if(T(o.nombre_receptor))h+=sec('user','Entregar a',li('Nombre',o.nombre_receptor)+tel(o.telefono_receptor));
-      h+=`<div class="gsec">Lugares de compra</div>`;
-      LC.forEach((q,i)=>{const p=i?PR.find(z=>Number(z.n)===q.n)||{}:{};const nom=i?q.nombre:String(cp.lugar||'').split(' · ')[0],dir=i?(T(p.direccion)!==T(p.nombre)?p.direccion:''):String(cp.lugar||'').split(' · ').slice(1).join(' · ');
-        h+=blq('Lugar '+q.n,nom,sec('store','Lugar de compra',li('Lugar',nom)+li('Dirección',dir)+(q.mapa?`<a class="gmap" href="${E(q.mapa)}" target="_blank" rel="noopener">${IC.pin}Ver en el mapa</a>`:''))+sec('list','Detalle de la compra',lineas(q.que)+li('Observaciones',q.obs)))});
-      if(F.length)h+=sec('list','Fotos de la compra',`<div class="gfotos">${F.map((u,i)=>`<a href="${E(u)}" target="_blank" rel="noopener"><img src="${E(u)}" alt="Foto ${i+1} de la compra" loading="lazy"></a>`).join('')}</div>`);
-      h+=sec('list','Comprobante',li('Tipo',cap1(cp.comp))+li(/factura/i.test(cp.comp)?'RUC':'DNI',cp.doc)+li('Nombre',cp.cnom)+li('Razón social',cp.craz)+li('Dirección fiscal',cp.cdir));
-    }else if(t==='enc'){
-      const cp=compra(o),PX=arr(o.paquetes_extra),tEnv=v=>cap1(String(v||'').replace(/_/g,' '));
-      h+=sec('user','Quien envía',li('Nombre',o.nombre_remitente)+li('DNI',o.dni_remitente)+tel(o.telefono_remitente));
-      h+=sec('pin','Dónde se recoge',li('Dirección',o.direccion_recojo)+li('Referencia',o.referencia_recojo)+mapa(o.latitud_recojo,o.longitud_recojo,o.direccion_recojo,o.ubicacion_recojo));
-      h+=sec('box','Qué envía',li('Detalle',notas(o)));
-      h+=`<div class="gsec">Agencias y paquetes</div>`;
-      grupos(o).forEach((g,gi)=>{const ap=agPunto(o,g.agencia,gi===0),ad=((AGU.d||{})[agClaveU(g.agencia)]||{}).direccion||(PX.find(z=>claveAg(z.agencia)===g.clave&&z.agencia_direccion)||{}).agencia_direccion;
-        let ph='';g.paquetes.forEach((p,j)=>{const z=PX.find(q=>Number(q.numero)===p.numero)||{};
-          ph+=`<div class="gb gpq"><div class="gbn">Paquete ${j+1}</div>`+sec('box','Envío del paquete',li('Destino',p.destino)+li('Modalidad de pago',pagoTx(p.tipoPago).replace(/^Pago: —$/,''))+li('Tipo',tEnv(p.numero===1?o.tipo_encomienda:z.tipo_envio))+li('Indicación',z.indicacion))+sec('user','Quien recibe',li('Nombre',p.recibe)+li('DNI',p.recibeDni)+tel(p.recibeTel))+`</div>`});
-        h+=blq('Agencia '+(gi+1),g.agencia,sec('store','Agencia',li('Agencia',g.agencia)+li('Dirección',ad)+(ap?mapa(ap.lat,ap.lng,'',''):''))+ph)});
-      h+=sec('list','Comprobante',li('Tipo',cap1(o.tipo_comprobante||cp.comp))+li(/factura/i.test(o.tipo_comprobante||cp.comp)?'RUC':'DNI',o.documento_comprobante||cp.doc)+li('Nombre',cp.cnom)+li('Razón social',cp.craz)+li('Dirección fiscal',cp.cdir));
-    }
-    /* pago del servicio (igual que en el admin) */
-    {const fp=alFinal(o)?'Al final a Pidemás':prepago(o)?'Ya pagado':yape(o)?'Yape':'Efectivo';
-      const cuando=alFinal(o)||prepago(o)?'':(alRecoger(o)||/^recojo/.test(String(o.pago_servicio_momento||''))||t==='enc')?'Al recoger':'Al entregar';
-      const qp=String(o.quien_paga||'').toLowerCase(),quien=qp==='envia'?'Quien envía':qp==='recibe'?'Quien recibe':qp==='cliente'?(t==='compra'?'Quien compra':'El cliente'):'';
-      const PRc=arr(o.puntos_recojo).filter(Boolean),pts=(t==='recojo'||t==='compra')&&PRc.length?PRc.map(q=>li('Delivery · '+(t==='compra'?'lugar ':'punto ')+q.n,q.costo_delivery!=null&&q.costo_delivery!==''?M(q.costo_delivery):'')).join(''):'';
-      const pq=t==='enc'?arr(o.paquetes_extra).filter(z=>z&&z.costo_delivery!=null).map(z=>li('Delivery · paquete '+z.numero,M(z.costo_delivery))).join(''):'';
-      const pc=pagaCon(o),pAqui=PRc.find(q=>q.paga_aqui);
-      h+=sec('cash','Costo del servicio',pts+pq+li('Total del servicio',M(servicio(o)))+(t==='compra'&&Number(o.subtotal)>0?li('Compra',M(o.subtotal))+li('Total a cobrar',M(o.total)):''));
-      h+=sec('cash','Forma de pago',li('Cómo paga',fp)+li('Cuándo',cuando)+(pc>0&&!yape(o)?li('Paga con',M(pc)):''));
-      h+=sec('user','Quién paga',li('Paga',quien)+(pAqui?li('Paga en','Punto '+pAqui.n+(pAqui.nombre?' · '+pAqui.nombre:'')):''));}
-    return h;
-  }
   function modelo(){
     const o=L().find(x=>String(x.id)===String(abierto));if(!o)return null;
     const t=tipo(o),e=etapa(o),id=o.id,d=dr(id),x=extra(o),cp=t==='compra'?compra(o):null;
@@ -492,8 +433,7 @@
               ((z.url||(z.edit&&q.foto))?`<img src="${E(z.url||q.foto)}" alt="Boleta" style="width:84px;height:84px;object-fit:cover;border-radius:12px;display:block">`:'')+
               (z.edit?`<button type="button" class="b" data-act="gcan${q.n}">Cancelar el cambio</button>`:'')+U.note('Escribe arriba cuánto gastaste y desliza «'+(z.edit?'Guardar corrección':'Guardar compra en '+E(nom))+'». Sale de tu caja al registrar la compra.')}
           h+=`</div>`});
-        h+=(cp.comp||cp.doc?`<div class="sum"><div class="lbl">Comprobante</div>${cp.comp?`<div class="li"><span>Tipo</span><b>${E(cap1(cp.comp))}</b></div>`:''}${cp.doc?`<div class="li"><span>${/factura/i.test(cp.comp||'')?'RUC':'DNI'}</span><b>${E(cp.doc)}</b></div>`:''}${cp.cnom?`<div class="li"><span>Nombre</span><b>${E(cp.cnom)}</b></div>`:''}${cp.craz?`<div class="li"><span>Razón social</span><b>${E(cp.craz)}</b></div>`:''}${cp.cdir?`<div class="li"><span>Dirección fiscal</span><b>${E(cp.cdir)}</b></div>`:''}</div>`:'')+
-          `<div class="sum"><div class="lbl">Cliente</div>`+U.who(remN,'Quien pide la compra','',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`;
+        h+=(cp.comp||cp.doc?`<div class="sum"><div class="lbl">Comprobante</div>${cp.comp?`<div class="li"><span>Tipo</span><b>${E(cap1(cp.comp))}</b></div>`:''}${cp.doc?`<div class="li"><span>${/factura/i.test(cp.comp||'')?'RUC':'DNI'}</span><b>${E(cp.doc)}</b></div>`:''}${cp.cnom?`<div class="li"><span>Nombre</span><b>${E(cp.cnom)}</b></div>`:''}${cp.craz?`<div class="li"><span>Razón social</span><b>${E(cp.craz)}</b></div>`:''}${cp.cdir?`<div class="li"><span>Dirección fiscal</span><b>${E(cp.cdir)}</b></div>`:''}</div>`:'');
         if(e>=1&&e<9){const sv=servicio(o);
           if(Number(o.subtotal)>0)h+=U.st('Compra registrada · gastaste '+M(o.subtotal),'ok');/* los montos y el cobro se ven en el paso Cobrar */
           else{const sum=sumaLugares(o);if(sum!=null)h+=`<div class="note" data-gt>${U.I.info}<span>Gastaste <b>${M(sum)}</b> en total. Sale de tu caja y se suma al cobro: cobrarás <b>${M(sum+sv)}</b> (servicio ${M(sv)}).</span></div>`}}
@@ -523,7 +463,7 @@
               (ok?U.st('Recogido aquí','ok'):e!==1?'':aqui?`<button type="button" class="b o" data-act="pt${q.n}">Ya recogí en el punto ${q.n}</button>`:`<button type="button" class="b o" data-act="pl${q.n}">Llegué a ${E(nom)}</button>`)+`</div>`});
         }
         if(t==='recojo'){const n=String(notas(o)||'').split(/\s*·\s*/).filter(z=>z&&!/^(Pago en efectivo|Pago por Yape|Paga quien|Servicio marcado como PAGADO|Pedido a nombre de)/i.test(z)).join(' · ');if(n)h+=`<div class="sum"><div class="lbl">Notas del servicio</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(n)}</div></div>`}
-        if(t==='enc'){h+=paquetes(o).map(pkgHtml).join('');const cq=compra(o),cmp=cq.comp||o.tipo_comprobante||'',doc=cq.doc||o.documento_comprobante||'';
+        if(t==='enc'){const nE=notas(o);if(nE)h+=`<div class="sum"><div class="lbl">Qué envía</div><div style="font-size:15px;line-height:1.5;color:#1F1A17;overflow-wrap:anywhere">${E(nE)}</div></div>`;const cq=compra(o),cmp=cq.comp||o.tipo_comprobante||'',doc=cq.doc||o.documento_comprobante||'';
           if((cmp&&!/no especificado/i.test(cmp))||doc)h+=`<div class="sum"><div class="lbl">Comprobante</div>${cmp?`<div class="li"><span>Tipo</span><b>${E(cap1(cmp))}</b></div>`:''}${doc?`<div class="li"><span>${/factura/i.test(cmp)?'RUC':'DNI'}</span><b>${E(doc)}</b></div>`:''}${cq.cnom?`<div class="li"><span>Nombre</span><b>${E(cq.cnom)}</b></div>`:''}${cq.craz?`<div class="li"><span>Razón social</span><b>${E(cq.craz)}</b></div>`:''}${cq.cdir?`<div class="li"><span>Dirección fiscal</span><b>${E(cq.cdir)}</b></div>`:''}</div>`}
         s.body=msg+avisoVuelto(o,aCobrar(o),false)+h;
       }
@@ -532,15 +472,8 @@
       else if(t==='enc'&&momento(o)==='pagado')s.body+=U.st('Ya pagado · no cobres nada','ok');
       else if(t==='enc'&&momento(o)==='al_final')s.body+=U.note('No cobres ahora: el cliente paga después de recibir la guía y la clave.');
       else if(t!=='enc'&&alFinal(o))s.body+=U.st('No cobras: el cliente le paga al final a Pidemás','ok');
-      if(e===0){/* pedido nuevo: resumen completo antes de aceptar (igual que el admin) */
-        const dc=v=>String(v||'').replace(/https?:\/\/\S+/g,'').replace(/[\s·,|-]+$/,'').trim(),li2=(k,v)=>`<div class="li"><span>${k}</span><b style="text-align:right;overflow-wrap:anywhere">${v}</b></div>`;
-        const q2=(n,d)=>E(n||'—')+(dc(d)&&dc(d)!==String(n||'').trim()?`<div style="font-weight:500;font-size:13.5px;color:#6B5E55">${E(dc(d))}</div>`:'');
-        let r='';
-        if(t==='compra'){r+=li2(PR.length?'Compra · lugar 1':'Compra en',q2(cp.lugar||'—',''));PR.forEach(q=>{r+=li2('Compra · lugar '+E(q.n),q2(q.nombre,''))});r+=li2('Entrega a',q2(recN,o.direccion_entrega))}
-        else if(t==='enc'){r+=li2('Recoge a',q2(remN,o.direccion_recojo));paquetes(o).forEach((p,i,A)=>{r+=li2(A.length>1?'Paquete '+p.numero:'Destino',E([p.agencia,p.destino].filter(Boolean).join(' → ')||'—'))})}
-        else{r+=li2(PR.length?'Recoge · punto 1':'Recoge a',q2(remN,o.direccion_recojo));PR.forEach(q=>{r+=li2('Recoge · punto '+E(q.n),q2(q.nombre,q.direccion))});r+=li2('Entrega a',q2(recN,o.direccion_entrega))}
-        r+=li2('Servicio',M(t==='compra'?servicio(o):o.total)+' · '+(alFinal(o)||momento(o)==='al_final'?'al final a Pidemás':(yape(o)?'Yape':'Efectivo')+(alRecoger(o)?' al recoger':' al entregar')));
-        s.body=`<div class="sum"><div class="lbl">Resumen del pedido</div>${r}</div>`+s.body+U.note('Acepta el pedido para empezar.')}else if(e===1)s.body+=rapidos(o,'rem',1);}
+      if(e===0){/* pedido nuevo: cada paso se puede abrir para ver sus datos antes de aceptar */
+        s.body+=U.note('Acepta el pedido para empezar. Toca los otros pasos para ver la entrega y el cobro.')}else if(e===1)s.body+=rapidos(o,'rem',1);}
 
     if(t==='enc'){
       /* 2 · Llevar a la agencia (si hay varias agencias, el motorizado elige a cuál va primero) */
@@ -611,6 +544,8 @@
       {const s=S(2);s.locked=t==='compra'?'Se muestra al terminar la compra':'Se muestra al recoger';s.sum=recN+(o.direccion_entrega?' · '+o.direccion_entrega:'');
         const mapa=U.maps(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,link(o.ubicacion_entrega||x.ubicacionEntrega)||(cp&&cp.ubi));
         s.body=msg+U.who(recN,(t==='compra'?(o.nombre_receptor?'Recibe la compra (no es quien la pidió)':'Cliente'):(/Pide el servicio:\s*Quien recibe/i.test(String(o.observaciones||''))?'Quien recibe · pidió el servicio':'Quien recibe'))+' · entrega aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+U.contact(mapa,recT,'')+
+          (t==='recojo'&&o.que_se_lleva?`<div class="li"><span>Se lleva</span><b style="text-align:right">${E(o.que_se_lleva)}</b></div>`:'')+
+          (t==='compra'&&o.nombre_receptor&&o.nombre_receptor!==o.nombre_cliente?`<div class="sum"><div class="lbl">Quien compra</div>`+U.who(remN,'Pidió la compra','',true)+U.contact(null,remT,'Hola, soy el motorizado de Pidemás por tu compra '+U.ref(id)+'.')+`</div>`:'')+
           rapidos(o,'rec',2)+entregasExtra(o,e);}
       /* 3 · Cobrar */
       if(cobro){const s=S(3);s.locked='Se muestra al llegar donde el cliente';const monto=aCobrar(o);
@@ -658,8 +593,8 @@
       return `<div class="sum" style="gap:8px"><div class="lbl">${t==='compra'?'Quien pide la compra':t==='enc'?'Quien pide la encomienda':'Quien pide el servicio'}</div>`+U.who(o.nombre_cliente||o.nombre_remitente||'Cliente',E(rol),'',true)+(o.telefono_cliente?U.contact(null,o.telefono_cliente,''):'')+
         (otra?`<div class="lbl" style="margin-top:4px">Quien recibe la compra</div>`+U.who(rc,'Otra persona · a ella le entregas','',true)+(o.telefono_receptor?U.contact(null,o.telefono_receptor,''):''):'')+
         `<div class="li"><span>Paga</span><b>${E(paga)}</b></div></div>`})();
-    if(e>=1){const k0=steps.findIndex(x=>x.state==='active');const k=k0>=0?k0:0;if(steps[k])steps[k].body=pideBox+(steps[k].body||'')}
-    const m={kicker:NOM+' · '+U.ref(id),steps,err:error,acts:{}};try{m.info=infoPedido(o);m.infoSum='Datos de '+(t==='enc'?'quien envía, agencias y paquetes':t==='compra'?'quien compra, lugares y productos':'recojos y entregas')+' · pago'}catch(_){};
+    /* sin «Pide el servicio» repetido: cada dato está en su paso */
+    const m={kicker:NOM+' · '+U.ref(id),steps,err:error,acts:{}};;
     if(e===-1){m.title='Pedido cancelado';m.chip='Cancelado';m.chipCls='mal';steps.forEach(s=>s.state='locked');m.fin={mal:true,title:'Este pedido fue cancelado',text:o.motivo_cancelacion||'Ya no tienes que hacer nada con él.'};return m}
     if(e>=9){m.title='Entregado';m.chip='Listo';m.chipCls='ok';m.fin={title:t==='enc'?'¡Encomienda terminada!':'¡Pedido entregado!',text:o.entregado_en?'Terminado a las '+U.hora(o.entregado_en)+'.':''};return m}
     const actual=steps.findIndex(s=>s.state==='active')+1;

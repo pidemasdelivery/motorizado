@@ -56,7 +56,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .gfotos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.gfotos a{display:block;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:1px solid #F1E4DA}.gfotos img{width:100%;height:100%;object-fit:cover;display:block}
 .card.a{background:#FFFFFF;border:1.5px solid #C4410C;box-shadow:0 6px 18px rgba(196,65,12,.10);opacity:1}
 .head{width:100%;display:flex;align-items:center;gap:12px;padding:14px;background:transparent;border:0;text-align:left;color:inherit;cursor:pointer}
-.card.l .head{cursor:default}
+.card.l .body [data-act]{pointer-events:none;opacity:.45}.prev{font-size:13px;font-weight:700;color:#6B5E55;background:#F6EFE9;border-radius:10px;padding:8px 10px}
 .dot{flex:0 0 34px;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;background:#EADFD6;color:#6B5E55}
 .card.d .dot{background:#15803D;color:#FFFFFF}.card.a .dot{background:#C4410C;color:#FFFFFF}
 .hx{flex:1 1 0%;min-width:0}
@@ -144,7 +144,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
   function head(s,i,open){
     const cls=s.state==='done'?'d':s.state==='active'?'a':'l';
     const sub=s.state==='locked'?s.locked:(s.state==='done'&&!open?s.sum:'');
-    return `<div class="card ${cls}${open?' open':''}" data-i="${i}"><button type="button" class="head" data-toggle="${i}" aria-expanded="${open}"><span class="dot">${s.state==='done'?I.check:(i+1)}</span><span class="hx"><span class="ht">${E(s.title)}</span>${sub?`<span class="hs">${E(sub)}</span>`:''}</span>${s.state==='locked'?I.lock:I.chev}</button>${open&&s.state!=='locked'?`<div class="body">${s.body||''}</div>`:''}</div>`;
+    return `<div class="card ${cls}${open?' open':''}" data-i="${i}"><button type="button" class="head" data-toggle="${i}" aria-expanded="${open}"><span class="dot">${s.state==='done'?I.check:(i+1)}</span><span class="hx"><span class="ht">${E(s.title)}</span>${sub?`<span class="hs">${E(sub)}</span>`:''}</span>${s.state==='locked'?I.lock:I.chev}</button>${open&&(s.state!=='locked'||s.body)?`<div class="body">${s.state==='locked'?'<div class="prev">Vista previa: este paso se activa más adelante.</div>':''}${s.body||''}</div>`:''}</div>`;
   }
 
   function render(){
@@ -184,7 +184,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     const r=cur.root,m=cur.m;
     r.querySelector('.back').onclick=()=>close();
     r.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>{cur.open.info=!cur.open.info;cur.key=null;render()});
-    r.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>{const i=+b.dataset.toggle;const s=m.steps[i];if(!s||s.state==='locked')return;cur.open[i]=!cur.open[i];if(cur.open[i])cur.irA=i;cur.key=null;render()});
+    r.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>{const i=+b.dataset.toggle;const s=m.steps[i];if(!s||(s.state==='locked'&&!s.body))return;cur.open[i]=!cur.open[i];if(cur.open[i])cur.irA=i;cur.key=null;render()});
     r.querySelectorAll('[data-alt]').forEach(b=>b.onclick=()=>{const a=m.alt[+b.dataset.alt];if(a&&a.run)a.run()});
     r.querySelectorAll('[data-act]').forEach(b=>{const f=m.acts&&m.acts[b.dataset.act];if(!f)return;const ev=b.tagName==='INPUT'?'input':'click';b.addEventListener(ev,e=>f(b,e))});
     const sl=r.querySelector('.sl');if(!sl||!m.cta)return;
