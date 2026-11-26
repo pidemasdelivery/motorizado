@@ -253,7 +253,11 @@
   async function guardarLugarCompra(o,n){
     error='';info='';const z=((dr(o.id).cl=dr(o.id).cl||{})[n])||{},v=Number(String(z.monto||'').replace(',','.')),q=lugaresCompra(o).find(x=>x.n===n);if(!q)return;
     if(!(v>0)){error='Escribe cuánto gastaste en '+(q.nombre||'el lugar '+n)+'.';return}
-    if(!(await pdConfirmar((z.edit?'¿Corregir a ':'¿Guardar ')+M(v)+' gastado en '+(q.nombre||'el lugar '+n)+'?'+(z.file||(z.edit&&q.foto)?'':'\nSin foto de boleta.'))))return;
+    const ultimo=!z.edit&&lugaresCompra(o).filter(x=>!x.hecho&&x.n!==n).length===0;
+    const tot=ultimo?Math.round(lugaresCompra(o).reduce((a,x)=>a+(x.n===n?v:(Number(x.monto)||0)),0)*100)/100:0,sv=servicio(o);
+    const pre=(z.edit?'¿Corregir a ':'¿Guardar ')+M(v)+' gastado en '+(q.nombre||'el lugar '+n)+'?'+(z.file||(z.edit&&q.foto)?'':'\nSin foto de boleta.');
+    const fin=ultimo?'\n\nCon esto se registra la compra de '+M(tot)+': sale de tu caja'+(alFinal(o)?' y el cliente le paga '+M(tot+sv)+' a Pidemás.':' y al entregar cobrarás '+M(tot+sv)+'.'):'';
+    if(!(await pdConfirmar(pre+fin)))return;
     z.subiendo=true;PdPasos.render();
     try{let url=z.edit?(q.foto||null):null;
       if(z.file){const {data:au}=await D().auth.getUser();const uid=au&&au.user&&au.user.id;if(!uid)throw new Error('Vuelve a iniciar sesión.');
@@ -266,14 +270,15 @@
       const {data,error:ue}=await D().from('pedidos').update(upd).eq('id',o.id).eq('motorizado_id',ME().id).select('id').maybeSingle();
       if(ue||!data)throw new Error(ue?ue.message:'Supabase no confirmó el cambio.');
       Object.assign(o,upd);try{if(z.url)URL.revokeObjectURL(z.url)}catch(_){}delete dr(o.id).cl[n];
-      const f=lugaresCompra(o).filter(x=>!x.hecho).length;info=f?'Guardado. Te falta'+(f===1?'':'n')+' '+f+' lugar'+(f===1?'':'es')+'.':'Guardaste todos los lugares. Ahora registra la compra.';
+      const f=lugaresCompra(o).filter(x=>!x.hecho).length;info=f?'Guardado. Te falta'+(f===1?'':'n')+' '+f+' lugar'+(f===1?'':'es')+'.':'';
+      if(!f&&sinMonto(o)){await registrarCompra(o,true);if(!error)info='Compra registrada: '+M(sumaLugares(o))+'. Ahora lleva el pedido al cliente.';return}
       try{await loadOrders()}catch(_){}
     }catch(err){error='No se pudo guardar: '+(err?.message||err);z.subiendo=false}
   }
-  async function registrarCompra(o){
+  async function registrarCompra(o,sinPreguntar){
     error='';{const sl=sumaLugares(o);if(sl!=null)dr(o.id).gasto=String(sl)}const v=Number(String(dr(o.id).gasto||'').replace(',','.'));if(!(v>0)){error='Escribe cuánto gastaste en la compra.';return}
     const sv=servicio(o);
-    if(!(await pdConfirmar(alFinal(o)?`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja. No cobras al entregar: el cliente le paga ${M(v+sv)} a Pidemás.`:`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja y al entregar cobrarás al cliente ${M(v+sv)} (efectivo o Yape).`)))return;
+    if(!sinPreguntar&&!(await pdConfirmar(alFinal(o)?`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja. No cobras al entregar: el cliente le paga ${M(v+sv)} a Pidemás.`:`¿Registrar gasto de compra de ${M(v)}?\nSale de tu caja y al entregar cobrarás al cliente ${M(v+sv)} (efectivo o Yape).`)))return;
     try{
       const {data:prev}=await D().from('movimientos_caja').select('id').eq('motorizado_id',ME().id).eq('pedido_id',o.id).eq('tipo','retiro').ilike('descripcion','PAGO DE COMPRA%').limit(1);
       if(!(prev&&prev.length)){const {error:me}=await D().from('movimientos_caja').insert({motorizado_id:ME().id,pedido_id:o.id,tipo:'retiro',monto:Math.round(v*100)/100,descripcion:'PAGO DE COMPRA · Pedido #'+String(o.id).slice(0,8).toUpperCase()});if(me)throw me}
@@ -394,7 +399,7 @@
         /* cada lugar de compra (1, 2, 3…): el motorizado guarda lo que gastó ahí y la foto de la boleta, uno por uno */
         const LC=lugaresCompra(o),tot=LC.length,reg=Number(o.subtotal)>0,INP='min-width:3ch;border:0;border-bottom:2px dashed #C4410C;border-radius:0;background:transparent;font:inherit;letter-spacing:inherit;text-align:center;color:#1F1A17;outline:none;padding:0;margin:0;box-shadow:none';
         const dlOk=PR.length&&PR.every(x=>x.costo_delivery!=null&&x.costo_delivery!=='');
-        let h=e===1&&!reg&&LC.filter(q=>!q.hecho).length?U.note(tot>1?'Tienes <b>'+tot+' lugares de compra</b>. Ve uno por uno: escribe cuánto gastaste, toma la foto de la boleta y desliza «Guardar compra». Al final registras la compra.':'Cuando compres, escribe cuánto gastaste, toma la foto de la boleta y desliza «Guardar compra».'):'';
+        let h=e===1&&!reg&&LC.filter(q=>!q.hecho).length?U.note(tot>1?'Tienes <b>'+tot+' lugares de compra</b>. Ve uno por uno: escribe cuánto gastaste, toma la foto de la boleta y desliza «Guardar compra». Al guardar el último se registra la compra sola.':'Cuando compres, escribe cuánto gastaste, toma la foto de la boleta y desliza «Guardar compra».'):'';
         const curL=lugarActual(o);
         LC.forEach(q=>{const z=(d.cl=d.cl||{})[q.n]||(d.cl[q.n]={}),nom=q.nombre||'Lugar '+q.n,abierto=e===1&&!reg&&curL&&curL.n===q.n,sigue=e===1&&!reg&&!q.hecho&&!abierto;
           h+=`<div class="sum" style="gap:10px${abierto&&tot>1?';border-color:#C4410C':''}"><div class="lbl"${abierto&&tot>1?' style="color:#9A330A"':''}>${abierto&&tot>1?'Estás en este lugar · ':sigue?'Siguiente · ':''}${tot>1?'Lugar '+q.n+' de '+tot:'Lugar de compra'}${q.hecho&&q.hecho!=='ok'?' · comprado '+E(U.hora(q.hecho)):''}</div>`+U.who(nom,'Compra aquí'+(q.n===1?' · pedido '+E(U.ref(id)):''),'')+
