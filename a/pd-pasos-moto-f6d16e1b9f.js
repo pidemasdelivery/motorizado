@@ -19,6 +19,8 @@
   const draft=id=>{const d=window.__pidemasCashDrafts||{};return d[String(id)]||''};
   const setDraft=(id,v)=>{(window.__pidemasCashDrafts=window.__pidemasCashDrafts||{})[String(id)]=v};
   let abierto=null,error='';
+  const COD={};/* código de entrega que va escribiendo el motorizado, por pedido */
+  const pideCod=o=>!o.entrega_verificada&&!!o.negocio_id&&!(String(o.tipo_servicio||'')==='encomienda'&&(o.guia_url||o.agencia_id));
 
   function etapa(o){
     const s=st(o);
@@ -126,7 +128,10 @@
       s.body=h;}
     /* 5 · Confirmar entrega */
     {const s=S(4);s.locked=cobro?'Se muestra después de cobrar':'Se muestra al llegar donde el cliente';s.sum='Código verificado';
-      s.body=U.note('Pide al cliente su <b>código de entrega</b> de 4 dígitos (lo ve en su app). Si no lo tiene, podrás tomarle una foto a la entrega.')+
+      s.body=(pideCod(o)?U.note('Pide al cliente su <b>código de entrega</b>: son 4 dígitos que ve en su app. Escríbelo aquí y luego desliza para finalizar.')+
+        `<div><div class="lbl">Código de entrega</div><input class="inp pdCod" style="text-align:center;font-size:30px;letter-spacing:.45em;height:64px;padding-left:.45em" data-act="cod" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="• • • •" value="${E(COD[o.id]||'')}"></div>`+
+        `<button type="button" class="pdSinCod" style="all:unset;box-sizing:border-box;display:block;width:100%;text-align:center;padding:10px;font:700 14px PdInter,Inter,system-ui,sans-serif;color:#C4410C;text-decoration:underline;cursor:pointer" data-act="sincod">El cliente no tiene el código · tomar foto de la entrega</button>`
+        :U.note('Entrega el pedido al cliente y desliza para finalizar.'))+
         (cobro?U.st('Cobrado '+M(aCobrar(o))+' · '+(yape(o)?'Yape':'Efectivo'),'ok'):U.st(prepago(o)?'El pedido ya está pagado: no cobres nada.':'No hay nada que cobrar.','ok'))+rapidosCliente(o,3);}
 
     const T=['Pedido nuevo','Ve al local','Recoge el pedido','Lleva el pedido','Cobra al cliente','Confirma la entrega'];
@@ -150,8 +155,23 @@
         if(yape(o)&&!(qn&&qn.negocio)&&window.PdYapeP){const f=PdYapeP.falta(o);if(f){error=f;return}try{await PdYapeP.guardar(o)}catch(e){error=e.message||String(e);return}}
         await correr('confirmPayment',id)}};
     }
-    else if(e===4)m.cta={label:'Finalizar entrega',green:true,busy:'Verificando…',run:()=>correr('deliverOrder',id)};
+    else if(e===4){
+      if(!pideCod(o))m.cta={label:'Finalizar entrega',green:true,busy:'Finalizando…',run:()=>correr('deliverOrder',id)};
+      else if(String(COD[id]||'').length!==4)m.cta={label:'Escribe el código para finalizar',off:true,hint:'Pide al cliente los 4 dígitos que ve en su app'};
+      else m.cta={label:'Finalizar entrega',green:true,busy:'Verificando código…',run:async()=>{
+        error='';
+        if(!navigator.onLine)return correr('deliverOrder',id);/* sin señal: la app lo guarda y lo envía después */
+        let r;try{r=await D().rpc('verificar_entrega',{p_pedido:id,p_codigo:COD[id],p_foto:null})}catch(x){r={error:x}}
+        if(r.error&&!/function|does not exist|schema cache/i.test(r.error.message||'')){error='No se pudo verificar el código: '+(r.error.message||r.error);return}
+        if(!r.error&&r.data==='incorrecto'){error='Código incorrecto. Pídeselo otra vez al cliente.';COD[id]='';return}
+        if(!r.error&&r.data!=='ok'&&r.data!=='sin_codigo'){error='No se pudo verificar ('+r.data+').';return}
+        o.entrega_verificada=o.entrega_verificada||'codigo';delete COD[id];
+        await correr('deliverOrder',id)}};
+    }
     m.acts={
+      cod:(inp)=>{const a=String(COD[id]||'').length===4;inp.value=inp.value.replace(/\D/g,'').slice(0,4);COD[id]=inp.value;if(error){error=''}
+        if((inp.value.length===4)!==a){if(inp.value.length===4)inp.blur();PdPasos.render()}},
+      sincod:()=>{error='';correr('deliverOrder',id).then(()=>PdPasos.render())},
       cpago:async(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b||b.classList.contains('on'))return;error='';try{await window.pdCambiarPago(o,b.dataset.m)}catch(e){error=String(e&&e.message||e)}PdPasos.render()},
       qr:()=>{if(typeof window.showYapeQr==='function')window.showYapeQr(id)},
       cash:(inp)=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
