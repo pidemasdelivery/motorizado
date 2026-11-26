@@ -130,7 +130,7 @@
     {const s=S(4);s.locked=cobro?'Se muestra después de cobrar':'Se muestra al llegar donde el cliente';s.sum='Código verificado';
       s.body=(pideCod(o)?U.note('Pide al cliente su <b>código de entrega</b>: son 4 dígitos que ve en su app. Escríbelo aquí y luego desliza para finalizar.')+
         `<div><div class="lbl">Código de entrega</div><input class="inp pdCod" style="text-align:center;font-size:30px;letter-spacing:.45em;height:64px;padding-left:.45em" data-act="cod" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="• • • •" value="${E(COD[o.id]||'')}"></div>`+
-        `<button type="button" class="pdSinCod" style="all:unset;box-sizing:border-box;display:block;width:100%;text-align:center;padding:10px;font:700 14px PdInter,Inter,system-ui,sans-serif;color:#C4410C;text-decoration:underline;cursor:pointer" data-act="sincod">El cliente no tiene el código · tomar foto de la entrega</button>`
+        `<div style="display:flex;align-items:center;gap:10px;margin:4px 0;color:#A8988C;font:700 12px PdInter,Inter,system-ui,sans-serif;letter-spacing:.06em"><span style="flex:1;height:1px;background:#F1E4DA"></span>SI NO TIENE EL CÓDIGO<span style="flex:1;height:1px;background:#F1E4DA"></span></div><button type="button" class="b soft" style="width:100%" data-act="sincod">Tomar foto de la entrega</button>`
         :U.note('Entrega el pedido al cliente y desliza para finalizar.'))+
         (cobro?U.st('Cobrado '+M(aCobrar(o))+' · '+(yape(o)?'Yape':'Efectivo'),'ok'):U.st(prepago(o)?'El pedido ya está pagado: no cobres nada.':'No hay nada que cobrar.','ok'))+rapidosCliente(o,3);}
 
