@@ -23,7 +23,7 @@
     const up=await b.upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(up.error)throw new Error('No se pudo subir la foto: '+up.error.message);
     return b.getPublicUrl(path)?.data?.publicUrl||null;
   }
-  function foto(){return new Promise(res=>{const i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('capture','environment');i.setAttribute('data-pd-cloud','1');i.style.display='none';document.body.appendChild(i);i.addEventListener('change',()=>{const f=i.files&&i.files[0];i.remove();res(f||null)});i.click()})}
+  function foto(){return new Promise(res=>{const i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('capture','environment');i.setAttribute('data-pd-cloud','1');i.style.display='none';document.body.appendChild(i);i.addEventListener('change',()=>{const f=i.files&&i.files[0];i.remove();res(f||null)});i.addEventListener('cancel',()=>{i.remove();res(null)});i.click()})}
 
   /* Foto de la entrega directa (cuando el cliente no tiene el código), usada desde el paso 5 */
   window.pdEntregaConFoto=async function(id){
