@@ -156,7 +156,7 @@ function cleanDeliveryTariffFromObservaciones(value){
     .trim();
 }
 
-function statusText(s){return ({pendiente:"Pendiente",confirmado:"Confirmado",asignado:"Asignado",aceptado:"Aceptado",en_camino:"En camino",en_entrega:"En entrega",entregado:"Entregado",cancelado:"Cancelado"})[s]||s}
+function statusText(s){return ({pendiente:"Pedido recibido",confirmado:"Confirmado por el negocio",asignado:"Nuevo · por aceptar",aceptado:"Yendo al local",pedido_aceptado:"Yendo al local",camino_recojo:"Yendo al local",en_camino:"Llevando al cliente",camino_entrega:"Llevando al cliente",pedido_recibido:"Pedido recibido",en_entrega:"Llegó donde el cliente",confirmando_pago:"Cobrando al cliente",entregado:"Entregado",cancelado:"Cancelado",rechazado:"Rechazado"})[s]||s}
 function displayPaymentMethod(o){
   
 
