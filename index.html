@@ -31,7 +31,7 @@ window.pdQuitarCarga=salir;
 }catch(e){h.classList.remove("pdCarga")}})();</script>
 <link rel="stylesheet" id="pidemas-estilos" href="a/pidemas-estilos-css-9d57dfaf47.css">
 <meta name="pd-instalacion" content="1">
-<meta name="pd-version" content="202611260102">
+<meta name="pd-version" content="202611260105">
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <script>
@@ -334,29 +334,7 @@ window.pdTxt=function(s){
 <script id="pidemas-moto-pasos-js" src="a/pidemas-moto-pasos-js-77674aa515.js"></script>
 
 <script id="pidemas-boton-atras" src="a/pidemas-boton-atras-e0a2473f86.js"></script>
-<script id="pidemas-version">
- 
-(function(){
-  const V='20261102235835',K='pd_ver_'+location.pathname;
-  async function revisar(){
-    try{
-      if(location.protocol==='file:')return;
-      if(window.pdAtrasDebug&&pdAtrasDebug().nivel>0)return;            
 
-      const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))return; 
-
-      const r=await fetch(location.pathname+'?chk='+Date.now(),{cache:'no-store'});if(!r.ok)return;
-      const m=(await r.text()).match(/name="pd-version" content="([^"]+)"/);
-      if(!m||m[1]===V)return;
-      if(sessionStorage.getItem(K)===m[1])return;sessionStorage.setItem(K,m[1]);
-      const u=new URL(location.href);u.searchParams.set('v',m[1]);location.replace(u.toString());
-    }catch(e){}
-  }
-  setTimeout(revisar,2500);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)revisar()});
-  setInterval(revisar,5*60*1000);
-})();
-</script>
 
 <script id="pidemas-guia-tienda-js" src="a/pidemas-guia-tienda-js-ea3fa31bc4.js"></script>
 <link rel="stylesheet" id="pidemas-estilos-body" href="a/pidemas-estilos-body-css-1af7044704.css">
@@ -391,7 +369,7 @@ window.pdTxt=function(s){
 <style id="pd-velo-recto">html body [data-pdm-velo][data-pdm-velo][data-pdm-velo],html body [data-pd-sin-velo][data-pd-sin-velo][data-pd-sin-velo]{border-radius:0!important;border:0!important;box-shadow:none!important;outline:0!important}</style>
 <link rel="stylesheet" id="pd-hojas-iguales" href="a/pd-hojas-iguales-css-be0f30b444.css">
 <script id="pd-guardado-auto" src="a/pd-guardado-auto-113a50572b.js"></script>
-<script id="pd-actualizar" src="a/pd-actualizar-6e91d53dcb.js"></script>
+<script id="pd-actualizar" src="a/pd-actualizar-37dc8a785b.js"></script>
 
 <script id="pd-yape-negocio-moto-js" src="a/pd-yape-negocio-moto-js-7110eecf48.js"></script>
 <style id="pd-yape-negocio-moto-css">#pdYNAviso{position:fixed;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:2147483647;display:flex;flex-direction:column;gap:6px;padding:16px;border-radius:18px;background:#fff;border:2px solid #C4410C;box-shadow:0 10px 30px rgba(31,26,23,.18);font-family:Inter,system-ui,sans-serif;color:#1F1A17}#pdYNAviso[hidden]{display:none!important}#pdYNAviso b{font:800 17px/1.25 Inter,system-ui,sans-serif}#pdYNAviso span{font:500 15px/1.4 Inter,system-ui,sans-serif;color:#4A3F38}#pdYNAviso button{margin-top:6px;min-height:46px;border:0;border-radius:12px;background:#C4410C;color:#fff;font:800 15px Inter,system-ui,sans-serif}.pdYNEst{display:flex;gap:10px;align-items:flex-start;margin-top:8px;padding:12px;border-radius:14px;background:#FFF9F5;border:1px solid #EFE3DA;font-family:Inter,system-ui,sans-serif;text-align:left}.pdYNEst b{display:block;font:800 15px Inter,system-ui,sans-serif;color:#1F1A17}.pdYNEst small{display:block;font:500 14px/1.4 Inter,system-ui,sans-serif;color:#6B5E55}.pdYNEst>span:first-child{flex:0 0 24px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 14px Inter,sans-serif;color:#fff;background:#C4410C}.pdYNEst .ok{background:#15803D!important}.pdYNEst .no{background:#B42318!important}.pdYNEst .dot{background:#F1C9B6!important;animation:pdYNp 1s ease-in-out infinite}@keyframes pdYNp{50%{transform:scale(.7);opacity:.6}}</style>
@@ -410,7 +388,7 @@ window.pdTxt=function(s){
 <script src="a/pd-sin-tirar-7c274dd83c.js"></script>
 <script id="pd-subir-archivo" src="a/pd-subir-archivo-3d675d057f.js"></script>
 <script src="a/pd-avisos-nativo-da120c0a15.js" defer></script>
-<script id="pd-subir-foto" src="a/pd-subir-foto-6eaad5dbb3.js"></script>
+<script id="pd-subir-foto" src="a/pd-subir-foto-3d9edbc7b3.js"></script>
 </body>
 
 </html>
