@@ -160,6 +160,23 @@
       try{await loadOrders()}catch(_){}try{window.loadCash&&window.loadCash()}catch(_){}
     }catch(e){error='No se pudo registrar el pago: '+(e.message||e)}
   }
+  function entregasExtra(o,e){
+    const L=tipo(o)==='recojo'&&Array.isArray(o.puntos_entrega)?o.puntos_entrega.filter(Boolean):[];if(!L.length)return '';
+    const falta=L.filter(x=>!x.entregado_en).length;
+    return `<div class="lbl" style="margin-top:6px">Entregas adicionales · ${L.length-falta} de ${L.length} listas</div>`+
+      (falta?U.note('Deja también estas entregas y márcalas al dejarlas. El cobro y el cierre se hacen en la entrega 1.'):'')+
+      L.map(x=>{const mp=U.maps(x.lat,x.lng,x.direccion,x.ubicacion||'');return `<div class="sum" style="gap:8px"><div class="lbl">Entrega ${E(x.n)}</div>`+U.who(x.nombre||'Quien recibe','Recibe aquí'+(x.que?' · '+E(x.que):''),'',true)+U.addr(x.direccion,x.referencia)+U.contact(mp,x.telefono||'','')+
+        (x.entregado_en?U.st('Entregado','ok'):e>=2&&e<9?`<button type="button" class="b o" data-act="en${E(x.n)}">Ya entregué en la entrega ${E(x.n)}</button>`:'')+`</div>`}).join('');
+  }
+  /* recojo y entrega con varias entregas: marca la entrega n (2, 3…) como entregada */
+  async function marcarEntrega(o,n){
+    error='';info='';if(!(await pdConfirmar('¿Ya entregaste en la entrega '+n+'?')))return;
+    const lista=(Array.isArray(o.puntos_entrega)?o.puntos_entrega:[]).map(x=>Number(x.n)===n?Object.assign({},x,{entregado_en:new Date().toISOString()}):x);
+    const {data,error:e}=await D().from('pedidos').update({puntos_entrega:lista}).eq('id',o.id).eq('motorizado_id',ME().id).select('id').maybeSingle();
+    if(e||!data){error='No se pudo marcar la entrega '+n+': '+(e?e.message:'Supabase no confirmó el cambio.');return}
+    o.puntos_entrega=lista;const f=lista.filter(x=>!x.entregado_en).length;info=f?'Entrega '+n+' lista. Te falta'+(f===1?'':'n')+' '+f+'.':'Ya hiciste todas las entregas adicionales.';
+    try{await loadOrders()}catch(_){}
+  }
   /* marca un punto de recojo adicional como recogido */
   async function marcarPunto(o,n){
     error='';info='';
@@ -535,7 +552,7 @@
       {const s=S(2);s.locked=t==='compra'?'Se muestra al terminar la compra':'Se muestra al recoger';s.sum=recN+(o.direccion_entrega?' · '+o.direccion_entrega:'');
         const mapa=U.maps(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,link(o.ubicacion_entrega||x.ubicacionEntrega)||(cp&&cp.ubi));
         s.body=msg+U.who(recN,(t==='compra'?(o.nombre_receptor?'Recibe la compra (no es quien la pidió)':'Cliente'):(/Pide el servicio:\s*Quien recibe/i.test(String(o.observaciones||''))?'Quien recibe · pidió el servicio':'Quien recibe'))+' · entrega aquí','',true)+U.addr(o.direccion_entrega,o.referencia_entrega)+U.contact(mapa,recT,'')+
-          rapidos(o,'rec',2);}
+          rapidos(o,'rec',2)+entregasExtra(o,e);}
       /* 3 · Cobrar */
       if(cobro){const s=S(3);s.locked='Se muestra al llegar donde el cliente';const monto=aCobrar(o);
         s.sum='Cobrado '+M(monto)+' · '+(yape(o)?'Yape':'Efectivo');
@@ -636,6 +653,7 @@
         const t=g.paquetes.filter(y=>y.tipoPago==='pago_en_agencia').reduce((a,y)=>a+(Number(String(d['cp'+gi+'_'+y.numero]||'').replace(',','.'))||0),0);let b=inp.parentElement;while(b&&!(b.classList&&b.classList.contains('amt')))b=b.previousElementSibling;const n=b&&b.querySelector('.n');if(n)n.textContent=t?M(t):'S/ —';vivo(inp,okAg(gi),'Escribe cuánto pagaste por cada paquete')}});
       m.acts['pg'+gi]=async b=>{if(b.disabled)return;b.disabled=true;await pagarEnAgencia(o,gi);PdPasos.render()};
     });
+    (t==='recojo'&&Array.isArray(o.puntos_entrega)?o.puntos_entrega.filter(Boolean):[]).forEach(x=>{m.acts['en'+x.n]=async b=>{if(b.disabled)return;b.disabled=true;await marcarEntrega(o,Number(x.n));PdPasos.render()}});
     PR.forEach(x=>{m.acts['pt'+x.n]=async b=>{if(b.disabled)return;b.disabled=true;await marcarPunto(o,x.n);if(!error)dr(o.id).ptAct=null;PdPasos.render()}});
     if(PR.length){for(let n=1;n<=PR.length+1;n++)m.acts['pl'+n]=()=>{error='';info='';dr(o.id).ptAct=n;PdPasos.render()};
       m.acts['pt1']=async b=>{if(b&&b.disabled)return;if(b)b.disabled=true;error='';info='';const z=dr(o.id),esC=t==='compra';
