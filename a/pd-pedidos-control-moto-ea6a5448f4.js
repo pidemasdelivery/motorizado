@@ -25,6 +25,12 @@
   }
   function foto(){return new Promise(res=>{const i=document.createElement('input');i.type='file';i.accept='image/*';i.setAttribute('capture','environment');i.setAttribute('data-pd-cloud','1');i.style.display='none';document.body.appendChild(i);i.addEventListener('change',()=>{const f=i.files&&i.files[0];i.remove();res(f||null)});i.click()})}
 
+  /* Foto de la entrega directa (cuando el cliente no tiene el código), usada desde el paso 5 */
+  window.pdEntregaConFoto=async function(id){
+    const o=OR().find(x=>String(x.id)===String(id));const f=await foto();if(!f)return false;
+    const url=await subir(f,'entrega');const r=await D().rpc('verificar_entrega',{p_pedido:id,p_codigo:null,p_foto:url});
+    if(r.error&&!/function|does not exist|schema cache/i.test(r.error.message||''))throw r.error;
+    if(o)o.entrega_verificada=o.entrega_verificada||'foto';return true};
   /* ---------- 1. Prueba de entrega ---------- */
   function pedirPrueba(o){return new Promise(res=>{
     const v=hoja('Confirma la entrega','<p class="pdpeTx">Pídele al cliente su <b>código de entrega</b> de 4 números. Lo ve en el seguimiento de su pedido.</p><input id="pdpeCod" class="pdpeCod" inputmode="numeric" maxlength="4" autocomplete="one-time-code" placeholder="• • • •"><p class="pdpeMsg" id="pdpeMsg"></p><button type="button" class="btn" id="pdpeOk">Confirmar entrega</button><button type="button" class="pdpeAlt pdFotoBtn" id="pdpeFoto">El cliente no tiene el código: tomar foto de la entrega</button>');

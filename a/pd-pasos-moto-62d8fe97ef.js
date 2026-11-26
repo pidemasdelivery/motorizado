@@ -171,7 +171,10 @@
     m.acts={
       cod:(inp)=>{const a=String(COD[id]||'').length===4;inp.value=inp.value.replace(/\D/g,'').slice(0,4);COD[id]=inp.value;if(error){error=''}
         if((inp.value.length===4)!==a){if(inp.value.length===4)inp.blur();PdPasos.render()}},
-      sincod:()=>{error='';correr('deliverOrder',id).then(()=>PdPasos.render())},
+      sincod:async(b)=>{error='';if(typeof window.pdEntregaConFoto!=='function'){await correr('deliverOrder',id);PdPasos.render();return}
+        const t=b.textContent;try{b.disabled=true;b.textContent='Abriendo cámara…';const ok=await window.pdEntregaConFoto(id);if(!ok){b.disabled=false;b.textContent=t;return}
+          b.textContent='Subiendo foto y finalizando…';await correr('deliverOrder',id)}catch(x){error='No se pudo subir la foto: '+(x.message||x)}
+        PdPasos.render()},
       cpago:async(box,ev)=>{const b=ev.target.closest('[data-m]');if(!b||b.classList.contains('on'))return;error='';try{await window.pdCambiarPago(o,b.dataset.m)}catch(e){error=String(e&&e.message||e)}PdPasos.render()},
       qr:()=>{if(typeof window.showYapeQr==='function')window.showYapeQr(id)},
       cash:(inp)=>{error='';inp.value=inp.value.replace(/[^\d.,]/g,'');setDraft(id,inp.value);const n=inp.getRootNode().querySelector('[data-vuelto]');if(n)n.innerHTML=I_v(inp.value,aCobrar(o));inp.getRootNode().querySelectorAll('.quick button').forEach(b=>b.classList.toggle('on',Number(b.dataset.v)===Number(inp.value)))},
