@@ -569,6 +569,11 @@
       const qp=String(o.quien_paga||''),mo2=String(o.pago_servicio_momento||'').toLowerCase();
       const paga=mo2==='pagado'?'Ya pagado':mo2==='al_final'?'Al final a Pidemás':qp==='recibe'?(t==='compra'?'Quien recibe la compra':'Quien recibe'):qp==='envia'?(t==='compra'?'Quien manda a comprar':'Quien envía'):'Quien pide el servicio';
       const otra=t==='compra'&&rc&&rc!==o.nombre_cliente;
+      if(t==='compra'){const nC=o.nombre_cliente||o.nombre_remitente||'Cliente',tC=o.telefono_cliente||o.telefono_remitente,dir=String(o.direccion_entrega||'').replace(/https?:\/\/\S+/g,'').trim(),rf=o.referencia_entrega||'';
+        return `<div class="sum" style="gap:8px"><div class="lbl">Compra</div><div class="lbl" style="margin:0">1 · Quien compra</div>`+U.who(nC,'Pide la compra','',true)+(tC?U.contact(null,tC,''):'')+
+          `<div style="height:1px;background:#F1E4DA;margin:4px 0"></div><div class="lbl" style="margin:0">2 · Dónde se recibe</div>`+(o.nombre_receptor&&o.nombre_receptor!==nC?U.who(o.nombre_receptor,'Recibe la compra','',true)+(o.telefono_receptor?U.contact(null,o.telefono_receptor,''):''):'')+
+          `<div class="li"><span>Dirección</span><b style="text-align:right">${E(dir||'—')}</b></div>`+(rf?`<div class="li"><span>Referencia</span><b style="text-align:right">${E(rf)}</b></div>`:'')+
+          `<div class="li"><span>Paga</span><b>${E(paga)}</b></div></div>`}
       if(t!=='compra'){const nE=o.nombre_remitente||o.nombre_cliente||'Quien envía',tE=o.telefono_remitente||o.telefono_cliente,nR=o.nombre_receptor||'',tR=o.telefono_receptor||'';
         return `<div class="sum" style="gap:8px"><div class="lbl">${t==='enc'?'Encomienda':'Recojo y entrega'}</div>`+
           `<div class="lbl" style="margin:0">1 · Envía</div>`+U.who(nE,t==='enc'?'Entrega la encomienda':'Entrega el pedido','',true)+(tE?U.contact(null,tE,''):'')+
