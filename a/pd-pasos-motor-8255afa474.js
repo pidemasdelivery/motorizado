@@ -39,6 +39,21 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .list>*{flex-shrink:0}
 .card{flex:0 0 auto;border-radius:18px;overflow:hidden;background:#F6EFE9;border:1px solid #F1E4DA;opacity:.85;transition:border-color .2s,background .2s}
 .card.d{background:#FFFFFF;opacity:1}
+.card.info{background:#FFFFFF;opacity:1;border:1.5px solid #EBDDD2}
+.card.info .dot{background:#FFF4EC;color:#C4410C}
+.ibody{display:flex;flex-direction:column;gap:12px}
+.gs{display:flex;flex-direction:column;gap:8px;background:#FFFFFF;border:1.5px solid #EBDDD2;border-radius:16px;padding:12px 14px}
+.gb .gs{background:#FFFDFB;border:1px solid #F1E4DA}
+.gsh{display:flex;align-items:center;gap:10px;margin-bottom:2px}.gsh b{font-size:15.5px;font-weight:800;color:#1F1A17}
+.gsi{width:32px;height:32px;border-radius:10px;background:#FFF4EC;color:#C4410C;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.gs .li{font-size:14.5px}.gs .li span{color:#6B5E55;flex:none}.gs .li b{text-align:right;font-weight:700;overflow-wrap:anywhere;min-width:0}.gs .li a{color:#C4410C;text-decoration:none}
+.gb{display:flex;flex-direction:column;gap:10px;border:1.5px solid #EBDDD2;border-radius:18px;padding:12px;background:#FFFFFF}
+.gb.gpq{border:1.5px solid #E8A27F;background:#FFFCFA}
+.gbt{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6B5E55}.gbn{font-size:16px;font-weight:800;color:#1F1A17;margin-top:-4px}.gpq .gbn{margin-top:0}
+.gsec{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6B5E55;margin:4px 2px -2px}
+.gmap{display:flex;align-items:center;justify-content:center;gap:8px;height:44px;border-radius:12px;border:1.5px solid #F1E4DA;background:#FFFFFF;color:#C4410C;font-weight:800;font-size:14.5px;text-decoration:none;margin-top:2px}
+.glist{display:flex;flex-direction:column;gap:6px;font-size:15px;font-weight:600}.glist div{padding:8px 10px;border:1px solid #F1E4DA;border-radius:10px;background:#FFFFFF}
+.gfotos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.gfotos a{display:block;aspect-ratio:1/1;border-radius:12px;overflow:hidden;border:1px solid #F1E4DA}.gfotos img{width:100%;height:100%;object-fit:cover;display:block}
 .card.a{background:#FFFFFF;border:1.5px solid #C4410C;box-shadow:0 6px 18px rgba(196,65,12,.10);opacity:1}
 .head{width:100%;display:flex;align-items:center;gap:12px;padding:14px;background:transparent;border:0;text-align:left;color:inherit;cursor:pointer}
 .card.l .head{cursor:default}
@@ -84,7 +99,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
 .amt .k{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#9A330A}
 .amt .n{font-size:44px;font-weight:800;margin-top:4px;letter-spacing:-.02em;line-height:1.1}
 .pill{display:inline-flex;align-items:center;gap:6px;margin-top:8px;height:30px;padding:0 12px;border-radius:999px;background:#FFFFFF;font-size:14px;font-weight:700}
-.sum{padding:12px;border-radius:14px;border:1px dashed #E3CFC2;background:transparent;font-size:15px;display:flex;flex-direction:column;gap:4px}.sum span{color:#6B5E55}.sum .lbl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6B5E55;margin:0 0 2px}
+.sum{padding:12px 14px;border-radius:16px;border:1.5px solid #EBDDD2;background:#FFFFFF;font-size:15px;display:flex;flex-direction:column;gap:4px}.sum span{color:#6B5E55}.sum .lbl{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6B5E55;margin:0 0 2px}
 .qr{display:flex;gap:12px;align-items:center;width:100%;padding:12px;border-radius:14px;border:1.5px solid #E4D3F5;background:#FFFFFF;text-align:left;color:#1F1A17;cursor:zoom-in}
 .qr .im{flex:0 0 84px;width:84px;height:84px;border-radius:10px;border:1px solid #F1E4DA;background:#FFFFFF center/contain no-repeat;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6B5E55;text-align:center}
 .qr .t{display:flex;flex-direction:column;gap:3px;min-width:0}
@@ -138,7 +153,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     if(!m){close();return}
     cur.m=m;
     const ai=m.steps.findIndex(s=>s.state==='active');
-    const key=ai+'|'+JSON.stringify([m.title,m.chip,m.steps.map(s=>[s.state,s.title,s.sum,s.body]),m.cta&&[m.cta.label,m.cta.off,m.cta.green,m.cta.hint],m.fin,m.alt&&m.alt.map(a=>a.label),m.err,cur.open]);
+    const key=ai+'|'+JSON.stringify([m.title,m.chip,m.steps.map(s=>[s.state,s.title,s.sum,s.body]),m.cta&&[m.cta.label,m.cta.off,m.cta.green,m.cta.hint],m.info,m.fin,m.alt&&m.alt.map(a=>a.label),m.err,cur.open]);
     if(key===cur.key)return;
     const act=cur.root.activeElement;
     if(act&&act.tagName==='INPUT'&&cur.lastActive===ai)return;
@@ -147,7 +162,8 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
     const list=cur.root.querySelector('.list');const sc=list?list.scrollTop:0;
     const n=m.steps.length;
     const bars=m.steps.map(s=>`<i class="${s.state==='done'?'d':s.state==='active'?'a':''}"></i>`).join('');
-    const cards=m.steps.map((s,i)=>head(s,i,!!cur.open[i])).join('');
+    const iOp=!!cur.open.info;
+    const cards=(m.info?`<div class="card info${iOp?' open':''}"><button type="button" class="head" data-info="1" aria-expanded="${iOp}"><span class="dot"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg></span><span class="hx"><span class="ht">Información del pedido</span>${!iOp&&m.infoSum?`<span class="hs">${E(m.infoSum)}</span>`:''}</span>${I.chev}</button>${iOp?`<div class="body ibody">${m.info}</div>`:''}</div>`:'')+m.steps.map((s,i)=>head(s,i,!!cur.open[i])).join('');
     const fin=m.fin?`<div class="fin${m.fin.mal?' mal':''}"><span class="ic">${m.fin.mal?'<svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M7 7l10 10M17 7L7 17"/></svg>':I.big}</span><div class="t">${E(m.fin.title)}</div>${m.fin.text?`<div class="s">${E(m.fin.text)}</div>`:''}${(m.fin.lines||[]).map(l=>`<div class="li2">${I.ok}<span>${l}</span></div>`).join('')}</div>`:'';
     const cta=m.cta?`<button type="button" class="sl${m.cta.green?' g':''}${m.cta.off?' off':''}" aria-label="${E(m.cta.label)}"${m.cta.off?' aria-disabled="true"':''}><span class="fill"></span><span class="lb">${E(m.cta.label)}</span><span class="kn">${I.arrow}</span></button><div class="hint">${E(m.cta.hint||(m.cta.off?'':'Desliza hacia la derecha para avanzar'))}</div>`:'';
     const alt=m.alt&&m.alt.length?`<div class="alt">${m.alt.map((a,i)=>`<button type="button" data-alt="${i}" class="${a.mal?'mal':''}">${E(a.label)}</button>`).join('')}</div>`:'';
@@ -167,6 +183,7 @@ button{font-family:inherit;-webkit-tap-highlight-color:transparent}
   function wire(){
     const r=cur.root,m=cur.m;
     r.querySelector('.back').onclick=()=>close();
+    r.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>{cur.open.info=!cur.open.info;cur.key=null;render()});
     r.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>{const i=+b.dataset.toggle;const s=m.steps[i];if(!s||s.state==='locked')return;cur.open[i]=!cur.open[i];if(cur.open[i])cur.irA=i;cur.key=null;render()});
     r.querySelectorAll('[data-alt]').forEach(b=>b.onclick=()=>{const a=m.alt[+b.dataset.alt];if(a&&a.run)a.run()});
     r.querySelectorAll('[data-act]').forEach(b=>{const f=m.acts&&m.acts[b.dataset.act];if(!f)return;const ev=b.tagName==='INPUT'?'input':'click';b.addEventListener(ev,e=>f(b,e))});

@@ -386,6 +386,65 @@
     });
     return h;
   }
+  /* ---------- Información del pedido: los mismos datos y el mismo diseño que el formulario del admin ---------- */
+  function infoPedido(o){
+    const t=tipo(o),T=v=>String(v??'').trim();
+    const IC={user:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></svg>',
+      pin:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>',
+      box:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></svg>',
+      store:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v10h16V10M3 4h18l-1.5 6h-15z"/><path d="M10 20v-5h4v5"/></svg>',
+      list:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+      cash:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>'};
+    const li=(k,v)=>T(v)?`<div class="li"><span>${E(k)}</span><b>${E(T(v))}</b></div>`:'';
+    const tel=v=>{const d=T(v).replace(/[^\d+]/g,'');return d?`<div class="li"><span>Número</span><b><a href="tel:${E(d)}">${E(T(v))}</a></b></div>`:''};
+    const mapa=(lat,lng,dir,url)=>{const u=U.maps(lat,lng,dir,link(url));return u?`<a class="gmap" href="${E(u)}" target="_blank" rel="noopener">${IC.pin}Ver en el mapa</a>`:''};
+    const sec=(ic,tt,h)=>T(h.replace(/<[^>]*>/g,''))||/class="gmap"/.test(h)?`<section class="gs"><div class="gsh"><span class="gsi">${IC[ic]}</span><b>${E(tt)}</b></div>${h}</section>`:'';
+    const blq=(tt,nom,h)=>h?`<div class="gb"><div class="gbt">${E(tt)}</div>${T(nom)?`<div class="gbn">${E(nom)}</div>`:''}${h}</div>`:'';
+    const lineas=v=>T(v)?`<div class="glist">${T(v).split(/\n+/).map(x=>`<div>${E(x.trim())}</div>`).join('')}</div>`:'';
+    const x=extra(o)||{};
+    let h='';
+    if(t==='recojo'){
+      const PR=arr(o.puntos_recojo).filter(Boolean),PE=arr(o.puntos_entrega).filter(Boolean);
+      h+=`<div class="gsec">Recojos</div>`;
+      h+=blq('Recojo 1',o.nombre_remitente,sec('user','Datos de contacto',li('Nombre',o.nombre_remitente)+tel(o.telefono_remitente)+li('A nombre de',o.recojo_a_nombre||x.pedidoANombre))+sec('pin','Ubicación',li('Dirección',o.direccion_recojo)+li('Referencia',o.referencia_recojo)+mapa(o.latitud_recojo,o.longitud_recojo,o.direccion_recojo,o.ubicacion_recojo)));
+      PR.forEach(q=>{h+=blq('Recojo '+q.n,q.nombre,sec('user','Datos de contacto',li('Nombre',q.nombre)+tel(q.telefono)+li('A nombre de',q.a_nombre))+sec('pin','Ubicación',li('Dirección',q.direccion)+li('Referencia',q.referencia)+mapa(q.lat,q.lng,q.direccion,q.ubicacion))+sec('box','Qué se recoge',li('Qué',q.que)))});
+      h+=`<div class="gsec">Entregas</div>`;
+      h+=blq('Entrega 1',o.nombre_receptor,sec('user','Datos de contacto',li('Nombre',o.nombre_receptor)+tel(o.telefono_receptor))+sec('pin','Ubicación',li('Dirección',o.direccion_entrega)+li('Referencia',o.referencia_entrega)+mapa(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,o.ubicacion_entrega))+sec('box','Qué se lleva',li('Qué',o.que_se_lleva)));
+      PE.forEach(q=>{h+=blq('Entrega '+q.n,q.nombre,sec('user','Datos de contacto',li('Nombre',q.nombre)+tel(q.telefono))+sec('pin','Ubicación',li('Dirección',q.direccion)+li('Referencia',q.referencia)+mapa(q.lat,q.lng,q.direccion,q.ubicacion))+sec('box','Qué se deja',li('Qué',q.que)))});
+    }else if(t==='compra'){
+      const cp=compra(o),LC=lugaresCompra(o),PR=arr(o.puntos_recojo).filter(Boolean),F=Array.isArray(o.compra_fotos)?o.compra_fotos.filter(Boolean):[];
+      h+=sec('user','Quien compra',li('Nombre',o.nombre_cliente)+tel(o.telefono_cliente));
+      h+=sec('pin','Dónde se recibe',li('Dirección',o.direccion_entrega)+li('Referencia',o.referencia_entrega)+mapa(o.latitud_entrega,o.longitud_entrega,o.direccion_entrega,o.ubicacion_entrega||cp.ubi));
+      if(T(o.nombre_receptor))h+=sec('user','Entregar a',li('Nombre',o.nombre_receptor)+tel(o.telefono_receptor));
+      h+=`<div class="gsec">Lugares de compra</div>`;
+      LC.forEach((q,i)=>{const p=i?PR.find(z=>Number(z.n)===q.n)||{}:{};const nom=i?q.nombre:String(cp.lugar||'').split(' · ')[0],dir=i?(T(p.direccion)!==T(p.nombre)?p.direccion:''):String(cp.lugar||'').split(' · ').slice(1).join(' · ');
+        h+=blq('Lugar '+q.n,nom,sec('store','Lugar de compra',li('Lugar',nom)+li('Dirección',dir)+(q.mapa?`<a class="gmap" href="${E(q.mapa)}" target="_blank" rel="noopener">${IC.pin}Ver en el mapa</a>`:''))+sec('list','Detalle de la compra',lineas(q.que)+li('Observaciones',q.obs)))});
+      if(F.length)h+=sec('list','Fotos de la compra',`<div class="gfotos">${F.map((u,i)=>`<a href="${E(u)}" target="_blank" rel="noopener"><img src="${E(u)}" alt="Foto ${i+1} de la compra" loading="lazy"></a>`).join('')}</div>`);
+      h+=sec('list','Comprobante',li('Tipo',cap1(cp.comp))+li(/factura/i.test(cp.comp)?'RUC':'DNI',cp.doc)+li('Nombre',cp.cnom)+li('Razón social',cp.craz)+li('Dirección fiscal',cp.cdir));
+    }else if(t==='enc'){
+      const cp=compra(o),PX=arr(o.paquetes_extra),tEnv=v=>cap1(String(v||'').replace(/_/g,' '));
+      h+=sec('user','Quien envía',li('Nombre',o.nombre_remitente)+li('DNI',o.dni_remitente)+tel(o.telefono_remitente));
+      h+=sec('pin','Dónde se recoge',li('Dirección',o.direccion_recojo)+li('Referencia',o.referencia_recojo)+mapa(o.latitud_recojo,o.longitud_recojo,o.direccion_recojo,o.ubicacion_recojo));
+      h+=sec('box','Qué envía',li('Detalle',notas(o)));
+      h+=`<div class="gsec">Agencias y paquetes</div>`;
+      grupos(o).forEach((g,gi)=>{const ap=agPunto(o,g.agencia,gi===0),ad=((AGU.d||{})[agClaveU(g.agencia)]||{}).direccion||(PX.find(z=>claveAg(z.agencia)===g.clave&&z.agencia_direccion)||{}).agencia_direccion;
+        let ph='';g.paquetes.forEach((p,j)=>{const z=PX.find(q=>Number(q.numero)===p.numero)||{};
+          ph+=`<div class="gb gpq"><div class="gbn">Paquete ${j+1}</div>`+sec('box','Envío del paquete',li('Destino',p.destino)+li('Modalidad de pago',pagoTx(p.tipoPago).replace(/^Pago: —$/,''))+li('Tipo',tEnv(p.numero===1?o.tipo_encomienda:z.tipo_envio))+li('Indicación',z.indicacion))+sec('user','Quien recibe',li('Nombre',p.recibe)+li('DNI',p.recibeDni)+tel(p.recibeTel))+`</div>`});
+        h+=blq('Agencia '+(gi+1),g.agencia,sec('store','Agencia',li('Agencia',g.agencia)+li('Dirección',ad)+(ap?mapa(ap.lat,ap.lng,'',''):''))+ph)});
+      h+=sec('list','Comprobante',li('Tipo',cap1(o.tipo_comprobante||cp.comp))+li(/factura/i.test(o.tipo_comprobante||cp.comp)?'RUC':'DNI',o.documento_comprobante||cp.doc)+li('Nombre',cp.cnom)+li('Razón social',cp.craz)+li('Dirección fiscal',cp.cdir));
+    }
+    /* pago del servicio (igual que en el admin) */
+    {const fp=alFinal(o)?'Al final a Pidemás':prepago(o)?'Ya pagado':yape(o)?'Yape':'Efectivo';
+      const cuando=alFinal(o)||prepago(o)?'':(alRecoger(o)||/^recojo/.test(String(o.pago_servicio_momento||''))||t==='enc')?'Al recoger':'Al entregar';
+      const qp=String(o.quien_paga||'').toLowerCase(),quien=qp==='envia'?'Quien envía':qp==='recibe'?'Quien recibe':qp==='cliente'?(t==='compra'?'Quien compra':'El cliente'):'';
+      const PRc=arr(o.puntos_recojo).filter(Boolean),pts=(t==='recojo'||t==='compra')&&PRc.length?PRc.map(q=>li('Delivery · '+(t==='compra'?'lugar ':'punto ')+q.n,q.costo_delivery!=null&&q.costo_delivery!==''?M(q.costo_delivery):'')).join(''):'';
+      const pq=t==='enc'?arr(o.paquetes_extra).filter(z=>z&&z.costo_delivery!=null).map(z=>li('Delivery · paquete '+z.numero,M(z.costo_delivery))).join(''):'';
+      const pc=pagaCon(o),pAqui=PRc.find(q=>q.paga_aqui);
+      h+=sec('cash','Costo del servicio',pts+pq+li('Total del servicio',M(servicio(o)))+(t==='compra'&&Number(o.subtotal)>0?li('Compra',M(o.subtotal))+li('Total a cobrar',M(o.total)):''));
+      h+=sec('cash','Forma de pago',li('Cómo paga',fp)+li('Cuándo',cuando)+(pc>0&&!yape(o)?li('Paga con',M(pc)):''));
+      h+=sec('user','Quién paga',li('Paga',quien)+(pAqui?li('Paga en','Punto '+pAqui.n+(pAqui.nombre?' · '+pAqui.nombre:'')):''));}
+    return h;
+  }
   function modelo(){
     const o=L().find(x=>String(x.id)===String(abierto));if(!o)return null;
     const t=tipo(o),e=etapa(o),id=o.id,d=dr(id),x=extra(o),cp=t==='compra'?compra(o):null;
@@ -600,7 +659,7 @@
         (otra?`<div class="lbl" style="margin-top:4px">Quien recibe la compra</div>`+U.who(rc,'Otra persona · a ella le entregas','',true)+(o.telefono_receptor?U.contact(null,o.telefono_receptor,''):''):'')+
         `<div class="li"><span>Paga</span><b>${E(paga)}</b></div></div>`})();
     if(e>=1){const k0=steps.findIndex(x=>x.state==='active');const k=k0>=0?k0:0;if(steps[k])steps[k].body=pideBox+(steps[k].body||'')}
-    const m={kicker:NOM+' · '+U.ref(id),steps,err:error,acts:{}};
+    const m={kicker:NOM+' · '+U.ref(id),steps,err:error,acts:{}};try{m.info=infoPedido(o);m.infoSum='Datos de '+(t==='enc'?'quien envía, agencias y paquetes':t==='compra'?'quien compra, lugares y productos':'recojos y entregas')+' · pago'}catch(_){};
     if(e===-1){m.title='Pedido cancelado';m.chip='Cancelado';m.chipCls='mal';steps.forEach(s=>s.state='locked');m.fin={mal:true,title:'Este pedido fue cancelado',text:o.motivo_cancelacion||'Ya no tienes que hacer nada con él.'};return m}
     if(e>=9){m.title='Entregado';m.chip='Listo';m.chipCls='ok';m.fin={title:t==='enc'?'¡Encomienda terminada!':'¡Pedido entregado!',text:o.entregado_en?'Terminado a las '+U.hora(o.entregado_en)+'.':''};return m}
     const actual=steps.findIndex(s=>s.state==='active')+1;
