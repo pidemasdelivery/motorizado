@@ -565,10 +565,13 @@
     const vivo=(el,ok,hint)=>{try{const r=el.getRootNode(),sl=r.querySelector('.sl');if(sl){sl.classList.toggle('off',!ok);sl.setAttribute('aria-disabled',String(!ok))}const h=sl&&sl.nextElementSibling;if(h&&h.classList.contains('hint'))h.textContent=ok?'Desliza hacia la derecha para avanzar':hint}catch(_){}};
     /* «Pide el servicio» arriba, en el mismo orden en Admin y Motorizado: quién pide, qué papel tiene y quién paga */
     const pideBox=(()=>{const ob=String(o.observaciones||''),pR=/Pide el servicio:\s*Quien recibe/i.test(ob),rc=o.nombre_receptor||'';
-      const rol=t==='compra'?(rc&&rc!==o.nombre_cliente?'Manda a comprar para '+rc:'Manda a comprar para sí'):t==='enc'?(pR?'Quien recibe · manda a recoger la encomienda':'Quien envía la encomienda'):(pR?'Quien recibe · manda a recoger':'Quien envía · manda a recoger y entregar');
+      const rol=t==='compra'?(rc&&rc!==o.nombre_cliente?'Manda a comprar para otra persona':'Manda a comprar para sí mismo'):t==='enc'?(pR?'Quien recibe · manda a recoger la encomienda':'Quien envía la encomienda'):(pR?'Quien recibe · manda a recoger':'Quien envía · manda a recoger y entregar');
       const qp=String(o.quien_paga||''),mo2=String(o.pago_servicio_momento||'').toLowerCase();
       const paga=mo2==='pagado'?'Ya pagado':mo2==='al_final'?'Al final a Pidemás':qp==='recibe'?(t==='compra'?'Quien recibe la compra':'Quien recibe'):qp==='envia'?(t==='compra'?'Quien manda a comprar':'Quien envía'):'Quien pide el servicio';
-      return `<div class="sum" style="gap:8px"><div class="lbl">Pide el servicio</div>`+U.who(o.nombre_cliente||o.nombre_remitente||'Cliente',E(rol),'',true)+`<div class="li"><span>Paga</span><b>${E(paga)}</b></div>`+(o.telefono_cliente?U.contact(null,o.telefono_cliente,''):'')+`</div>`})();
+      const otra=t==='compra'&&rc&&rc!==o.nombre_cliente;
+      return `<div class="sum" style="gap:8px"><div class="lbl">${t==='compra'?'Quien pide la compra':t==='enc'?'Quien pide la encomienda':'Quien pide el servicio'}</div>`+U.who(o.nombre_cliente||o.nombre_remitente||'Cliente',E(rol),'',true)+(o.telefono_cliente?U.contact(null,o.telefono_cliente,''):'')+
+        (otra?`<div class="lbl" style="margin-top:4px">Quien recibe la compra</div>`+U.who(rc,'Otra persona · a ella le entregas','',true)+(o.telefono_receptor?U.contact(null,o.telefono_receptor,''):''):'')+
+        `<div class="li"><span>Paga</span><b>${E(paga)}</b></div></div>`})();
     if(e>=1){const k0=steps.findIndex(x=>x.state==='active');const k=k0>=0?k0:0;if(steps[k])steps[k].body=pideBox+(steps[k].body||'')}
     const m={kicker:NOM+' · '+U.ref(id),steps,err:error,acts:{}};
     if(e===-1){m.title='Pedido cancelado';m.chip='Cancelado';m.chipCls='mal';steps.forEach(s=>s.state='locked');m.fin={mal:true,title:'Este pedido fue cancelado',text:o.motivo_cancelacion||'Ya no tienes que hacer nada con él.'};return m}
