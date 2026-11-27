@@ -60,7 +60,7 @@
       if(st.modo==='efectivo'){
         const {data:prev}=await db.from('movimientos_caja').select('id').eq('motorizado_id',moto.id).eq('pedido_id',o.id).eq('tipo','ingreso').not('descripcion','ilike','INGRESO MANUAL%').not('descripcion','ilike','EFECTIVO PARA %').limit(1);
         if(!(prev&&prev.length)){
-          const {error:me}=await db.from('movimientos_caja').insert({motorizado_id:moto.id,pedido_id:o.id,tipo:'ingreso',monto:Math.round((vueltoDe==='propio'?paga:total)*100)/100,
+          const {error:me}=await db.from('movimientos_caja').insert({motorizado_id:moto.id,pedido_id:o.id,tipo:'ingreso',monto:Math.round(total*100)/100,
             descripcion:(isEnc(o)?'Cobro de encomienda':'Cobro de recojo')+' · total S/ '+total.toFixed(2)+' · cliente pagó con S/ '+paga.toFixed(2)+' · vuelto entregado S/ '+Math.max(0,paga-total).toFixed(2)+(vueltoDe?(vueltoDe==='caja'?' · VUELTO DE CAJA':' · VUELTO CON DINERO PROPIO'):'')});
           if(me)throw me;
         }

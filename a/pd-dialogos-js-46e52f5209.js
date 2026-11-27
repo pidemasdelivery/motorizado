@@ -29,7 +29,7 @@
             <div style="display:inline-block;padding:6px 14px;border-radius:999px;background:#FFFFFF;font-weight:700;font-size:14px;line-height:1.2;color:#1F1A17">Paga con ${E(M(pa))} · pedido ${E(M(to))}</div>
           </div>
           <div style="margin:16px 0 8px;font-weight:800;font-size:14px;line-height:1.2;letter-spacing:.06em;text-transform:uppercase;color:#6B5E55">¿De dónde sacas el vuelto?</div>
-          <div style="display:grid;gap:10px">${op('propio','De mi bolsillo','La caja no se toca: entra '+E(M(pa))+' completo')}${op('caja','De la caja','Se descuentan '+E(M(vu))+' de la caja')}</div>
+          <div style="display:grid;gap:10px">${op('propio','De mi bolsillo','La caja no se toca: entra solo el total del pedido')}${op('caja','De la caja','Se descuentan '+E(M(vu))+' de la caja')}</div>
           <button type="button" class="pdDlgNo" style="display:block;width:100%;height:54px;margin-top:12px;border-radius:16px;border:1.5px solid #F1E4DA;background:#FFFFFF;color:#1F1A17;font-weight:800;font-size:16px;line-height:1;cursor:pointer;${F}">Cancelar</button></div>`;
         d.hidden=false;document.documentElement.classList.add('pdDlgOn');
         const fin=v=>{d.hidden=true;d.innerHTML='';document.documentElement.classList.remove('pdDlgOn');document.removeEventListener('keydown',tecla,true);res(v)};
