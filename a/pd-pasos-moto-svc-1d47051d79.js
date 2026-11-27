@@ -31,6 +31,16 @@
   let abierto=null,error='',info='';
   const DR={};const dr=id=>DR[id]||(DR[id]={modo:null,monto:'',gasto:'',caja:'',pk:{}});
 
+  /* observaciones del pedido sin lo que el sistema ya muestra en otro lugar (campos, pagos, cambios de pago, tokens): solo lo que escribió el cliente o quien lo atiende */
+  function notaLibre(s){
+    let t=String(s||'');
+    t=t.replace(/__PIDEMAS_[A-Z_]+__\s*\{[^{}]*\}/g,' ').replace(/\[COMPROBANTE_YAPE:[^\]]*\]/gi,' ').replace(/https?:\/\/\S+/g,' ');
+    t=t.replace(/CAMBIO DE PAGO:[^|]*/gi,' ');
+    t=t.replace(/(?:Servicio marcado como PAGADO|Pago en efectivo|Pago por Yape|Paga quien (?:envía|recibe)|El cliente paga al final)[^|]*/gi,' ');
+    t=t.replace(/(?:Pide el servicio|Ubicación(?: de recojo| de entrega| del cliente)?|Referencia de recojo|Pedido a nombre de|Qué se lleva|Entregar a|Compra solicitada|Comprobante|DNI\/RUC|Nombre comprobante|Razón social|Dirección fiscal|Lugar de compra|Tipo de encomienda|DNI de quien (?:envía|recibe)|¿De dónde desea la compra\?|¿Qué desea que compremos\?)\s*:[^|]*?(?=\s+(?:Pide el servicio|Ubicación|Referencia de recojo|Pedido a nombre|Qué se lleva|Entregar a|Compra solicitada|Comprobante|DNI|Nombre comprobante|Razón social|Dirección fiscal|Lugar de compra|Tipo de encomienda|CAMBIO DE PAGO)\b|\s*\||$)/gi,' ');
+    t=t.replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+){2,}\b/g,' ');
+    return t.split(/\||·/).map(x=>x.replace(/\s+/g,' ').trim()).filter(Boolean).join(' · ');
+  }
   /* ---------- datos de compra (vienen escritos en las observaciones) ---------- */
   function compra(o){
     const raw=String(o.observaciones||'').replace(/__PIDEMAS_[A-Z_]+__\s*\{[^{}]*\}/g,'').replace(/\[COMPROBANTE_YAPE:[^\]]*\]/gi,'').replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+){2,}\b/g,'');
@@ -38,11 +48,11 @@
     const ubi=get('Ubicación','Ubicación del cliente');
     return {url:(String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').match(/https?:\/\/\S+/)||[''])[0],lugar:String(o.direccion_recojo||get('Lugar de compra','¿De dónde desea la compra?')||'').replace(/https?:\/\/\S+/g,'').replace(/[\s·,|-]+$/,'').trim(),detalle:get('Compra solicitada','¿Qué desea que compremos?'),
       comp:get('Comprobante'),doc:get('DNI/RUC'),cnom:get('Nombre comprobante'),craz:get('Razón social'),cdir:get('Dirección fiscal'),ubi:link(ubi),
-      obs:raw.split('|').flatMap(x=>x.split('·')).map(x=>x.trim()).filter(x=>x&&!/^(Ubicación(?: del cliente)?|Compra solicitada|Comprobante|DNI\/RUC|Nombre comprobante|Razón social|Dirección fiscal|Lugar de compra|¿De dónde desea la compra\?|¿Qué desea que compremos\?)\s*:/i.test(x)&&!/^(Servicio marcado como PAGADO|Pago en efectivo|Pago por Yape|Paga quien|Pedido a nombre de|El cliente paga al final)/i.test(x)).join(' · ')};
+      obs:notaLibre(raw)};
   }
   function notas(o){const x=extra(o);let n=String(x.clean||'');try{if(typeof cleanDeliveryTariffFromObservaciones==='function')n=cleanDeliveryTariffFromObservaciones(n)}catch(_){}
     try{if(typeof window.pdLimpiarNotas==='function')n=window.pdLimpiarNotas(n)}catch(_){}
-    return String(n||'').replace(/(?:^|[|·])\s*Ubicaci[oó]n[^:|·]*:\s*[^|·]*/gi,'').replace(/https?:\/\/\S+/g,'').replace(/servicio marcado como PAGADO[^|·]*/ig,'').replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+){2,}\b/g,'').replace(/__PIDEMAS_[A-Z_]+__\s*\{[^{}]*\}/g,'').replace(/^[\s|·]+|[\s|·]+$/g,'').trim()}
+    n=String(n||'').replace(/(?:^|[|·])\s*Ubicaci[oó]n[^:|·]*:\s*[^|·]*/gi,'').replace(/https?:\/\/\S+/g,'').replace(/servicio marcado como PAGADO[^|·]*/ig,'').replace(/\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+){2,}\b/g,'').replace(/__PIDEMAS_[A-Z_]+__\s*\{[^{}]*\}/g,'').replace(/^[\s|·]+|[\s|·]+$/g,'').trim();return notaLibre(n)}
 
   /* ---------- encomienda: paquetes y guías ---------- */
   function paquetes(o){
